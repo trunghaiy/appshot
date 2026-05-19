@@ -1,47 +1,105 @@
 # Appshot
 
-Generate polished App Store & Google Play preview videos from a simple config. Built on [Remotion](https://remotion.dev) + React + Tailwind CSS.
+Generate polished App Store and Google Play preview videos and screenshots — from your app's codebase, not a video editor.
 
-No video editing skills required. Define your scenes in TypeScript, render to MP4.
+Appshot ships as **AI agent skills** that act as a creative director: they scan your project, ask the right questions, and produce a ready-to-render [Remotion](https://remotion.dev) config. No video editing experience required.
 
-Appshot also ships as a set of AI agent skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — let Claude scan your app, direct the creative, and generate a ready-to-render config automatically.
+Works with **Claude Code**, **Cursor**, **Windsurf**, **Codex**, and any AI agent that supports the [Agent Skills spec](https://agentskills.io).
 
-## Installation
+<!-- TODO: Add GIF or screenshot of example output here -->
+<!-- ![BookStreak example](docs/bookstreak-preview.gif) -->
 
-### Install Skills
+## How It Works
 
-```bash
-# Install all skills (recommended)
-npx skills add trunghaiy/appshot
+Appshot skills turn a conversation into a finished video or screenshot set:
 
-# Install specific skills
-npx skills add trunghaiy/appshot --skill appshot-videos appshot-images
+1. **Install the skills** into your mobile app project
+2. **Ask your AI agent** — "Generate an App Store preview video for this app"
+3. **The skill scans your codebase** — extracts app name, brand colors, icon, features, and store metadata automatically
+4. **You answer a few creative questions** — what problem does your app solve? What's the core action? What proof do you have?
+5. **The skill generates everything** — scaffolds a Remotion project, writes the config, and sets up scenes
+6. **Preview and render** — `npm run dev` to preview in-browser, `npm run build` to export MP4
 
-# List available skills
-npx skills add trunghaiy/appshot --list
+The skill handles the creative direction (narrative arc, copy, scene selection) and the technical setup (project scaffolding, config generation, component wiring). You focus on your app's story.
+
+### Quick mode
+
+Don't want a conversation? Add `--quick` and the skill makes all creative decisions from your codebase context alone:
+
+```
+Generate an App Store preview video for this app --quick
 ```
 
-### Clone and Copy
+## Install
+
+Install the skills into your app project (recommended):
+
+```bash
+npx skills add trunghaiy/appshot
+```
+
+This installs three skills into your project's `.agents/skills/` directory. Your AI agent picks them up automatically on the next session.
+
+<details>
+<summary>Other installation methods</summary>
+
+**Install specific skills only:**
+
+```bash
+npx skills add trunghaiy/appshot --skill appshot-videos appshot-images
+```
+
+**Clone and copy:**
 
 ```bash
 git clone https://github.com/trunghaiy/appshot.git
-cp -r appshot/.claude/skills/* .claude/skills/
+cp -r appshot/skills/* your-project/.agents/skills/
 ```
 
-### Git Submodule
+**Git submodule:**
 
 ```bash
-git submodule add https://github.com/trunghaiy/appshot.git .claude/appshot
+git submodule add https://github.com/trunghaiy/appshot.git .agents/appshot
 ```
 
-### Fork and Customize
+**Fork and customize** — fork this repo and modify the skills, strategies, and templates for your needs.
 
-Fork this repository, customize the skills and template for your needs.
+</details>
 
-## Quick Start
+## What You Can Generate
+
+### Videos
+
+15-30 second animated preview videos for App Store and Google Play, built from 5 scene types:
+
+| Scene | What it does |
+|-------|-------------|
+| **PainPoint** | Shows the problem — dark theme, counter reset, card crack animation |
+| **FeatureShowcase** | Your app's UI inside a realistic phone frame with animated cards |
+| **SpeedDemo** | Demonstrates a fast core loop — type, save, success toast |
+| **SocialProof** | Analytics, heat maps, progress timelines, stats |
+| **CallToAction** | App icon + tagline + feature pills + store badge |
+
+### Screenshots
+
+Store listing screenshots with device frames, captions, and branded backgrounds. Supports all required App Store and Google Play dimensions.
+
+## Skills
+
+| Skill | What it does |
+|-------|-------------|
+| `appshot-core` | Foundation — architecture, config schema, component inventory, device presets |
+| `appshot-videos` | Creative director for preview videos — scans your app, guides narrative, generates config |
+| `appshot-images` | Creative director for screenshots — scans your app, designs layouts, generates config |
+
+`appshot-core` is loaded automatically by the other two. You interact with `appshot-videos` or `appshot-images` directly.
+
+## Manual Quick Start
+
+If you prefer full control without AI skills, scaffold a standalone Remotion project:
 
 ```bash
-# 1. Create a new project
+# 1. Scaffold
 npx create-appshot my-video
 cd my-video
 
@@ -54,29 +112,45 @@ npm run dev
 npm run build
 ```
 
-## Scene Templates
+## Example
 
-Appshot ships with 5 scene templates that cover the most common App Store video patterns:
+See [examples/bookstreak/](examples/bookstreak/) for a complete config that produces a 25-second reading app preview video with all 5 scene types.
 
-| Scene | What it does |
-|-------|-------------|
-| **PainPoint** | Show the problem (dark theme, counter reset, card crack animation) |
-| **FeatureShowcase** | Your app's UI inside a realistic phone frame with animated cards |
-| **SpeedDemo** | Demonstrate a fast core loop (type → save → success toast) |
-| **SocialProof** | Analytics, heat maps, progress timelines, stats |
-| **CallToAction** | App icon + tagline + feature pills + App Store badge |
+## Components
 
-## Config
+All components accept brand colors via a `brand` prop:
 
-Everything is driven by `src/app-config.ts`:
+| Component | Purpose |
+|-----------|---------|
+| `PhoneFrame` | Realistic device with bezel, side buttons, notch/Dynamic Island |
+| `AmbientBackground` | Animated gradient with floating orbs (light/medium/deep/dark) |
+| `Caption` | Bottom caption with word-by-word entrance animation |
+| `FadeIn` | Directional fade-in (up/down/left/right) |
+| `SceneWrap` | 12-frame fade transitions between scenes |
+| `HeatMap` | GitHub-style contribution grid |
+| `AppIcon` | Icon with optional glow effect |
+| `AppStoreBadge` | iOS App Store / Google Play badges |
+
+## Device Presets
+
+| Preset | Screen | Notch |
+|--------|--------|-------|
+| `iphone-16-pro` | 393x852 | Dynamic Island |
+| `iphone-15` | 375x812 | Dynamic Island |
+| `ipad-pro-13` | 1024x1366 | None |
+| `pixel-9` | 412x915 | Punch hole |
+
+## Config Reference
+
+Everything is driven by `src/app-config.ts`. The skill generates this for you, but here's the schema if you're customizing manually:
 
 ```typescript
 export const appConfig: AppConfig = {
   app: {
     name: "MyApp",
     tagline: "Your tagline",
-    icon: "app-icon.png",  // in public/
-    platform: "ios",       // "ios" | "android" | "both"
+    icon: "app-icon.png",     // in public/
+    platform: "ios",          // "ios" | "android" | "both"
   },
   brand: {
     primary: "#007AFF",
@@ -95,62 +169,40 @@ export const appConfig: AppConfig = {
     device: "iphone-15",
   },
   scenes: [
-    // Your scenes here — see template for examples
+    // Ordered array of scene configs
+    // Each has: type, durationInFrames, caption, and type-specific props
   ],
 };
 ```
 
-## Device Presets
+## Store Requirements
 
-| Preset | Screen | Notch |
-|--------|--------|-------|
-| `iphone-16-pro` | 393×852 | Dynamic Island |
-| `iphone-15` | 375×812 | Dynamic Island |
-| `ipad-pro-13` | 1024×1366 | None |
-| `pixel-9` | 412×915 | Punch hole |
+### Videos
 
-## Components
+| Platform | Dimensions | Duration | Format |
+|----------|-----------|----------|--------|
+| iPhone 6.7" | 886x1920 | 15-30s | H.264, MP4/MOV |
+| iPhone 6.1" | 886x1920 | 15-30s | H.264, MP4/MOV |
+| iPad 13" | 1200x1600 | 15-30s | H.264, MP4/MOV |
 
-All components are brand-aware and accept your colors:
+Default output is 1080x1920. For App Store submission, set `video.width` to 886.
 
-- **PhoneFrame** — Realistic device with bezel, side buttons, notch
-- **AmbientBackground** — Animated gradient with floating orbs
-- **Caption** — Bottom caption with word-by-word animation
-- **FadeIn** — Directional fade-in (up/down/left/right)
-- **HeatMap** — GitHub-style contribution grid
-- **AppIcon** — Icon with optional glow
-- **AppStoreBadge** — iOS / Google Play badges
-- **SceneWrap** — Auto fade transitions between scenes
+### Screenshots
 
-## Skills
-
-| Skill | What it does |
-|-------|-------------|
-| **appshot-core** | Foundation — architecture, config schema, component inventory, device presets |
-| **appshot-videos** | Creative direction + config generation for App Store preview videos |
-| **appshot-images** | Creative direction + config generation for App Store screenshots |
-
-Skills act as creative directors: they scan your app's codebase for context (name, colors, icon, features), guide narrative and copy decisions, then generate a ready-to-render Remotion config.
-
-## App Store Requirements
-
-| Platform | Dimensions | Duration |
+| Platform | Dimensions | Required |
 |----------|-----------|----------|
-| iPhone 6.7" | 886×1920 | 15-30s |
-| iPhone 6.1" | 886×1920 | 15-30s |
-| iPad 13" | 1200×1600 | 15-30s |
-| Format | H.264, MP4/MOV | — |
-
-## Examples
-
-See [examples/bookstreak/](examples/bookstreak/) for a real-world config that produces a 30-second reading app preview video.
+| iPhone 6.7" | 1290x2796 | Yes |
+| iPhone 6.5" | 1242x2688 | Optional |
+| iPad 13" | 2064x2752 | Optional |
+| Android | 1080x1920 (min) | Recommended |
 
 ## Customization
 
-1. **Custom scenes** — Add `.tsx` files to `src/scenes/`, import in `AppPreview.tsx`
-2. **Screenshots** — Use `staticFile("screenshot.png")` inside `PhoneFrame`
-3. **Audio** — Place `.mp3` in `public/`, set `backgroundMusic` in config
-4. **Custom components** — Build on top of the existing primitives
+- **Custom scenes** — Add `.tsx` files to `src/scenes/`, export from index, add a `case` in `AppPreview.tsx`
+- **Screenshots** — Use `staticFile("screenshot.png")` inside `PhoneFrame`
+- **Audio** — Place `.mp3` in `public/`, set `backgroundMusic` in config
+- **Custom components** — Build on top of the existing primitives in `src/components/`
+- **Category strategies** — The video skill includes strategies for habit tracking, fitness, finance, and more. Add your own in `skills/appshot-videos/strategies/`
 
 ## License
 
