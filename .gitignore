@@ -1,0 +1,9 @@
+node_modules/
+out/
+dist/
+.DS_Store
+*.mp4
+*.gif
+*.mov
+template/node_modules/
+template/out/
