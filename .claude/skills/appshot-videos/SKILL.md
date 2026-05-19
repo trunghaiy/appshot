@@ -338,6 +338,16 @@ export const FooAppPreview: React.FC = () => {
 - App name, icon, tagline are from the actual app (phase 1)
 - Each scene mocks the actual app UI discovered in phase 1, not generic placeholders
 
+### After writing code, self-check every scene file
+
+- [ ] Scene 1 first visible element uses `delay: 0` (thumbnail rule)
+- [ ] PhoneFrame uses `scale={1.7}` or higher
+- [ ] Text outside PhoneFrame is 28px+ body, 40px+ titles
+- [ ] Floating cards outside PhoneFrame are 800px+ wide
+- [ ] No dark text color on dark background — trace every text element's `color` against its parent's `background`
+- [ ] Every `TypeWriter` or styled text block has an explicit `color` set via `style={}`, not just a className
+- [ ] Emoji/icons are 40px+ outside PhoneFrame
+
 ---
 
 ## Phase 4: Preview & iterate
@@ -397,19 +407,28 @@ Approve this direction and I'll generate all code, or tell me what to change.
 
 6. **Timing.** Total video 15-30 seconds. Each scene 3-6 seconds. CTA badge visible 2+ seconds. Caption every scene.
 
-7. **Readability at App Store scale.** The video will be viewed as a small thumbnail in the App Store listing. All UI elements inside PhoneFrame must be legible at that size.
-   - Set `phoneScale` on PhoneFrame to **1.6–2.0** for portrait videos (1080x1920). The phone should fill 70-80% of the frame width.
-   - Text inside the phone screen: minimum 13px for body, 18px for titles, 11px for labels. Anything smaller will be unreadable.
+7. **Readability at App Store scale.** The video will be viewed as a small thumbnail in the App Store listing. ALL visual elements must be legible — not just those inside PhoneFrame.
+   - **Inside PhoneFrame:** Set `phoneScale` to **1.6–2.0** for portrait videos (1080x1920). The phone should fill 70-80% of the frame width. Text minimum: 13px body, 18px titles, 11px labels.
+   - **Outside PhoneFrame (floating cards, icons, CTA elements):** These render directly on the 1080x1920 canvas with no phone zoom. Font sizes must be **much larger**: minimum 28px for body text, 40px+ for titles, 22px+ for labels, 48px+ for stat values. A card with 15-20px text on a 1080x1920 canvas is unreadable at App Store thumbnail size.
+   - **Emoji/icon sizes:** Minimum 40px when used outside PhoneFrame. 32px minimum inside PhoneFrame.
+   - **Card widths:** Floating cards outside PhoneFrame should be at least 800px wide (out of 1080px canvas).
    - Cards, buttons, and interactive elements must have clear visual contrast against the background.
-   - Test: if you squint, can you still tell what each element is? If not, make it bigger.
 
-8. **No empty frames.** Every scene must have visible content from frame 0. No scene should open with a blank screen or only a background gradient.
-   - If elements enter with delays (spring animations), ensure at least one element is visible immediately or add a branded title/label that appears from frame 0.
-   - The very first frame of the entire video (frame 0 of scene 1) is especially critical — it becomes the video thumbnail. It must not be black, transparent, or empty.
+8. **No empty frames — delay: 0 on first element.** Every scene must have visible content from frame 0.
+   - The first visible element in Scene 1 MUST use `delay: 0` in its spring/FadeIn. Not `delay: 3`, not `delay: 5` — zero. AmbientBackground alone is not visible content.
+   - Frame 0 of the entire video becomes the App Store thumbnail. It must show recognizable content (a card, a phone screen, text — anything the viewer can parse).
+   - Subsequent elements can use staggered delays (delay: 8, 16, etc.) but the first one must be instant.
+   - For scenes 2+ (not the opening scene), `delay: 3-5` on the first element is acceptable since SceneWrap provides a fade-in transition.
 
 9. **Use structured questions.** When asking the user to choose between options (color theme, narrative arc, scenes to include/exclude, music mood), always use the AskUserQuestion tool with labeled options — never plain text questions. This makes decisions visible and actionable.
 
 10. **Theme selection.** In Phase 1, detect whether the app has both light and dark themes. In Phase 2, ask the user which theme to use for the video using a structured question. Default recommendation: light mode (higher visibility in App Store listings, where most competing videos use light backgrounds). If the app is dark-theme-only (e.g., dark brand identity), use dark mode but ensure sufficient contrast.
+
+11. **Text contrast — no dark text on dark backgrounds.** Every text element must be legible against its immediate background.
+    - On dark backgrounds (`brand.background` or `brand.surface` in dark themes): use `brand.textPrimary` (white/light) for titles, `brand.textSecondary` (muted light) for body text. Never use black or dark gray.
+    - On light backgrounds: use `brand.textPrimary` (dark) for titles.
+    - For TypeWriter and TypeWriter-like components: explicitly set `color` in the containing div's style — do not rely on CSS class inheritance, which may produce black text.
+    - Before writing any text element, verify: "Is the text color from the same `brand.*` family as the background?" If both are dark (e.g., `#1E293B` background + `#1D1D1F` text), it's a contrast bug.
 
 ## Supporting resources
 
