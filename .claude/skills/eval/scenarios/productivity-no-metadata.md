@@ -15,7 +15,7 @@ No files found by any scan commands. All dynamic context injection returns empty
 ## Expected Behavior
 
 1. **Extraction:** Should report that no project files were found, note all gaps
-2. **No strategy file match initially:** Should infer "productivity" from "task management" and read `strategies/productivity.md`
+2. **Category inference:** Should infer "productivity" from "task management" and derive narrative from the app description
 3. **Full creative brief:** Since nothing was extracted, should ask about:
    - Pain point (what frustrates users about other task apps?)
    - Core action loop (adding a task? completing a task?)

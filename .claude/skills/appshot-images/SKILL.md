@@ -170,18 +170,11 @@ Default output targets iPhone 6.7" (1290 x 2796) for iOS and 1080 x 1920 for And
 - At least 4 screenshots recommended for store listing quality.
 - Phone screenshots required. Tablet and Chromebook optional.
 
-## Category strategies
+## Category-specific guidance
 
-After identifying the app category in phase 1, check if a matching strategy file exists:
+After identifying the app category in phase 1, derive your screenshot strategy directly from the app's source code, README, and store description. There are no pre-written strategy files — you analyze the app and make creative decisions based on what you find.
 
-- [habit-tracking.md](../appshot-videos/strategies/habit-tracking.md) — habits, streaks, self-improvement
-- [fitness.md](../appshot-videos/strategies/fitness.md) — workout, exercise, health tracking
-- [finance.md](../appshot-videos/strategies/finance.md) — budgeting, expenses, money management
-- [productivity.md](../appshot-videos/strategies/productivity.md) — tasks, notes, organization
-
-For unlisted categories, use [_template.md](../appshot-videos/strategies/_template.md) as a framework and apply the general copy principles.
-
-These are the same strategy files used by the video skill. Read the matching strategy to inform your screenshot ordering, copy suggestions, and feature prioritization.
+Read [copy-principles.md](../shared/copy-principles.md) for writing rules that apply across all categories.
 
 ## Output formats
 
@@ -215,7 +208,6 @@ Format as a numbered list with all creative decisions explicit. No ambiguity.
 
 - Shared extraction guide: [extract-app-context.md](../shared/extract-app-context.md)
 - Copy principles: [copy-principles.md](../shared/copy-principles.md)
-- Category strategies: `../appshot-videos/strategies/[category].md`
 
 ## Tips
 

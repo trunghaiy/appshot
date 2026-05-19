@@ -155,7 +155,7 @@ export const appConfig: AppConfig = {
   },
   video: {
     fps: 30,
-    width: 1080,
+    width: 886,       // App Store required: 886x1920
     height: 1920,
     device: "iphone-15",
   },
@@ -172,7 +172,7 @@ export const appConfig: AppConfig = {
 | iPhone 6.1" | 886x1920 | 15-30s | H.264, MP4/MOV |
 | iPad 13" | 1200x1600 | 15-30s | H.264, MP4/MOV |
 
-Default output is 1080x1920. For App Store submission, set `video.width` to 886.
+Default output is 886x1920 (App Store native for iPhone 6.7").
 
 ### Screenshots
 

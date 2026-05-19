@@ -24,7 +24,7 @@ No other metadata files exist. No theme file, no fastlane, no README, no icon fo
 ## Expected Behavior
 
 1. **Extraction:** Should find name "fittrack" and description "workout tracker" from package.json. Should note missing: colors, icon, store metadata
-2. **Strategy:** Should read `strategies/fitness.md`
+2. **Strategy:** Should infer fitness category and derive narrative from the minimal context available
 3. **Graceful degradation:** Should ask for brand colors (user said "teal-green" — Claude derives a palette), icon path, and platform
 4. **Creative brief:** Should ask about pain point (what frustrates users about other workout apps), core action (logging an exercise), and proof metrics
 5. **Arc:** Should recommend Problem-Solution-Proof (fitness category default)

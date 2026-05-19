@@ -62,7 +62,7 @@ A meditation app that meets you where you are. Build consistency without perfect
 ## Expected Behavior
 
 1. **Extraction:** Should find app name, description, all colors, icon path, category (habit tracking), and store description without asking
-2. **Strategy:** Should read `strategies/habit-tracking.md`
+2. **Strategy:** Should infer habit-tracking category from the rich context and derive narrative from code analysis
 3. **Arc:** Should recommend Transformation arc (identity journey fits meditation/habit)
 4. **Questions:** Should only ask about proof metrics (not in code) and emotional payoff specifics
 5. **Copy quality:** Captions should reference meditation-specific language, not generic habit language

@@ -56,9 +56,9 @@ No fastlane directory. No app icon found by scan commands.
 ## Expected Behavior
 
 1. **Extraction:** Should find name from pubspec.yaml, description, and convert Flutter Color(0xFF...) format to hex strings
-2. **Strategy:** Should read `strategies/finance.md`
+2. **Strategy:** Should infer finance category from Flutter pubspec and derive narrative from code analysis
 3. **Color conversion:** `Color(0xFF2E7D32)` should become `#2E7D32`
 4. **Arc:** Should recommend Problem-Solution-Proof (finance default)
-5. **Copy quality:** Should use finance-specific language from strategy — "Where did it all go?" not generic "Track your data"
+5. **Copy quality:** Should use finance-specific language — "Where did it all go?" not generic "Track your data"
 6. **Speed demo:** Should demonstrate expense logging (from README: "3 taps, done")
 7. **Missing info:** Should ask for icon path, platform, and proof metrics
