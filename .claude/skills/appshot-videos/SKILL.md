@@ -263,12 +263,14 @@ export const appConfig: AppConfig = {
   brand: { /* from phase 1 */ },
   video: {
     fps: 30,
-    width: 1080,
+    width: 886,      // App Store REQUIRED: 886x1920 for iPhone 6.7". Do NOT use 1080.
     height: 1920,
     device: "iphone-16-pro",
   },
 };
 ```
+
+**IMPORTANT: The canvas is 886×1920px (App Store native).** All sizing rules below are calibrated for this width. Do NOT change to 1080.
 
 **2. `src/scenes/S1_[Name].tsx`, `S2_[Name].tsx`, etc.** — Custom scene components.
 
@@ -293,8 +295,8 @@ export const S1_Hook: React.FC = () => {
       <AmbientBackground brand={brand} variant="dark" />
       <div className="relative z-10">
         {/* This FloatingCard is visible from frame 0 because delay={0} */}
-        <FloatingCard delay={0} variant="dark" style={{ width: 860, padding: 32 }}>
-          <span style={{ fontSize: 42, fontWeight: 700, color: brand.textPrimary }}>
+        <FloatingCard delay={0} variant="dark" style={{ width: 740, padding: 32 }}>
+          <span style={{ fontSize: 36, fontWeight: 700, color: brand.textPrimary }}>
             Your best ideas disappear.
           </span>
         </FloatingCard>
@@ -309,23 +311,34 @@ export const S1_Hook: React.FC = () => {
 // WRONG — FadeIn delay={8} as the ONLY element (blank for 8 frames)
 ```
 
-**PhoneFrame scale — ALWAYS set scale={1.8}:**
+**PhoneFrame scale — ALWAYS set scale={1.5}:**
 ```tsx
-// CORRECT
-<PhoneFrame device={appConfig.video.device} scale={1.8} screenBackground={brand.background}>
+// CORRECT — scale 1.5 fills ~67% of 886px canvas width. Safe range: 1.4-1.6.
+<PhoneFrame device={appConfig.video.device} scale={1.5} screenBackground={brand.background}>
 
-// WRONG — missing scale (defaults to 1.0, phone is tiny on 1080x1920 canvas)
+// WRONG — scale 1.8 overflows 886px canvas (393px × 1.8 = 707px + bezel = ~723px, tight)
+// WRONG — missing scale (defaults to 1.0, phone is tiny)
 <PhoneFrame device={appConfig.video.device}>
 ```
 
-**Text sizes — inside vs outside PhoneFrame:**
+**Text sizes — inside vs outside PhoneFrame (calibrated for 886px canvas):**
 ```tsx
 // INSIDE PhoneFrame (gets zoomed by scale):
 // Body: 13-16px, Titles: 18-24px, Labels: 10-12px
 
-// OUTSIDE PhoneFrame (renders at actual size on 1080x1920 canvas):
-// Body: 28px minimum, Titles: 40px+, Labels: 22px+, Stats: 48px+
-// Cards: 800px+ width, Emoji: 40px+
+// OUTSIDE PhoneFrame (renders at actual size on 886x1920 canvas):
+// Body: 24px minimum, Titles: 34px+, Labels: 20px+, Stats: 42px+
+// Cards: 700px+ width (leaves ~93px margin each side), Emoji: 36px+
+```
+
+**Caption positioning — avoid overlap with PhoneFrame:**
+```tsx
+// Caption is absolutely positioned at the bottom. When PhoneFrame is scaled up,
+// it can overlap the Caption area. Use Caption with default props — it has
+// built-in pb-40 (160px) bottom padding. If overlap still occurs, reduce
+// PhoneFrame scale or add a maxWidth to Caption:
+<Caption text="Your caption here." delay={5} maxWidth={720} />
+// maxWidth 720 keeps the caption within the safe area on 886px canvas.
 ```
 
 **Text contrast — always use brand colors:**
@@ -389,9 +402,12 @@ export const FooAppPreview: React.FC = () => {
       {scenes.map(({ component: Scene, duration }, i) => {
         const from = offset;
         offset += duration;
+        const isFirst = i === 0;
+        const isLast = i === scenes.length - 1;
         return (
           <Sequence key={i} from={from} durationInFrames={duration}>
-            <SceneWrap durationInFrames={duration}>
+            {/* CRITICAL: fadeIn={false} on first scene prevents black frame 0 */}
+            <SceneWrap durationInFrames={duration} fadeIn={!isFirst} fadeOut={!isLast}>
               <Scene />
             </SceneWrap>
           </Sequence>
@@ -401,6 +417,8 @@ export const FooAppPreview: React.FC = () => {
   );
 };
 ```
+
+**CRITICAL: The orchestrator MUST pass `fadeIn={!isFirst}` and `fadeOut={!isLast}` to SceneWrap.** Without this, Scene 1 gets a 12-frame fade-in that makes frame 0 fully transparent (black). This is the #1 cause of the "black first frame" bug.
 
 **4. `src/Root.tsx`** — Register the orchestrator.
 
@@ -440,9 +458,16 @@ export const RemotionRoot: React.FC = () => (
 - App name, icon, tagline are from the actual app (phase 1)
 - Each scene mocks the actual app UI discovered in phase 1, not generic placeholders
 
-### After writing ALL scene files, run this self-check
+### After writing ALL files, run this self-check
 
-For EACH scene file, verify:
+**Orchestrator check:**
+- [ ] `fadeIn={!isFirst}` and `fadeOut={!isLast}` passed to every SceneWrap. Without this, frame 0 is black.
+- [ ] `TOTAL_DURATION` exported and used in Root.tsx `durationInFrames`.
+
+**Config check:**
+- [ ] `video.width` is `886` (not 1080). App Store requires 886×1920.
+
+**For EACH scene file, verify:**
 
 1. **S1 frame 0 thumbnail:** What renders at frame 0? Must be a large, fully visible element.
    - FAIL if: TypeWriter is the first/only visible element
@@ -450,15 +475,17 @@ For EACH scene file, verify:
    - FAIL if: All elements use `FadeIn delay={N}` where N > 0 with no static element
    - PASS if: FloatingCard with `delay={0}`, or PhoneFrame with `delay={0}`, or a static `<div>` with content
 
-2. **PhoneFrame scale:** Every `<PhoneFrame>` must have `scale={1.7}` or `scale={1.8}`. Search for `<PhoneFrame` without `scale=` — that's a bug.
+2. **PhoneFrame scale:** Every `<PhoneFrame>` must have `scale={1.5}` (range 1.4-1.6 for 886px canvas). Search for `<PhoneFrame` without `scale=` — that's a bug. scale={1.8} overflows on 886px canvas.
 
-3. **Text sizes outside PhoneFrame:** Search for `fontSize:` in elements NOT inside a PhoneFrame. Any value under 28 for body text or under 40 for titles is too small.
+3. **Text sizes outside PhoneFrame (886px canvas):** Search for `fontSize:` in elements NOT inside a PhoneFrame. Body under 24px = too small. Titles under 34px = too small.
 
-4. **Floating card widths:** Search for `FloatingCard` not inside PhoneFrame. Check the `style.width` — must be 800+ px.
+4. **Floating card widths (886px canvas):** Search for `FloatingCard` not inside PhoneFrame. `style.width` must be 700+ px (not 800+ — canvas is only 886px).
 
-5. **Text contrast:** For every `color:` in style, trace it against the nearest `background:`. Both dark = bug. Specifically:
+5. **Text contrast:** For every `color:` in style, trace it against the nearest `background:`. Both dark = bug.
    - `TypeWriter` must have `color` set via parent div style, not just className
    - No hardcoded `color: "#000"` or `color: "#1D1D1F"` on dark backgrounds
+
+6. **Caption overlap:** If a scene uses PhoneFrame at scale 1.5+, verify the Caption `pb-40` (160px bottom padding) doesn't overlap the phone bottom edge. If tight, add `maxWidth={720}` to Caption.
 
 6. **staticFile usage:** Search for `staticFile(` in scene files. It should ONLY appear in `<Audio src={staticFile(...)} />` or raw `<img src={staticFile(...)} />`. Never near `<AppIcon`.
 
