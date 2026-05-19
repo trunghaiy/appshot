@@ -380,13 +380,14 @@ export const FooAppPreview: React.FC = () => {
 
 ### After writing code, self-check every scene file
 
-- [ ] Scene 1 first visible element uses `delay: 0` (thumbnail rule)
+- [ ] **Scene 1 frame 0 thumbnail:** Open S1 and mentally render frame 0. Is there a large, fully visible element? TypeWriter alone = FAIL (shows 0-1 chars). `spring({ frame: frame - N })` = FAIL (nothing for N frames). Must be a static element or `FadeIn delay={0}` with substantive content.
 - [ ] PhoneFrame uses `scale={1.7}` or higher
 - [ ] Text outside PhoneFrame is 28px+ body, 40px+ titles
 - [ ] Floating cards outside PhoneFrame are 800px+ wide
 - [ ] No dark text color on dark background — trace every text element's `color` against its parent's `background`
 - [ ] Every `TypeWriter` or styled text block has an explicit `color` set via `style={}`, not just a className
 - [ ] Emoji/icons are 40px+ outside PhoneFrame
+- [ ] **No `staticFile()` wrapping on AppIcon src.** Search for `staticFile(appConfig.app.icon)` or `staticFile(` near `<AppIcon` — these are bugs. AppIcon handles staticFile internally.
 
 ---
 
@@ -454,11 +455,12 @@ Approve this direction and I'll generate all code, or tell me what to change.
    - **Card widths:** Floating cards outside PhoneFrame should be at least 800px wide (out of 1080px canvas).
    - Cards, buttons, and interactive elements must have clear visual contrast against the background.
 
-8. **No empty frames — delay: 0 on first element.** Every scene must have visible content from frame 0.
-   - The first visible element in Scene 1 MUST use `delay: 0` in its spring/FadeIn. Not `delay: 3`, not `delay: 5` — zero. AmbientBackground alone is not visible content.
-   - Frame 0 of the entire video becomes the App Store thumbnail. It must show recognizable content (a card, a phone screen, text — anything the viewer can parse).
-   - Subsequent elements can use staggered delays (delay: 8, 16, etc.) but the first one must be instant.
-   - For scenes 2+ (not the opening scene), `delay: 3-5` on the first element is acceptable since SceneWrap provides a fade-in transition.
+8. **No empty frames — frame 0 must be visually complete.** The App Store uses frame 0 as the video thumbnail. It MUST show a fully visible, recognizable element.
+   - The first element in Scene 1 MUST be fully visible at frame 0 — not animating in, not typing, not fading. Use `opacity: 1` with no spring/FadeIn wrapper, or use a spring with `delay: 0` (which resolves to ~0.95 opacity at frame 0 — acceptable).
+   - **Do NOT use TypeWriter as the first visible element.** TypeWriter shows 0-1 characters at frame 0 — that's effectively blank. Use a static text element, a FloatingCard, or a PhoneFrame with content as the first thing the viewer sees.
+   - **Do NOT use `frame - N` offset math on the first element.** `spring({ frame: frame - 70, ... })` means nothing appears for 70 frames. The first element must use `frame` directly with `delay: 0`.
+   - Subsequent elements can animate in with delays. But the first one must be solid at frame 0.
+   - For scenes 2+ (not the opening), `delay: 3-5` on the first element is acceptable since SceneWrap provides a fade-in.
 
 9. **Use structured questions.** When asking the user to choose between options (color theme, narrative arc, scenes to include/exclude, music mood), always use the AskUserQuestion tool with labeled options — never plain text questions. This makes decisions visible and actionable.
 
@@ -469,6 +471,11 @@ Approve this direction and I'll generate all code, or tell me what to change.
     - On light backgrounds: use `brand.textPrimary` (dark) for titles.
     - For TypeWriter and TypeWriter-like components: explicitly set `color` in the containing div's style — do not rely on CSS class inheritance, which may produce black text.
     - Before writing any text element, verify: "Is the text color from the same `brand.*` family as the background?" If both are dark (e.g., `#1E293B` background + `#1D1D1F` text), it's a contrast bug.
+
+12. **Never double-wrap staticFile().** The `AppIcon` component calls `staticFile()` internally. When using AppIcon, pass just the filename string — NOT `staticFile(filename)`. Same applies to any component that accepts an asset path and internally resolves it.
+    - Correct: `<AppIcon src={appConfig.app.icon} />` or `<AppIcon src="icon.png" />`
+    - Wrong: `<AppIcon src={staticFile(appConfig.app.icon)} />` — this crashes with "already prefixed with static base"
+    - Only use `staticFile()` directly when rendering a raw `<img>` or `<Img>` tag, or in `<Audio src={staticFile("music.mp3")} />`.
 
 ## Supporting resources
 
