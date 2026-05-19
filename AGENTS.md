@@ -4,295 +4,188 @@ Guidelines for AI agents working in this repository.
 
 ## Repository Overview
 
-This repository contains an **App Store preview video and screenshot generator** built on Remotion + React + Tailwind CSS. It includes **Agent Skills** (following the [Agent Skills specification](https://agentskills.io/specification.md)) that act as creative directors — they scan a user's codebase, guide narrative and copy decisions, and produce ready-to-render configs.
+Appshot generates App Store preview videos for mobile apps. It ships as **AI agent skills** that scan a target app's codebase, propose a narrative, and write **custom Remotion scene components** that mock the target app's actual UI.
 
 - **Name**: Appshot
 - **GitHub**: [github.com/trunghaiy/appshot](https://github.com/trunghaiy/appshot)
 - **Creator**: Kian Nguyen
 - **License**: MIT
+- **Scope**: Mobile apps only (iOS/Android). No desktop/web.
+
+## Critical Architecture: Custom Scenes, Not Templates
+
+**Appshot does NOT use fixed scene templates.** There are no PainPoint, FeatureShowcase, SpeedDemo scene types. Those were removed because they encoded one app's (BookStreak) visual DNA and every other app ended up looking like BookStreak with different text.
+
+Instead, the skill:
+1. Scans the target app's source code to understand screens, features, value props
+2. Proposes a narrative with custom scenes described in plain language
+3. Writes bespoke `.tsx` scene files from scratch, using shared animation primitives
+4. Each scene mocks the target app's actual UI inside PhoneFrame
+
+**The primitives ARE the product.** The 11 reusable components (PhoneFrame, AmbientBackground, Caption, FadeIn, FloatingCard, TypeWriter, etc.) are the building blocks. Scenes are composed fresh per project.
 
 ## Repository Structure
 
 ```
 appshot/
-├── AGENTS.md                          # This file — agent guidelines
-├── README.md                          # Project overview and quick start
-├── VERSIONS.md                        # Skill version tracking
-├── template/                          # Remotion project template (copy to start)
+├── AGENTS.md                          # This file
+├── README.md
+├── template/                          # Clean Remotion project with primitives only
 │   ├── package.json                   # Remotion + React + Tailwind deps
-│   ├── remotion.config.ts
-│   ├── tailwind.config.ts
 │   ├── src/
-│   │   ├── app-config.ts              # User config — skills generate this
-│   │   ├── config.ts                  # TypeScript types (AppConfig, BrandColors, etc.)
-│   │   ├── AppPreview.tsx             # Main composition — routes scenes
-│   │   ├── Root.tsx                   # Remotion entry point
-│   │   ├── scenes/                    # 5 scene components
-│   │   │   ├── PainPoint.tsx
-│   │   │   ├── FeatureShowcase.tsx
-│   │   │   ├── SpeedDemo.tsx
-│   │   │   ├── SocialProof.tsx
-│   │   │   └── CallToAction.tsx
-│   │   └── components/                # Reusable brand-aware components
-│   │       ├── PhoneFrame.tsx
-│   │       ├── AmbientBackground.tsx
-│   │       ├── Caption.tsx
-│   │       ├── FadeIn.tsx
-│   │       ├── HeatMap.tsx
-│   │       ├── AppIcon.tsx
-│   │       ├── AppStoreBadge.tsx
-│   │       └── SceneWrap.tsx
+│   │   ├── app-config.ts              # Default placeholder config
+│   │   ├── config.ts                  # TypeScript types (AppConfig, BrandColors, DevicePreset)
+│   │   ├── Root.tsx                   # Placeholder — skill replaces this
+│   │   ├── components/                # 11 shared animation primitives
+│   │   │   ├── PhoneFrame.tsx
+│   │   │   ├── AmbientBackground.tsx
+│   │   │   ├── Caption.tsx
+│   │   │   ├── FadeIn.tsx
+│   │   │   ├── SceneWrap.tsx
+│   │   │   ├── HeatMap.tsx
+│   │   │   ├── AppIcon.tsx
+│   │   │   ├── AppStoreBadge.tsx
+│   │   │   ├── TypeWriter.tsx
+│   │   │   ├── StatCard.tsx
+│   │   │   ├── FloatingCard.tsx
+│   │   │   └── index.ts
+│   │   └── styles.css
 │   └── public/                        # Static assets (icons, audio)
+├── packages/
+│   └── create-appshot/                # npx create-appshot CLI scaffolder
 ├── examples/
-│   └── bookstreak/                    # Annotated real-world example
-│       └── app-config.ts
+│   └── bookstreak/                    # Example config (reference only)
 ├── .claude/
-│   ├── settings.local.json            # Claude Code permissions and hooks
-│   └── skills/                        # Agent skills (also symlinked for npx skills add)
-│       ├── appshot-core/              # Foundation skill
-│       │   └── SKILL.md
-│       ├── appshot-videos/            # Video generation skill (creative director)
-│       │   └── SKILL.md
-│       ├── appshot-images/            # Screenshot generation skill (creative director)
-│       │   └── SKILL.md
-│       ├── eval/                      # Evaluation rubric and runner
-│       │   ├── rubric.md
-│       │   └── run-eval.md
-│       └── shared/                    # Shared resources across skills
-│           ├── copy-principles.md     # Writing rules for all store assets
-│           └── extract-app-context.md # Codebase scanning guide
-├── tools/
-│   └── REGISTRY.md                    # Tool and platform registry
+│   └── skills/
+│       ├── appshot-core/              # Foundation: primitives catalog, config schema
+│       ├── appshot-videos/            # Creative director: scans code, writes scenes
+│       ├── appshot-images/            # Screenshot generator
+│       ├── eval/                      # Evaluation rubric and scenarios
+│       └── shared/                    # copy-principles.md, extract-app-context.md
 └── docs/
 ```
 
-**Key architectural point:** The `template/` directory is a standalone Remotion project. Skills generate config for it — they do not modify the template itself. Each user project is a copy of `template/` with a customized `src/app-config.ts`.
+**Key rules:**
+- `template/` contains ONLY primitives and placeholder config. No scene files. No app-specific code. Skills generate scene files into the target project's `appshot-video/` directory, never into `template/`.
+- `template/src/scenes/` should NOT exist. If it does, it contains test artifacts that must be deleted.
+
+## How the Skill Works (Video Generation)
+
+The appshot-videos skill runs in 4 phases with mandatory STOP gates:
+
+1. **Phase 1: Extract & confirm** — Scan target app codebase for identity, colors, icon, screens, features, value props. Pre-fill AppConfig. Present findings, wait for user approval.
+
+2. **Phase 2: Creative direction** — Propose narrative angle, scene breakdown (custom per app), draft all copy. Wait for user approval.
+
+3. **Phase 3: Generate code** — Scaffold `appshot-video/` inside the target project. Copy primitives from template. Write custom S1_*.tsx, S2_*.tsx scene files + orchestrator + Root.tsx + app-config.ts.
+
+4. **Phase 4: Preview & iterate** — Run `npm run dev`, guide user through review.
+
+## Known Pitfalls (Learned from 8+ Test Sessions)
+
+These are the bugs that repeatedly occurred during development. Every fix is encoded as a rule in the skill, but understanding WHY matters for future changes.
+
+### Frame 0 black screen (#5)
+
+**Root cause**: SceneWrap defaults `fadeIn={true}`. The orchestrator must pass `fadeIn={!isFirst}` to disable fade-in on Scene 1. Without this, frame 0 has opacity: 0 (12-frame ramp). Additionally, the first visible element in S1 must NOT be a TypeWriter (shows 0-1 chars at frame 0) or use `frame - N` offset math (blank for N frames).
+
+**Where the fix lives**: appshot-videos SKILL.md → Phase 3 orchestrator example + S1 example + self-check item 1.
+
+### App Store dimensions (#10)
+
+**Root cause**: App Store requires exactly 886×1920px for iPhone 6.7" previews. Early versions defaulted to 1080×1920 which gets rejected.
+
+**Cascading effects**: All sizing rules are calibrated for 886px canvas width:
+- PhoneFrame scale: 1.5 (not 1.8 — that overflows at 886px)
+- Text outside PhoneFrame: body 24px+, titles 34px+ (not 28/40)
+- FloatingCard width: 700px+ (not 800+ — only 886px available)
+- Caption maxWidth: 720px
+
+**Where the fix lives**: appshot-videos SKILL.md → Phase 3 config example + sizing code blocks + self-check.
+
+### staticFile double-wrap crash (#9)
+
+**Root cause**: AppIcon internally calls `staticFile()`. Scene code that wraps the icon path in `staticFile()` before passing to AppIcon causes Remotion to crash with "already prefixed with static base."
+
+**Rule**: Never `staticFile()` on AppIcon src. Only use `staticFile()` on raw `<Audio>` or `<Img>` tags.
+
+### Text contrast on dark themes (#8)
+
+**Root cause**: TypeWriter and other text components inherit color from CSS, which defaults to black. On dark backgrounds, black text is invisible. Every text element needs an explicit `color` in `style={}` using brand colors.
+
+### Elements too small (#6)
+
+**Root cause**: Elements outside PhoneFrame render at actual pixel size on the canvas. PhoneFrame content gets zoomed by the scale prop. Developers forget that a 16px font outside PhoneFrame is tiny on a 886×1920 canvas, while 16px inside PhoneFrame at scale 1.5 is effectively 24px.
+
+### Video quality (#8 — video encoding)
+
+**Root cause**: Remotion's default encoding produces low-bitrate video that looks blurry on App Store. Build scripts must include: `--codec h264 --crf 18 --pixel-format yuv420p --color-space bt709`.
+
+**Where the fix lives**: template/package.json build scripts.
+
+### Generated files in wrong location (#1)
+
+**Root cause**: The skill generated scenes directly into appshot's `template/` directory instead of scaffolding inside the target project. This pollutes the appshot repo with project-specific files.
+
+**Rule**: All generated files go into `[target-project]/appshot-video/`. Never into `template/`.
 
 ## Build / Lint / Test Commands
 
-The template is a standard Remotion project. Scaffold a new project with:
-
 ```bash
-npx create-appshot my-video
-cd my-video
-npm run dev          # Preview at localhost:3000
-npm run build        # Render to out/AppPreview.mp4
+# In template/ or a generated appshot-video/ directory:
+npm run dev          # Preview in Remotion Studio at localhost:3000
+npm run build        # Render to out/AppPreview.mp4 (886×1920, H.264, CRF 18)
+npm run build:gif    # Render as GIF
 ```
 
-Skills are content-only (no build step). To verify a skill file:
-- YAML frontmatter is valid
-- `name` field matches directory name exactly
-- `name` is 1-64 chars, lowercase alphanumeric and hyphens only
-- `description` is 1-1024 characters with trigger phrases
-- File is under 500 lines
+## Primitives Library (11 Components)
 
-## Agent Skills Specification
+| Component | Purpose | Key Props |
+|-----------|---------|-----------|
+| PhoneFrame | Device mockup with bezel, buttons, notch | `device`, `scale` (use 1.5), `screenBackground` |
+| AmbientBackground | Animated gradient + floating orbs | `brand`, `variant` (light/medium/deep/dark) |
+| Caption | Bottom text overlay, word-by-word animation | `text`, `delay`, `fontSize` (default 44), `maxWidth` (use 720) |
+| FadeIn | Directional fade-in wrapper | `delay`, `direction`, `distance` |
+| SceneWrap | Fade transitions between scenes | `durationInFrames`, `fadeIn`, `fadeOut` |
+| HeatMap | Contribution grid | `brand`, `weeks`, `cellSize` |
+| AppIcon | Icon with optional glow | `src` (filename only, NO staticFile), `size`, `glow` |
+| AppStoreBadge | Store download badges | `platform`, `delay` |
+| TypeWriter | Character-by-character reveal | `text`, `startFrame`, `cursorColor` |
+| StatCard | Before/after metric counter | `label`, `before`, `after`, `brand` |
+| FloatingCard | Animated card container | `variant` (glass/solid/dark), `delay`, `style` |
 
-Skills follow the [Agent Skills spec](https://agentskills.io/specification.md).
+## Config Schema
 
-### Required Frontmatter
-
-```yaml
----
-name: skill-name
-description: What this skill does and when to use it. Include trigger phrases.
-license: MIT
-metadata:
-  author: Kian Nguyen
-  version: 1.0.0
----
+```typescript
+interface AppConfig {
+  app: { name, tagline, icon, platform };
+  brand: BrandColors;  // primary, primaryLight, background, surface, textPrimary, textSecondary, success, danger, accent?
+  video: { fps: 30, width: 886, height: 1920, device, backgroundMusic?, backgroundMusicVolume? };
+}
 ```
 
-### Frontmatter Field Constraints
-
-| Field         | Required | Constraints                                                      |
-|---------------|----------|------------------------------------------------------------------|
-| `name`        | Yes      | 1-64 chars, lowercase `a-z`, numbers, hyphens. Must match dir.   |
-| `description` | Yes      | 1-1024 chars. Include trigger phrases and when-to-use guidance.  |
-| `license`     | No       | License name (default: MIT).                                     |
-| `metadata`    | No       | Key-value pairs: `author`, `version`, etc.                       |
-
-### Name Field Rules
-
-- Lowercase letters, numbers, and hyphens only
-- Cannot start or end with hyphen
-- No consecutive hyphens (`--`)
-- Must match parent directory name exactly
-
-**Valid**: `appshot-videos`, `appshot-images`, `appshot-core`
-**Invalid**: `Appshot-Videos`, `-appshot`, `appshot--videos`
-
-### Skill Directory Layout
-
-```
-skills/skill-name/
-├── SKILL.md        # Required — main instructions (<500 lines)
-├── strategies/     # Optional — category-specific creative guidance
-├── examples/       # Optional — annotated examples
-├── references/     # Optional — detailed docs loaded on demand
-└── assets/         # Optional — templates, data files
-```
-
-## Foundation Skill Pattern
-
-Appshot uses a layered skill architecture:
-
-1. **`appshot-videos`** and **`appshot-images`** are the user-facing skills. They act as creative directors — scanning codebases, guiding narrative decisions, and producing configs.
-
-2. Both skills reference **shared resources** in `skills/shared/`:
-   - `copy-principles.md` — writing rules for all store asset text (captions, headlines, taglines, pills)
-   - `extract-app-context.md` — step-by-step codebase scanning guide for extracting app identity, brand colors, icons, and store metadata
-
-3. Both skills share **category strategy files** (in `skills/appshot-videos/strategies/`). These provide category-specific creative guidance for habit tracking, fitness, finance, productivity, and more.
-
-When building a new skill that extends appshot, always reference `shared/copy-principles.md` and `shared/extract-app-context.md` rather than duplicating their content.
-
-## Writing Style Guidelines
-
-### Structure
-
-- Keep `SKILL.md` under 500 lines. Move detailed references to separate files.
-- Use H2 (`##`) for main sections, H3 (`###`) for subsections.
-- Use bullet points and numbered lists.
-- Short paragraphs (2-4 sentences max).
-
-### Tone
-
-- Direct and instructional.
-- Second person when addressing the agent ("You are a creative director").
-- Active voice over passive.
-
-### Formatting
-
-- Bold (`**text**`) for key terms.
-- Code blocks for config examples and shell commands.
-- Tables for reference data (scene props, device dimensions, store requirements).
-- No excessive emojis.
-
-### Clarity Principles
-
-- Clarity over cleverness.
-- Specific over vague — include numbers, dimensions, and concrete examples.
-- One idea per section.
-- Always provide real examples, never placeholders.
-
-## Cross-Agent Compatibility
-
-Skills must work with **Claude Code, Cursor, Windsurf, Codex**, and other agents supporting the Agent Skills spec.
-
-### Rules
-
-- Keep `SKILL.md` files agent-agnostic where possible.
-- Claude Code-specific features (like `!`command`` dynamic injection) are acceptable where essential for context extraction (extracting package.json, theme files, etc.), but avoid them for non-critical content.
-- Other agents that load skills will see the literal `` !`command` `` string rather than executing it. Skills should still function without these injections — agents that don't support dynamic injection will simply have less context and may need to ask the user.
-- Do not rely on Claude Code-specific slash command syntax in skill instructions.
-
-## Version Management
-
-- `VERSIONS.md` at the repo root tracks skill versions.
-- Agents should check once per session on first skill use.
-- Only notify the user when:
-  - 2 or more skills have updates, OR
-  - Any skill has a major version bump (e.g., 1.x to 2.x)
-- Non-blocking notification at end of response:
-  ```
-  ---
-  Skills update available: X appshot skills have updates.
-  Say "update skills" to update, or run `git pull` in your appshot folder.
-  ```
+No `scenes` array — scenes are custom code, not config.
 
 ## Git Workflow
 
-### Branch Naming
-
-- New skills or features: `feature/skill-name`
-- Bug fixes: `fix/skill-name-description`
-- Documentation: `docs/description`
-
-### Commit Messages
-
-Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
-
-- `feat(videos): add fitness category strategy`
-- `fix(images): correct iPad screenshot dimensions`
-- `chore: update dependencies`
-- `docs: add evaluation scenario for finance apps`
-- `refactor(shared): simplify color extraction logic`
-
-Include a scope in parentheses when it adds clarity.
-
-### Pull Request Checklist
-
-- [ ] `name` matches directory name exactly
-- [ ] `name` follows naming rules (lowercase, hyphens, no `--`)
-- [ ] `description` is 1-1024 chars with trigger phrases
-- [ ] `SKILL.md` is under 500 lines
-- [ ] No sensitive data or credentials
-- [ ] Shared resources referenced, not duplicated
-- [ ] Config examples pass TypeScript type checking against `config.ts`
-
-## Remotion-Specific Notes
-
-### Template Architecture
-
-The `template/` directory is a self-contained Remotion project. The skill workflow is:
-
-1. Copy `template/` to a new directory (`cp -r template/ my-video`)
-2. Install dependencies (`npm install`)
-3. Skills generate `src/app-config.ts` based on creative decisions
-4. Preview with `npm run dev`, render with `npm run build`
-
-Skills **never modify the template directly**. They produce config that the template consumes.
-
-### Scene Types
-
-Five built-in scene types, each a React component in `src/scenes/`:
-
-| Scene | Purpose |
-|-------|---------|
-| `pain-point` | Show the problem — dark theme, counter reset, failure animation |
-| `feature-showcase` | App UI inside a realistic phone frame with animated cards |
-| `speed-demo` | Demonstrate a fast core loop (type, save, success toast) |
-| `social-proof` | Analytics, heat maps, progress timelines, stats |
-| `call-to-action` | App icon + tagline + feature pills + App Store badge |
-
-### Components
-
-All components accept brand colors via a `brand` prop:
-
-- **PhoneFrame** — Realistic device with bezel, side buttons, notch/Dynamic Island
-- **AmbientBackground** — Animated gradient with floating orbs (light/medium/deep/dark)
-- **Caption** — Word-by-word entrance animation
-- **FadeIn** — Directional fade (up/down/left/right)
-- **SceneWrap** — 12-frame fade transitions between scenes
-- **HeatMap** — GitHub-style contribution grid
-- **AppIcon** — Icon with optional glow effect
-- **AppStoreBadge** — iOS App Store / Google Play badges
-
-### Config Schema
-
-All user config lives in `src/app-config.ts` and conforms to the `AppConfig` type defined in `src/config.ts`. The config covers:
-
-- `app` — name, tagline, icon path, platform (ios/android/both)
-- `brand` — 8 named colors (primary, primaryLight, background, surface, textPrimary, textSecondary, success, danger)
-- `video` — fps, dimensions, device preset, optional background music
-- `scenes` — ordered array of scene configs with type, duration, caption, and type-specific props
-
-### Device Presets
-
-| Preset | Screen | Notch |
-|--------|--------|-------|
-| `iphone-16-pro` | 393x852 | Dynamic Island |
-| `iphone-15` | 375x812 | Dynamic Island |
-| `ipad-pro-13` | 1024x1366 | None |
-| `pixel-9` | 412x915 | Punch hole |
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+- `feat(videos): ...` — new skill capability
+- `fix(skill): ...` — bug fix in skill instructions
+- `chore: ...` — cleanup, dependency updates
+- `refactor: ...` — architecture changes
 
 ## Evaluation
 
-The `skills/eval/` directory contains a rubric and runner for evaluating skill output quality. After modifying any SKILL.md, strategy file, or shared resource:
+`skills/eval/` contains rubric and test scenarios. After modifying any SKILL.md:
+1. Install skills into a test project (e.g., kernio-ai-mobile)
+2. Run the skill, render the video, review frame-by-frame
+3. Check: frame 0 not black, elements readable, correct dimensions, no crashes
+4. Score against rubric (pass: average 3.5+, no dimension below 2)
 
-1. Run the skill against test scenarios
-2. Score output on 5 dimensions: extraction, creative quality, technical validity, conversational quality
-3. Pass threshold: average 3.5+, no dimension below 2
+## What NOT to Do
 
-See `skills/eval/rubric.md` for scoring criteria and `skills/eval/run-eval.md` for the full process.
+- Do NOT add fixed scene template files (PainPoint.tsx, FeatureShowcase.tsx, etc.) — these were the original architecture and they're gone for good reason
+- Do NOT add strategy/playbook files (habit-tracking.md, fitness.md, etc.) — narrative comes from source code analysis, not pre-written playbooks
+- Do NOT put generated scene code in `template/` — that directory is primitives-only
+- Do NOT use 1080px width for the video canvas — App Store requires 886px
+- Do NOT use PhoneFrame scale above 1.6 on 886px canvas — it overflows
