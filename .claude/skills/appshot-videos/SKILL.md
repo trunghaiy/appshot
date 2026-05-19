@@ -6,7 +6,7 @@ argument-hint: "[app name] [--quick]"
 license: MIT
 metadata:
   author: kiennguyen
-  version: 2.0.0
+  version: 3.0.0
 ---
 
 # Appshot Videos — App Store Preview Video Generator
@@ -25,35 +25,35 @@ Generate polished, animated App Store preview videos by acting as creative direc
 
 You are a creative director for App Store preview videos. Your job is to help the user tell a compelling 15-30 second story about their app — not just fill in a config file.
 
-### Five phases
+**CRITICAL RULE: You MUST execute phases in order. Each phase has a STOP gate — you present your output and wait for user confirmation before proceeding to the next phase. Never skip phases. Never combine phases. Never generate a config file until phase 4.**
 
-1. **Extract & confirm** — Review the project context above. Read [extract-app-context.md](../shared/extract-app-context.md) for detailed scan instructions if context is sparse. Present findings and confirm with the user. Identify gaps.
+### Phase 1: Extract & confirm → STOP
 
-2. **Creative brief** — Ask only what the scan couldn't answer:
-   - What problem does your app solve? (the frustration)
-   - What's the core action loop? (what users do daily)
-   - What proof do you have? (metrics, milestones, outcomes)
-   - What's the emotional payoff?
+Review the project context above. Read [extract-app-context.md](../shared/extract-app-context.md) for detailed scan instructions if context is sparse.
 
-   If the README or store description already answers these, propose the answer and confirm — don't ask open-ended.
+Present your findings in this exact format:
 
-3. **Narrative & copy** — Recommend a narrative arc (see below). Read [copy-principles.md](../shared/copy-principles.md) for writing rules. Draft all captions, headlines, taglines, and pills. Present for review. Never leave any text as a placeholder.
+```
+I scanned your project and found:
 
-4. **Generate config** — Write `src/app-config.ts` with all creative decisions made. Set up the project if needed (copy template, install deps).
+- **App:** [name] (from [source file])
+- **Tagline:** [text] (from [source file])
+- **Platform:** [iOS/Android/both] (from [evidence])
+- **Colors:** primary [hex], background [hex], surface [hex], ... (from [source file])
+- **Icon:** [file path]
+- **Category:** [category] based on [keywords/description]
+- **Store description:** [found at path / not found]
+- **Key features:** [bullet list of 3-5 main features extracted from code/docs]
+- **Core action loop:** [what users do most — e.g., "record voice → get transcript"]
 
-5. **Preview & iterate** — Run `npm run dev`, tell the user what to watch for:
-   - Does the pain-point scene feel dramatic enough?
-   - Are captions readable at speed?
-   - Does the CTA have enough screen time (2+ seconds)?
-   - Does the overall pacing feel rushed or draggy?
+Does this look right? Anything to correct before I proceed?
+```
 
-### Quick mode
+**⛔ STOP. Wait for user confirmation. Do not proceed to phase 2 until the user confirms or corrects.**
 
-If `$ARGUMENTS` contains "quick": compress phases 2-3 into inference. Use the extracted context to make all creative decisions autonomously. Present the complete config for approval with a brief rationale for each choice, rather than asking questions. The user can iterate from there.
+### Phase 2: Strategy & creative brief → STOP
 
-## Category strategies
-
-After identifying the app category in phase 1, check if a matching strategy file exists:
+**Strategy selection (mandatory).** Based on the category identified in phase 1, check if a matching strategy file exists:
 
 - [habit-tracking.md](strategies/habit-tracking.md) — habits, streaks, self-improvement
 - [fitness.md](strategies/fitness.md) — workout, exercise, health tracking
@@ -62,7 +62,103 @@ After identifying the app category in phase 1, check if a matching strategy file
 
 For unlisted categories, use [_template.md](strategies/_template.md) as a framework and apply the general copy principles.
 
-Read the matching strategy to inform your arc recommendation, copy suggestions, and pain-point framing.
+**You MUST read the matching strategy file and present your strategy decision in this format:**
+
+```
+**Strategy:** Using [strategy file name] because [app matches this category because...]
+**Narrative arc:** [arc name] — [one sentence why this arc fits]
+**Scenes:** [ordered list of scene types, noting any scenes SKIPPED and why]
+```
+
+If the strategy file recommends skipping a scene (e.g., productivity recommends skipping pain-point), you MUST follow that recommendation unless the user overrides it.
+
+**Creative brief.** After presenting the strategy, ask only what the scan couldn't answer:
+- What problem does your app solve? (the frustration)
+- What's the core action loop? (what users do daily)
+- What proof do you have? (metrics, milestones, outcomes)
+- What's the emotional payoff?
+
+If the README, store description, or docs already answer these, **propose the answer and confirm** — don't ask open-ended.
+
+**⛔ STOP. Wait for user to confirm strategy, arc, and scene selection. Do not proceed to phase 3.**
+
+### Phase 3: Narrative & copy → STOP
+
+Read [copy-principles.md](../shared/copy-principles.md) for writing rules.
+
+Draft ALL text for the video — every caption, headline, tagline, pill, counter label, card title, success message, button label. Present everything together so the user can review the full narrative flow.
+
+**Self-check before presenting — every item must pass:**
+- [ ] Each caption is under 8 words (billboard test)
+- [ ] Each caption is benefit-first, not feature-first
+- [ ] Speed-demo caption includes a specific number or time
+- [ ] CTA tagline follows setup + differentiator formula
+- [ ] Pills are benefits that differentiate, not feature names
+- [ ] No text is copied from the BookStreak example or template defaults
+- [ ] Every piece of copy references actual features/capabilities of THIS app
+- [ ] Captions read as a coherent story top-to-bottom
+
+Present the copy grouped by scene:
+
+```
+**Scene 1: [type] ([duration]s)**
+- Caption: "[text]"
+- [other props with text: headline, card titles, etc.]
+
+**Scene 2: [type] ([duration]s)**
+- Caption: "[text]"
+- [other props with text]
+
+[...all scenes...]
+
+**Full narrative flow (read top to bottom):**
+1. "[caption 1]"
+2. "[caption 2]"
+3. "[caption 3]"
+4. "[caption 4]"
+
+Does this narrative feel right for [app name]?
+```
+
+**⛔ STOP. Wait for user to approve copy. Do not generate config until copy is approved.**
+
+### Phase 4: Generate config
+
+Only now write `src/app-config.ts` with all creative decisions made in phases 1-3. Set up the project if needed (copy template, install deps).
+
+**Before writing the config, verify:**
+- Arc matches what was approved in phase 2
+- Scene order matches what was approved in phase 2
+- All text matches what was approved in phase 3 (copy verbatim, don't rephrase)
+- Brand colors are from the actual app (phase 1), not template defaults
+- App name, icon, tagline are from the actual app (phase 1)
+
+### Phase 5: Preview & iterate
+
+Run `npm run dev`, tell the user what to watch for:
+- Does the pain-point scene feel dramatic enough? (if applicable)
+- Are captions readable at speed?
+- Does the CTA have enough screen time (2+ seconds)?
+- Does the overall pacing feel rushed or draggy?
+- Do the scenes look like they belong to THIS app, not a generic template?
+
+### Quick mode
+
+If `$ARGUMENTS` contains "quick": compress phases 2-3 into inference. Use the extracted context to make all creative decisions autonomously. **You must still complete phase 1 (extract & confirm) and present the full output of phases 2-3 combined for approval before generating the config.** The difference is you don't ask questions — you make all creative decisions and present them for a single approval.
+
+Present in quick mode:
+
+```
+**Strategy:** [strategy file] — [reason]
+**Arc:** [arc name] — [reason]
+**Scenes:** [ordered list with skipped scenes noted]
+
+[Full copy for all scenes, same format as phase 3]
+
+Approve this direction, or tell me what to change.
+```
+
+**⛔ STOP. Wait for approval before generating config.**
 
 ## Narrative arcs
 
@@ -102,6 +198,7 @@ Total video: 22-28 seconds (660-840 frames at 30fps).
 | feature-showcase | 4-5s | 120-150 | Cards need time to animate and breathe |
 | speed-demo | 4-5s | 120-150 | Full type → save → toast loop |
 | social-proof | 5-6s | 150-180 | Heatmap and timeline draw progressively |
+| screenshot | 4-6s | 120-180 | Pan/zoom needs time to reveal detail |
 | call-to-action | 3-4s | 90-120 | Quick and clean, badge visible 2+ sec |
 
 ### typeFrames
@@ -159,6 +256,17 @@ Always tell the user: "Characters appear at 0.6s, 0.73s, 0.87s" alongside the ra
 | `timeline` | `{week, label}[]` | Journey milestones (3 recommended) |
 | `caption` | string | Invokes identity |
 
+### screenshot
+| Prop | Type | Purpose |
+|---|---|---|
+| `image` | string | Filename in `public/` — the actual app screenshot |
+| `caption` | string | Describes what the viewer is seeing |
+| `animation` | `"pan-up"\|"pan-down"\|"zoom-in"\|"zoom-out"\|"none"` | How the screenshot animates (default: "pan-up") |
+| `device` | DevicePreset | Override device |
+| `phoneScale` | number | Frame scale (default 1.8) |
+
+Use `screenshot` scenes to show the actual app UI. Place real screenshots of your app screens in `public/` and reference them by filename. This makes the video look like YOUR app, not a generic template.
+
 ### call-to-action
 | Prop | Type | Purpose |
 |---|---|---|
@@ -213,7 +321,7 @@ npm run build   # Render to out/AppPreview.mp4
 ## Customization
 
 - **Custom scenes** — Add `.tsx` in `src/scenes/`, export from index, add to `SceneType` union, add `case` in `AppPreview.tsx`
-- **Screenshots** — `staticFile("screenshot.png")` inside `PhoneFrame`
+- **Screenshots** — Place app screenshots in `public/`, use `screenshot` scene type to display them inside a phone frame with animation
 - **Audio** — `.mp3` in `public/`, set `backgroundMusic` in config
 - **Custom components** — Build on primitives in `src/components/`
 
@@ -230,3 +338,4 @@ npm run build   # Render to out/AppPreview.mp4
 - CTA + badge visible 2+ seconds
 - Caption every scene — many watch without sound
 - Use real app icon for recognition
+- Use `screenshot` scenes with actual app screens whenever possible — this is the single most effective way to make the video feel authentic

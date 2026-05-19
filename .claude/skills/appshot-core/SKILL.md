@@ -59,9 +59,12 @@ Each scene has `type`, `durationInFrames`, `caption`, and type-specific `props`.
 | `feature-showcase` | App UI in phone frame with animated cards. Shows the solution. | 4-5s (120-150 frames) |
 | `speed-demo` | Type, save, success toast. Core action loop. | 4-5s (120-150 frames) |
 | `social-proof` | Stats, heatmap, progress timeline. Evidence. | 5-6s (150-180 frames) |
+| `screenshot` | Actual app screenshot inside phone frame with pan/zoom animation. Shows the real app. | 4-6s (120-180 frames) |
 | `call-to-action` | Icon + tagline + pills + store badge. The ask. | 3-4s (90-120 frames) |
 
 Total video: 22-28 seconds (660-840 frames at 30fps).
+
+The `screenshot` scene type displays an actual app screenshot inside a phone frame with configurable animation (pan-up, pan-down, zoom-in, zoom-out, none). Use it to show real app UI — this makes videos look like the actual app instead of generic animated cards. Place screenshot images in `public/` and reference by filename.
 
 ## Component Inventory
 
@@ -77,6 +80,18 @@ All accept a `brand` prop for consistent theming.
 | `HeatMap` | GitHub-style contribution grid |
 | `AppIcon` | App icon with optional glow effect |
 | `AppStoreBadge` | iOS App Store / Google Play badge |
+
+### Screenshot Scene Animations
+
+The `screenshot` scene type supports these animation modes:
+
+| Animation | Effect |
+|-----------|--------|
+| `pan-up` | Image slowly pans upward (default) — good for tall screens like feeds/lists |
+| `pan-down` | Image slowly pans downward — good for revealing content below the fold |
+| `zoom-in` | Gentle zoom into the center — good for detail-focused screens |
+| `zoom-out` | Starts zoomed, pulls back to reveal full screen — good for overview screens |
+| `none` | Static display — good for screens that speak for themselves |
 
 ## Device Presets
 

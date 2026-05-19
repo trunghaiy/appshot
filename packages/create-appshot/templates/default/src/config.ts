@@ -5,6 +5,7 @@ export type SceneType =
   | "feature-showcase"
   | "speed-demo"
   | "social-proof"
+  | "screenshot"
   | "call-to-action";
 
 export interface SceneConfig {

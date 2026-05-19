@@ -4,6 +4,7 @@ import { PainPoint } from "./scenes/PainPoint";
 import { FeatureShowcase } from "./scenes/FeatureShowcase";
 import { SpeedDemo } from "./scenes/SpeedDemo";
 import { SocialProof } from "./scenes/SocialProof";
+import { Screenshot } from "./scenes/Screenshot";
 import { CallToAction } from "./scenes/CallToAction";
 import { appConfig } from "./app-config";
 import type { SceneConfig } from "./config";
@@ -11,6 +12,7 @@ import type { PainPointProps } from "./scenes/PainPoint";
 import type { FeatureShowcaseProps } from "./scenes/FeatureShowcase";
 import type { SpeedDemoProps } from "./scenes/SpeedDemo";
 import type { SocialProofProps } from "./scenes/SocialProof";
+import type { ScreenshotProps } from "./scenes/Screenshot";
 import type { CallToActionProps } from "./scenes/CallToAction";
 
 function renderScene(scene: SceneConfig, index: number) {
@@ -26,6 +28,8 @@ function renderScene(scene: SceneConfig, index: number) {
       return <SpeedDemo brand={brand} caption={scene.caption} {...(props as Omit<SpeedDemoProps, "brand" | "caption">)} />;
     case "social-proof":
       return <SocialProof brand={brand} caption={scene.caption} {...(props as Omit<SocialProofProps, "brand" | "caption">)} />;
+    case "screenshot":
+      return <Screenshot brand={brand} caption={scene.caption} {...(props as Omit<ScreenshotProps, "brand" | "caption">)} />;
     case "call-to-action":
       return (
         <CallToAction
