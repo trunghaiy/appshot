@@ -67,6 +67,11 @@ Go beyond identity and colors. Understand what the app actually does.
 - How many taps/steps does it take?
 - What feedback do they get after completing it?
 
+**Theme detection.** Check if the app supports light/dark modes:
+- Look for theme toggle, `useColorScheme`, `Appearance`, `ThemeProvider`, `darkMode` in config
+- Note which is the default or primary theme
+- Note if the app is dark-theme-only (some brands like Spotify, cinema apps)
+
 ### Present findings
 
 ```
@@ -252,8 +257,8 @@ export const S2_CoreFeature: React.FC = () => {
       <AmbientBackground brand={brand} variant="light" />
 
       <div className="relative z-10 flex flex-col items-center">
-        <PhoneFrame device={appConfig.video.device}>
-          {/* Mock the actual app screen layout here */}
+        <PhoneFrame device={appConfig.video.device} scale={1.8}>
+          {/* Mock the actual app screen layout here — scale 1.6-2.0 for readability */}
           <div style={{ padding: 20, background: brand.background, height: "100%" }}>
             <div style={{ fontSize: 24, fontWeight: 700, color: brand.textPrimary }}>
               Today's Activity
@@ -391,6 +396,20 @@ Approve this direction and I'll generate all code, or tell me what to change.
 5. **Primitives, not from-scratch.** Use the shared primitives library (see [appshot-core](../appshot-core/SKILL.md)). Build scene layouts on top of PhoneFrame, AmbientBackground, Caption, FadeIn, FloatingCard, etc. Only write raw HTML/Tailwind for app-specific UI mockups inside PhoneFrame.
 
 6. **Timing.** Total video 15-30 seconds. Each scene 3-6 seconds. CTA badge visible 2+ seconds. Caption every scene.
+
+7. **Readability at App Store scale.** The video will be viewed as a small thumbnail in the App Store listing. All UI elements inside PhoneFrame must be legible at that size.
+   - Set `phoneScale` on PhoneFrame to **1.6–2.0** for portrait videos (1080x1920). The phone should fill 70-80% of the frame width.
+   - Text inside the phone screen: minimum 13px for body, 18px for titles, 11px for labels. Anything smaller will be unreadable.
+   - Cards, buttons, and interactive elements must have clear visual contrast against the background.
+   - Test: if you squint, can you still tell what each element is? If not, make it bigger.
+
+8. **No empty frames.** Every scene must have visible content from frame 0. No scene should open with a blank screen or only a background gradient.
+   - If elements enter with delays (spring animations), ensure at least one element is visible immediately or add a branded title/label that appears from frame 0.
+   - The very first frame of the entire video (frame 0 of scene 1) is especially critical — it becomes the video thumbnail. It must not be black, transparent, or empty.
+
+9. **Use structured questions.** When asking the user to choose between options (color theme, narrative arc, scenes to include/exclude, music mood), always use the AskUserQuestion tool with labeled options — never plain text questions. This makes decisions visible and actionable.
+
+10. **Theme selection.** In Phase 1, detect whether the app has both light and dark themes. In Phase 2, ask the user which theme to use for the video using a structured question. Default recommendation: light mode (higher visibility in App Store listings, where most competing videos use light backgrounds). If the app is dark-theme-only (e.g., dark brand identity), use dark mode but ensure sufficient contrast.
 
 ## Supporting resources
 
