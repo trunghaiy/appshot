@@ -133,7 +133,26 @@ State your angle and why it fits.
 
 Use AskUserQuestion to let the user choose light or dark theme for the video. Default recommendation: light mode (higher visibility in App Store listings). If the app is dark-only, note that and default to dark with high-contrast colors.
 
-### Step 3: Design the scene breakdown
+### Step 3: Select background music
+
+Appshot ships with 8 royalty-free background tracks in `public/music/`. Use AskUserQuestion to let the user pick one based on their app's mood:
+
+| Track | Mood | Best for |
+|-------|------|----------|
+| `upbeat-corporate.mp3` | Upbeat, confident | Business, productivity |
+| `calm-ambient.mp3` | Calm, peaceful | Wellness, meditation |
+| `warm-inspiring.mp3` | Warm, motivational | Education, habits |
+| `minimal-electronic.mp3` | Clean, minimal | Finance, utility |
+| `energetic-tech.mp3` | Energetic, modern | Social, gaming |
+| `lofi-chill.mp3` | Lo-fi, relaxed | Lifestyle, reading |
+| `bright-acoustic.mp3` | Bright, friendly | Food, travel |
+| `cinematic-build.mp3` | Cinematic, dramatic | Premium, launch videos |
+
+Based on the app category detected in Phase 1, recommend a default track. Present 3-4 relevant options using AskUserQuestion, plus "No music" and "I'll provide my own."
+
+Set `backgroundMusicVolume: 0.25` — low enough to not compete with visual storytelling.
+
+### Step 4: Design the scene breakdown
 
 For each scene, describe in plain language:
 
@@ -151,7 +170,7 @@ For each scene, describe in plain language:
 - Use real screen names, real data shapes, real UI patterns from the codebase.
 - Final scene is always CTA: app icon + tagline + store badge.
 
-### Step 4: Draft all copy
+### Step 5: Draft all copy
 
 Read [copy-principles.md](../shared/copy-principles.md) before writing any text.
 
@@ -241,8 +260,9 @@ Scaffold an `appshot-video/` directory in the target project's root:
 2. Copy the template scaffolding files (package.json, remotion.config.ts, tailwind.config.ts, tsconfig.json, src/styles.css, src/index.ts, src/config.ts) from the appshot template. If the appshot template is not locally available, write these files from the schema in appshot-core.
 3. Copy ALL component primitives from the appshot template `src/components/` directory into `appshot-video/src/components/`
 4. Copy the app icon into `appshot-video/public/`
-5. Then generate the custom files (app-config.ts, scenes, orchestrator, Root.tsx)
-6. Run `cd appshot-video && npm install` to set up dependencies
+5. Copy the selected background music track from `template/public/music/` into `appshot-video/public/music/`
+6. Then generate the custom files (app-config.ts, scenes, orchestrator, Root.tsx)
+7. Run `cd appshot-video && npm install` to set up dependencies
 
 **Never write generated scenes into the appshot repo's template/ directory.** That directory is the clean template — it must not contain project-specific files.
 
@@ -266,6 +286,8 @@ export const appConfig: AppConfig = {
     width: 886,      // App Store REQUIRED: 886x1920 for iPhone 6.7". Do NOT use 1080.
     height: 1920,
     device: "iphone-16-pro",
+    backgroundMusic: "music/warm-inspiring.mp3",  // from bundled tracks, selected in Phase 2
+    backgroundMusicVolume: 0.25,
   },
 };
 ```
