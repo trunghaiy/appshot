@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "remotion studio",
-    "build": "remotion render AppPreview out/AppPreview.mp4",
+    "build": "remotion render AppPreview out/AppPreview.mp4 --codec h264 --crf 18 --pixel-format yuv420p --color-space bt709",
     "build:gif": "remotion render AppPreview out/AppPreview.gif --image-format png",
-    "build:portrait": "remotion render AppPreview out/AppPreview-portrait.mp4",
-    "build:landscape": "remotion render AppPreview out/AppPreview-landscape.mp4 --width 1920 --height 886"
+    "build:portrait": "remotion render AppPreview out/AppPreview-portrait.mp4 --codec h264 --crf 18 --pixel-format yuv420p --color-space bt709",
+    "build:landscape": "remotion render AppPreview out/AppPreview-landscape.mp4 --width 1920 --height 886 --codec h264 --crf 18 --pixel-format yuv420p --color-space bt709"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
