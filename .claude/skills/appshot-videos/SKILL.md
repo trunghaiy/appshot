@@ -196,7 +196,47 @@ Approve this direction, or tell me what to change.
 
 ## Phase 3: Generate code
 
-Only after phases 1-2 are approved, write all project files.
+Only after phases 1-2 are approved, scaffold the project and write all files.
+
+### Project location
+
+**CRITICAL: Generate files inside the target project, NOT inside the appshot template directory.**
+
+Scaffold an `appshot-video/` directory in the target project's root:
+
+```
+[target-project]/
+├── appshot-video/          ← generated here
+│   ├── package.json
+│   ├── remotion.config.ts
+│   ├── tailwind.config.ts
+│   ├── tsconfig.json
+│   ├── public/
+│   │   └── icon.png        ← copy app icon here
+│   └── src/
+│       ├── index.ts
+│       ├── Root.tsx
+│       ├── app-config.ts
+│       ├── config.ts        ← copy from appshot template
+│       ├── styles.css
+│       ├── components/      ← copy all primitives from appshot template
+│       ├── scenes/          ← generated custom scenes
+│       └── [AppName]Preview.tsx  ← generated orchestrator
+├── src/                     ← target app source (untouched)
+├── package.json             ← target app package (untouched)
+└── ...
+```
+
+**Steps to scaffold:**
+
+1. Create the `appshot-video/` directory in the target project root
+2. Copy the template scaffolding files (package.json, remotion.config.ts, tailwind.config.ts, tsconfig.json, src/styles.css, src/index.ts, src/config.ts) from the appshot template. If the appshot template is not locally available, write these files from the schema in appshot-core.
+3. Copy ALL component primitives from the appshot template `src/components/` directory into `appshot-video/src/components/`
+4. Copy the app icon into `appshot-video/public/`
+5. Then generate the custom files (app-config.ts, scenes, orchestrator, Root.tsx)
+6. Run `cd appshot-video && npm install` to set up dependencies
+
+**Never write generated scenes into the appshot repo's template/ directory.** That directory is the clean template — it must not contain project-specific files.
 
 ### Files to generate
 
@@ -352,7 +392,7 @@ export const FooAppPreview: React.FC = () => {
 
 ## Phase 4: Preview & iterate
 
-Run `npm run dev` and tell the user what to watch for:
+Run `cd appshot-video && npm run dev` and tell the user what to watch for:
 
 - Are captions readable at playback speed?
 - Does each scene look like it belongs to THIS app (correct colors, correct UI patterns)?
