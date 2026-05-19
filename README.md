@@ -4,22 +4,53 @@ Generate polished App Store & Google Play preview videos from a simple config. B
 
 No video editing skills required. Define your scenes in TypeScript, render to MP4.
 
+Appshot also ships as a set of AI agent skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — let Claude scan your app, direct the creative, and generate a ready-to-render config automatically.
+
+## Installation
+
+### Install Skills
+
+```bash
+# Install all skills (recommended)
+npx skills add trunghaiy/appshot
+
+# Install specific skills
+npx skills add trunghaiy/appshot --skill appshot-videos appshot-images
+
+# List available skills
+npx skills add trunghaiy/appshot --list
+```
+
+### Clone and Copy
+
+```bash
+git clone https://github.com/trunghaiy/appshot.git
+cp -r appshot/.claude/skills/* .claude/skills/
+```
+
+### Git Submodule
+
+```bash
+git submodule add https://github.com/trunghaiy/appshot.git .claude/appshot
+```
+
+### Fork and Customize
+
+Fork this repository, customize the skills and template for your needs.
+
 ## Quick Start
 
 ```bash
-# 1. Copy the template
-cp -r template/ my-video
+# 1. Create a new project
+npx create-appshot my-video
 cd my-video
 
-# 2. Install dependencies
-npm install
+# 2. Edit src/app-config.ts with your app's info
 
-# 3. Edit src/app-config.ts with your app's info
-
-# 4. Preview in browser
+# 3. Preview in browser
 npm run dev
 
-# 5. Render to MP4
+# 4. Render to MP4
 npm run build
 ```
 
@@ -91,15 +122,15 @@ All components are brand-aware and accept your colors:
 - **AppStoreBadge** — iOS / Google Play badges
 - **SceneWrap** — Auto fade transitions between scenes
 
-## Claude Code Skill
+## Skills
 
-Appshot includes a Claude Code skill. After cloning this repo:
+| Skill | What it does |
+|-------|-------------|
+| **appshot-core** | Foundation — architecture, config schema, component inventory, device presets |
+| **appshot-videos** | Creative direction + config generation for App Store preview videos |
+| **appshot-images** | Creative direction + config generation for App Store screenshots |
 
-```
-/appshot MyApp --scenes pain,feature,speed,proof,cta
-```
-
-Claude will generate the config and set up the project for you.
+Skills act as creative directors: they scan your app's codebase for context (name, colors, icon, features), guide narrative and copy decisions, then generate a ready-to-render Remotion config.
 
 ## App Store Requirements
 

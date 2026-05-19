@@ -1,0 +1,29 @@
+{
+  "name": "create-appshot",
+  "version": "1.0.0",
+  "description": "Scaffold an App Store preview video project powered by Remotion",
+  "bin": "./index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "index.js",
+    "templates/"
+  ],
+  "keywords": [
+    "appshot",
+    "remotion",
+    "app-store",
+    "preview-video",
+    "screenshot",
+    "scaffold",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trunghaiy/appshot.git",
+    "directory": "packages/create-appshot"
+  },
+  "author": "trunghaiy",
+  "license": "MIT"
+}

@@ -1,0 +1,101 @@
+export type DevicePreset = "iphone-16-pro" | "iphone-15" | "ipad-pro-13" | "pixel-9";
+
+export type SceneType =
+  | "pain-point"
+  | "feature-showcase"
+  | "speed-demo"
+  | "social-proof"
+  | "call-to-action";
+
+export interface SceneConfig {
+  type: SceneType;
+  durationInFrames: number;
+  caption: string;
+  props: Record<string, unknown>;
+}
+
+export interface BrandColors {
+  primary: string;
+  primaryLight: string;
+  background: string;
+  surface: string;
+  textPrimary: string;
+  textSecondary: string;
+  success: string;
+  danger: string;
+  accent?: string;
+}
+
+export interface AppConfig {
+  app: {
+    name: string;
+    tagline: string;
+    icon: string;
+    platform: "ios" | "android" | "both";
+  };
+  brand: BrandColors;
+  video: {
+    fps: number;
+    width: number;
+    height: number;
+    device: DevicePreset;
+    backgroundMusic?: string;
+    backgroundMusicVolume?: number;
+  };
+  scenes: SceneConfig[];
+}
+
+export const DEVICE_DIMENSIONS: Record<
+  DevicePreset,
+  {
+    screenWidth: number;
+    screenHeight: number;
+    bezelRadius: number;
+    bezelWidth: number;
+    notchType: "dynamic-island" | "notch" | "punch-hole" | "none";
+  }
+> = {
+  "iphone-16-pro": {
+    screenWidth: 393,
+    screenHeight: 852,
+    bezelRadius: 55,
+    bezelWidth: 8,
+    notchType: "dynamic-island",
+  },
+  "iphone-15": {
+    screenWidth: 375,
+    screenHeight: 812,
+    bezelRadius: 52,
+    bezelWidth: 8,
+    notchType: "dynamic-island",
+  },
+  "ipad-pro-13": {
+    screenWidth: 1024,
+    screenHeight: 1366,
+    bezelRadius: 20,
+    bezelWidth: 12,
+    notchType: "none",
+  },
+  "pixel-9": {
+    screenWidth: 412,
+    screenHeight: 915,
+    bezelRadius: 40,
+    bezelWidth: 6,
+    notchType: "punch-hole",
+  },
+};
+
+export const DEFAULT_BRAND: BrandColors = {
+  primary: "#007AFF",
+  primaryLight: "#E5F1FF",
+  background: "#F5F5F7",
+  surface: "#FFFFFF",
+  textPrimary: "#1D1D1F",
+  textSecondary: "#86868B",
+  success: "#34C759",
+  danger: "#FF3B30",
+};
+
+export function getTotalDuration(config: AppConfig): number {
+  return config.scenes.reduce((sum, s) => sum + s.durationInFrames, 0);
+}
