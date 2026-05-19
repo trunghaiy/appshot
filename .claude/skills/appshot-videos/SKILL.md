@@ -6,7 +6,7 @@ argument-hint: "[app name] [--quick]"
 license: MIT
 metadata:
   author: kiennguyen
-  version: 4.0.0
+  version: 5.0.0
 ---
 
 # Appshot Videos — App Store Preview Video Generator
@@ -42,7 +42,7 @@ Scan the target app's codebase thoroughly. This phase has two parts: standard ex
 
 Review the project context above. Read [extract-app-context.md](../shared/extract-app-context.md) for detailed scan instructions if context is sparse.
 
-### Part B: Deep analysis (NEW)
+### Part B: Deep analysis
 
 Go beyond identity and colors. Understand what the app actually does.
 
@@ -84,6 +84,7 @@ I scanned your project and found:
 - **Icon:** [file path]
 - **Category:** [category] based on [keywords/description]
 - **Store description:** [found at path / not found]
+- **Theme:** [light only / dark only / both — default is X]
 
 **Screen inventory:**
 - [Tab 1]: [ScreenName] — [what it shows]
@@ -124,9 +125,15 @@ Pick the angle that best sells THIS app. Common angles (not an exhaustive list):
 - **UI showcase:** Let the polished UI do the talking. Best when the interface IS the product.
 - **Problem-solution:** Name the pain, show the fix. Best for utility and productivity apps.
 
+Use AskUserQuestion with labeled options when presenting the angle choice to the user.
+
 State your angle and why it fits.
 
-### Step 2: Design the scene breakdown
+### Step 2: Ask theme preference
+
+Use AskUserQuestion to let the user choose light or dark theme for the video. Default recommendation: light mode (higher visibility in App Store listings). If the app is dark-only, note that and default to dark with high-contrast colors.
+
+### Step 3: Design the scene breakdown
 
 For each scene, describe in plain language:
 
@@ -144,7 +151,7 @@ For each scene, describe in plain language:
 - Use real screen names, real data shapes, real UI patterns from the codebase.
 - Final scene is always CTA: app icon + tagline + store badge.
 
-### Step 3: Draft all copy
+### Step 4: Draft all copy
 
 Read [copy-principles.md](../shared/copy-principles.md) before writing any text.
 
@@ -168,6 +175,7 @@ Draft ALL text — every caption, headline, tagline, card label, pill, stat, but
 
 ```
 **Narrative angle:** [angle] — [one sentence why]
+**Theme:** [light/dark] — [reason]
 
 **Scene breakdown:**
 
@@ -249,7 +257,7 @@ export const appConfig: AppConfig = {
   app: {
     name: "...",
     tagline: "...",
-    icon: "icon.png",
+    icon: "icon.png",     // just the filename, NOT staticFile()
     platform: "ios",
   },
   brand: { /* from phase 1 */ },
@@ -257,68 +265,102 @@ export const appConfig: AppConfig = {
     fps: 30,
     width: 1080,
     height: 1920,
-    device: "iphone-15",
+    device: "iphone-16-pro",
   },
 };
 ```
 
 **2. `src/scenes/S1_[Name].tsx`, `S2_[Name].tsx`, etc.** — Custom scene components.
 
-Each scene file must:
-- Import and use primitives from `"../components"` (PhoneFrame, AmbientBackground, Caption, FadeIn, etc.)
-- Import `appConfig` from `"../app-config"` for brand colors
-- Use `useCurrentFrame()` and `useVideoConfig()` from Remotion for frame-based animation
-- Use `spring()` and `interpolate()` from Remotion for motion
-- Render a mockup of the target app's actual screen layout (based on source code analysis from phase 1)
-- Use brand colors from `appConfig.brand`
-- Include hardcoded demo data that represents realistic app content
-- Export a named React component: `export const S1_[Name]: React.FC = () => { ... }`
+Each scene file must follow these rules:
 
-**Example scene structure** (generic — adapt entirely for the target app):
-
+**Imports:**
 ```tsx
-import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
+// CORRECT — import from "../components" barrel
 import { AmbientBackground, PhoneFrame, Caption, FadeIn, FloatingCard } from "../components";
 import { appConfig } from "../app-config";
+import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
+// NOTE: Only import from "remotion" what you actually use. Remove unused imports.
+```
 
-export const S2_CoreFeature: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+**Scene 1 (S1) — Frame 0 thumbnail rule:**
+```tsx
+// CORRECT — first element is a static, fully visible card at frame 0
+export const S1_Hook: React.FC = () => {
   const { brand } = appConfig;
-
-  // Mock data representing what the app actually shows
-  const items = [
-    { title: "Morning Run", value: "5.2 km", time: "28:30" },
-    { title: "Evening Walk", value: "2.1 km", time: "35:15" },
-  ];
-
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
-      <AmbientBackground brand={brand} variant="light" />
-
-      <div className="relative z-10 flex flex-col items-center">
-        <PhoneFrame device={appConfig.video.device} scale={1.8}>
-          {/* Mock the actual app screen layout here — scale 1.6-2.0 for readability */}
-          <div style={{ padding: 20, background: brand.background, height: "100%" }}>
-            <div style={{ fontSize: 24, fontWeight: 700, color: brand.textPrimary }}>
-              Today's Activity
-            </div>
-            {items.map((item, i) => (
-              <FadeIn key={i} delay={15 + i * 12} distance={20}>
-                <FloatingCard delay={15 + i * 12} variant="solid">
-                  <div style={{ color: brand.textPrimary, fontWeight: 600 }}>{item.title}</div>
-                  <div style={{ color: brand.primary, fontSize: 28, fontWeight: 700 }}>{item.value}</div>
-                </FloatingCard>
-              </FadeIn>
-            ))}
-          </div>
-        </PhoneFrame>
+      <AmbientBackground brand={brand} variant="dark" />
+      <div className="relative z-10">
+        {/* This FloatingCard is visible from frame 0 because delay={0} */}
+        <FloatingCard delay={0} variant="dark" style={{ width: 860, padding: 32 }}>
+          <span style={{ fontSize: 42, fontWeight: 700, color: brand.textPrimary }}>
+            Your best ideas disappear.
+          </span>
+        </FloatingCard>
       </div>
-
-      <Caption text="Track every step without thinking." delay={5} />
+      <Caption text="Great ideas deserve better." delay={5} />
     </div>
   );
 };
+
+// WRONG — TypeWriter as first element (shows 0-1 chars at frame 0 = blank)
+// WRONG — spring({ frame: frame - 70 }) as first element (blank for 70 frames)
+// WRONG — FadeIn delay={8} as the ONLY element (blank for 8 frames)
+```
+
+**PhoneFrame scale — ALWAYS set scale={1.8}:**
+```tsx
+// CORRECT
+<PhoneFrame device={appConfig.video.device} scale={1.8} screenBackground={brand.background}>
+
+// WRONG — missing scale (defaults to 1.0, phone is tiny on 1080x1920 canvas)
+<PhoneFrame device={appConfig.video.device}>
+```
+
+**Text sizes — inside vs outside PhoneFrame:**
+```tsx
+// INSIDE PhoneFrame (gets zoomed by scale):
+// Body: 13-16px, Titles: 18-24px, Labels: 10-12px
+
+// OUTSIDE PhoneFrame (renders at actual size on 1080x1920 canvas):
+// Body: 28px minimum, Titles: 40px+, Labels: 22px+, Stats: 48px+
+// Cards: 800px+ width, Emoji: 40px+
+```
+
+**Text contrast — always use brand colors:**
+```tsx
+// CORRECT — explicit color from brand
+<span style={{ color: brand.textPrimary }}>Title</span>
+<span style={{ color: brand.textSecondary }}>Body text</span>
+<TypeWriter text="..." startFrame={20} cursorColor={brand.primary} />
+<div style={{ color: brand.textPrimary }}>  {/* parent sets color */}
+  <TypeWriter text="..." startFrame={20} />
+</div>
+
+// WRONG — no color specified (inherits black, invisible on dark bg)
+<TypeWriter text="..." startFrame={20} className="leading-relaxed" />
+// WRONG — Tailwind text color class (may not match dark theme)
+<span className="text-gray-800">Text</span>
+```
+
+**AppIcon — never wrap in staticFile():**
+```tsx
+// CORRECT — pass just the filename
+<AppIcon src={appConfig.app.icon} size={140} glow glowColor={`${brand.primary}55`} />
+<AppIcon src="icon.png" size={140} />
+
+// WRONG — double staticFile() crash
+import { staticFile } from "remotion";
+<AppIcon src={staticFile(appConfig.app.icon)} />  // CRASHES: "already prefixed with static base"
+```
+
+**Audio — use staticFile() only for raw Audio tags:**
+```tsx
+// CORRECT — Audio needs staticFile
+<Audio src={staticFile("music.mp3")} volume={0.3} />
+
+// AppIcon, AppStoreBadge do NOT need staticFile — they handle it internally
 ```
 
 **3. `src/[AppName]Preview.tsx`** — Orchestrator that sequences all scenes.
@@ -326,7 +368,6 @@ export const S2_CoreFeature: React.FC = () => {
 ```tsx
 import { Sequence } from "remotion";
 import { SceneWrap } from "./components";
-import { appConfig } from "./app-config";
 import { S1_Hook } from "./scenes/S1_Hook";
 import { S2_CoreFeature } from "./scenes/S2_CoreFeature";
 import { S3_Proof } from "./scenes/S3_Proof";
@@ -338,6 +379,8 @@ const scenes = [
   { component: S3_Proof, duration: 150 },
   { component: S4_CTA, duration: 120 },
 ];
+
+export const TOTAL_DURATION = scenes.reduce((sum, s) => sum + s.duration, 0);
 
 export const FooAppPreview: React.FC = () => {
   let offset = 0;
@@ -359,16 +402,35 @@ export const FooAppPreview: React.FC = () => {
 };
 ```
 
-**4. Update `src/Root.tsx`** — Register the orchestrator as a Remotion composition.
+**4. `src/Root.tsx`** — Register the orchestrator.
+
+```tsx
+import { Composition } from "remotion";
+import { FooAppPreview, TOTAL_DURATION } from "./FooAppPreview";
+import { appConfig } from "./app-config";
+import "./styles.css";
+
+export const RemotionRoot: React.FC = () => (
+  <Composition
+    id="AppPreview"
+    component={FooAppPreview}
+    durationInFrames={TOTAL_DURATION}
+    fps={appConfig.video.fps}
+    width={appConfig.video.width}
+    height={appConfig.video.height}
+  />
+);
+```
 
 ### Code quality rules
 
 - Every scene must be a self-contained `.tsx` file in `src/scenes/`
 - No scene should exceed ~150 lines — split complex animations into helper functions
 - Use Tailwind for layout, inline `style={}` for dynamic/brand-colored properties
-- All motion uses Remotion `spring()` or `interpolate()` — no CSS transitions
+- All motion uses Remotion `spring()` or `interpolate()` — no CSS transitions or `transition:` properties (they don't work in Remotion)
 - Demo data must look realistic (real names, plausible numbers, proper formatting)
-- Status bar time should be realistic (e.g., "9:41" for iOS)
+- Status bar time should be "9:41" for iOS
+- Remove unused imports — no `spring`, `interpolate`, `useCurrentFrame`, `useVideoConfig` if not used in the component
 
 ### Before writing code, verify
 
@@ -378,16 +440,31 @@ export const FooAppPreview: React.FC = () => {
 - App name, icon, tagline are from the actual app (phase 1)
 - Each scene mocks the actual app UI discovered in phase 1, not generic placeholders
 
-### After writing code, self-check every scene file
+### After writing ALL scene files, run this self-check
 
-- [ ] **Scene 1 frame 0 thumbnail:** Open S1 and mentally render frame 0. Is there a large, fully visible element? TypeWriter alone = FAIL (shows 0-1 chars). `spring({ frame: frame - N })` = FAIL (nothing for N frames). Must be a static element or `FadeIn delay={0}` with substantive content.
-- [ ] PhoneFrame uses `scale={1.7}` or higher
-- [ ] Text outside PhoneFrame is 28px+ body, 40px+ titles
-- [ ] Floating cards outside PhoneFrame are 800px+ wide
-- [ ] No dark text color on dark background — trace every text element's `color` against its parent's `background`
-- [ ] Every `TypeWriter` or styled text block has an explicit `color` set via `style={}`, not just a className
-- [ ] Emoji/icons are 40px+ outside PhoneFrame
-- [ ] **No `staticFile()` wrapping on AppIcon src.** Search for `staticFile(appConfig.app.icon)` or `staticFile(` near `<AppIcon` — these are bugs. AppIcon handles staticFile internally.
+For EACH scene file, verify:
+
+1. **S1 frame 0 thumbnail:** What renders at frame 0? Must be a large, fully visible element.
+   - FAIL if: TypeWriter is the first/only visible element
+   - FAIL if: `spring({ frame: frame - N })` is used on first element (blank for N frames)
+   - FAIL if: All elements use `FadeIn delay={N}` where N > 0 with no static element
+   - PASS if: FloatingCard with `delay={0}`, or PhoneFrame with `delay={0}`, or a static `<div>` with content
+
+2. **PhoneFrame scale:** Every `<PhoneFrame>` must have `scale={1.7}` or `scale={1.8}`. Search for `<PhoneFrame` without `scale=` — that's a bug.
+
+3. **Text sizes outside PhoneFrame:** Search for `fontSize:` in elements NOT inside a PhoneFrame. Any value under 28 for body text or under 40 for titles is too small.
+
+4. **Floating card widths:** Search for `FloatingCard` not inside PhoneFrame. Check the `style.width` — must be 800+ px.
+
+5. **Text contrast:** For every `color:` in style, trace it against the nearest `background:`. Both dark = bug. Specifically:
+   - `TypeWriter` must have `color` set via parent div style, not just className
+   - No hardcoded `color: "#000"` or `color: "#1D1D1F"` on dark backgrounds
+
+6. **staticFile usage:** Search for `staticFile(` in scene files. It should ONLY appear in `<Audio src={staticFile(...)} />` or raw `<img src={staticFile(...)} />`. Never near `<AppIcon`.
+
+7. **Unused imports:** Search for imported-but-unused variables (`spring`, `interpolate`, `useCurrentFrame`, `useVideoConfig`, `staticFile`). Remove them.
+
+8. **Caption on every scene:** Every scene must have `<Caption text="..." delay={N} />`. Search for scenes without Caption.
 
 ---
 
@@ -395,11 +472,13 @@ export const FooAppPreview: React.FC = () => {
 
 Run `cd appshot-video && npm run dev` and tell the user what to watch for:
 
-- Are captions readable at playback speed?
+- Frame 0: does it show content (not black/blank)?
+- Are all text elements readable at playback speed?
 - Does each scene look like it belongs to THIS app (correct colors, correct UI patterns)?
 - Does the CTA have enough screen time (badge visible 2+ seconds)?
 - Does the overall pacing feel rushed or draggy?
 - Is the demo data realistic and representative?
+- Are there any contrast issues (text blending into background)?
 
 Guide the user through iteration. Each change should target a specific scene file.
 
@@ -417,6 +496,7 @@ Present in quick mode:
 **Extraction summary:** [condensed phase 1 findings]
 
 **Narrative angle:** [angle] — [reason]
+**Theme:** [light/dark]
 
 **Scene breakdown:**
 [Full table from phase 2]
@@ -431,51 +511,21 @@ Approve this direction and I'll generate all code, or tell me what to change.
 
 ---
 
-## Critical rules
+## Critical rules (numbered for reference)
 
-1. **Phase gates are mandatory.** Never skip to code generation. Never combine extraction with creative direction. The user must approve the plan.
+1. **Phase gates are mandatory.** Never skip to code generation. Never combine extraction with creative direction.
 
-2. **No generic content.** Every scene must mock THIS app's actual UI. Read the source code. Use real screen names, real data shapes, real navigation patterns. A scene that could belong to any app is a failed scene.
+2. **No generic content.** Every scene must mock THIS app's actual UI. Read the source code.
 
-3. **Copy quality.** Read [copy-principles.md](../shared/copy-principles.md). Apply the billboard test, benefit-first rule, and tagline formula. Every caption must be specific to this app.
+3. **Copy quality.** Billboard test, benefit-first, tagline formula. See [copy-principles.md](../shared/copy-principles.md).
 
-4. **Self-check before presenting copy:**
-   - No text copied from any example (BookStreak, Kernio, or others)
-   - Every piece of copy references actual features of THIS app
-   - Captions tell a coherent story when read in sequence
+4. **No copied text.** Not from BookStreak, Kernio, or any example.
 
-5. **Primitives, not from-scratch.** Use the shared primitives library (see [appshot-core](../appshot-core/SKILL.md)). Build scene layouts on top of PhoneFrame, AmbientBackground, Caption, FadeIn, FloatingCard, etc. Only write raw HTML/Tailwind for app-specific UI mockups inside PhoneFrame.
+5. **Primitives only.** Use the shared library. See [appshot-core](../appshot-core/SKILL.md).
 
-6. **Timing.** Total video 15-30 seconds. Each scene 3-6 seconds. CTA badge visible 2+ seconds. Caption every scene.
+6. **Timing.** 15-30 seconds total. 3-6 seconds per scene. CTA badge visible 2+ seconds.
 
-7. **Readability at App Store scale.** The video will be viewed as a small thumbnail in the App Store listing. ALL visual elements must be legible — not just those inside PhoneFrame.
-   - **Inside PhoneFrame:** Set `phoneScale` to **1.6–2.0** for portrait videos (1080x1920). The phone should fill 70-80% of the frame width. Text minimum: 13px body, 18px titles, 11px labels.
-   - **Outside PhoneFrame (floating cards, icons, CTA elements):** These render directly on the 1080x1920 canvas with no phone zoom. Font sizes must be **much larger**: minimum 28px for body text, 40px+ for titles, 22px+ for labels, 48px+ for stat values. A card with 15-20px text on a 1080x1920 canvas is unreadable at App Store thumbnail size.
-   - **Emoji/icon sizes:** Minimum 40px when used outside PhoneFrame. 32px minimum inside PhoneFrame.
-   - **Card widths:** Floating cards outside PhoneFrame should be at least 800px wide (out of 1080px canvas).
-   - Cards, buttons, and interactive elements must have clear visual contrast against the background.
-
-8. **No empty frames — frame 0 must be visually complete.** The App Store uses frame 0 as the video thumbnail. It MUST show a fully visible, recognizable element.
-   - The first element in Scene 1 MUST be fully visible at frame 0 — not animating in, not typing, not fading. Use `opacity: 1` with no spring/FadeIn wrapper, or use a spring with `delay: 0` (which resolves to ~0.95 opacity at frame 0 — acceptable).
-   - **Do NOT use TypeWriter as the first visible element.** TypeWriter shows 0-1 characters at frame 0 — that's effectively blank. Use a static text element, a FloatingCard, or a PhoneFrame with content as the first thing the viewer sees.
-   - **Do NOT use `frame - N` offset math on the first element.** `spring({ frame: frame - 70, ... })` means nothing appears for 70 frames. The first element must use `frame` directly with `delay: 0`.
-   - Subsequent elements can animate in with delays. But the first one must be solid at frame 0.
-   - For scenes 2+ (not the opening), `delay: 3-5` on the first element is acceptable since SceneWrap provides a fade-in.
-
-9. **Use structured questions.** When asking the user to choose between options (color theme, narrative arc, scenes to include/exclude, music mood), always use the AskUserQuestion tool with labeled options — never plain text questions. This makes decisions visible and actionable.
-
-10. **Theme selection.** In Phase 1, detect whether the app has both light and dark themes. In Phase 2, ask the user which theme to use for the video using a structured question. Default recommendation: light mode (higher visibility in App Store listings, where most competing videos use light backgrounds). If the app is dark-theme-only (e.g., dark brand identity), use dark mode but ensure sufficient contrast.
-
-11. **Text contrast — no dark text on dark backgrounds.** Every text element must be legible against its immediate background.
-    - On dark backgrounds (`brand.background` or `brand.surface` in dark themes): use `brand.textPrimary` (white/light) for titles, `brand.textSecondary` (muted light) for body text. Never use black or dark gray.
-    - On light backgrounds: use `brand.textPrimary` (dark) for titles.
-    - For TypeWriter and TypeWriter-like components: explicitly set `color` in the containing div's style — do not rely on CSS class inheritance, which may produce black text.
-    - Before writing any text element, verify: "Is the text color from the same `brand.*` family as the background?" If both are dark (e.g., `#1E293B` background + `#1D1D1F` text), it's a contrast bug.
-
-12. **Never double-wrap staticFile().** The `AppIcon` component calls `staticFile()` internally. When using AppIcon, pass just the filename string — NOT `staticFile(filename)`. Same applies to any component that accepts an asset path and internally resolves it.
-    - Correct: `<AppIcon src={appConfig.app.icon} />` or `<AppIcon src="icon.png" />`
-    - Wrong: `<AppIcon src={staticFile(appConfig.app.icon)} />` — this crashes with "already prefixed with static base"
-    - Only use `staticFile()` directly when rendering a raw `<img>` or `<Img>` tag, or in `<Audio src={staticFile("music.mp3")} />`.
+7. **Use AskUserQuestion.** For all user choices (theme, arc, scenes). Never plain text questions.
 
 ## Supporting resources
 
