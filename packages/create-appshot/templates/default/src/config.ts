@@ -1,20 +1,5 @@
 export type DevicePreset = "iphone-16-pro" | "iphone-15" | "ipad-pro-13" | "pixel-9";
 
-export type SceneType =
-  | "pain-point"
-  | "feature-showcase"
-  | "speed-demo"
-  | "social-proof"
-  | "screenshot"
-  | "call-to-action";
-
-export interface SceneConfig {
-  type: SceneType;
-  durationInFrames: number;
-  caption: string;
-  props: Record<string, unknown>;
-}
-
 export interface BrandColors {
   primary: string;
   primaryLight: string;
@@ -43,7 +28,6 @@ export interface AppConfig {
     backgroundMusic?: string;
     backgroundMusicVolume?: number;
   };
-  scenes: SceneConfig[];
 }
 
 export const DEVICE_DIMENSIONS: Record<
@@ -96,7 +80,3 @@ export const DEFAULT_BRAND: BrandColors = {
   success: "#34C759",
   danger: "#FF3B30",
 };
-
-export function getTotalDuration(config: AppConfig): number {
-  return config.scenes.reduce((sum, s) => sum + s.durationInFrames, 0);
-}

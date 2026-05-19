@@ -1,5 +1,9 @@
 # BookStreak — Annotated Creative Walkthrough
 
+> **WARNING: This shows reasoning for ONE specific app (BookStreak). Do not copy these specific scenes, layouts, copy, or data values. Use this to understand the creative REASONING process, then apply that process to generate completely different scenes for your target app.**
+>
+> The value of this document is in the WHY behind each decision — not the WHAT. Your target app has different screens, different features, different users, and needs a completely different video. Study the thinking pattern, then throw away all the specifics.
+
 Explains the WHY behind every creative choice in `../../examples/bookstreak/app-config.ts`. Use this to understand reasoning, not as a template to copy.
 
 ## Overall Strategy

@@ -23,5 +23,4 @@ export const appConfig: AppConfig = {
     height: 1920,
     device: "iphone-15",
   },
-  scenes: [],
 };

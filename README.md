@@ -2,25 +2,24 @@
 
 Generate polished App Store and Google Play preview videos and screenshots — from your app's codebase, not a video editor.
 
-Appshot ships as **AI agent skills** that act as a creative director: they scan your project, ask the right questions, and produce a ready-to-render [Remotion](https://remotion.dev) config. No video editing experience required.
+Appshot is a **primitives library + AI skill** that acts as a creative director: it scans your project, understands your app, and generates custom scene files tailored to your product. No video editing experience required.
 
 Works with **Claude Code**, **Cursor**, **Windsurf**, **Codex**, and any AI agent that supports the [Agent Skills spec](https://agentskills.io).
 
 <!-- TODO: Add GIF or screenshot of example output here -->
-<!-- ![BookStreak example](docs/bookstreak-preview.gif) -->
 
 ## How It Works
 
-Appshot skills turn a conversation into a finished video or screenshot set:
+The AI skill generates custom `.tsx` scene files for each project — no fixed scene templates, no one-size-fits-all layouts:
 
 1. **Install the skills** into your mobile app project
 2. **Ask your AI agent** — "Generate an App Store preview video for this app"
 3. **The skill scans your codebase** — extracts app name, brand colors, icon, features, and store metadata automatically
 4. **You answer a few creative questions** — what problem does your app solve? What's the core action? What proof do you have?
-5. **The skill generates everything** — scaffolds a Remotion project, writes the config, and sets up scenes
+5. **The skill generates custom scenes** — writes bespoke `.tsx` components using Appshot primitives, wired into a Remotion composition
 6. **Preview and render** — `npm run dev` to preview in-browser, `npm run build` to export MP4
 
-The skill handles the creative direction (narrative arc, copy, scene selection) and the technical setup (project scaffolding, config generation, component wiring). You focus on your app's story.
+Every video is unique to your app. The skill picks the right narrative arc, writes copy, chooses animations, and composes scenes from the primitives library below.
 
 ### Quick mode
 
@@ -70,15 +69,7 @@ git submodule add https://github.com/trunghaiy/appshot.git .agents/appshot
 
 ### Videos
 
-15-30 second animated preview videos for App Store and Google Play, built from 5 scene types:
-
-| Scene | What it does |
-|-------|-------------|
-| **PainPoint** | Shows the problem — dark theme, counter reset, card crack animation |
-| **FeatureShowcase** | Your app's UI inside a realistic phone frame with animated cards |
-| **SpeedDemo** | Demonstrates a fast core loop — type, save, success toast |
-| **SocialProof** | Analytics, heat maps, progress timelines, stats |
-| **CallToAction** | App icon + tagline + feature pills + store badge |
+15-30 second animated preview videos for App Store and Google Play. The AI generates custom scenes per project using the primitives library — each video is unique to your app's story, brand, and features.
 
 ### Screenshots
 
@@ -89,8 +80,8 @@ Store listing screenshots with device frames, captions, and branded backgrounds.
 | Skill | What it does |
 |-------|-------------|
 | `appshot-core` | Foundation — architecture, config schema, component inventory, device presets |
-| `appshot-videos` | Creative director for preview videos — scans your app, guides narrative, generates config |
-| `appshot-images` | Creative director for screenshots — scans your app, designs layouts, generates config |
+| `appshot-videos` | Creative director for preview videos — scans your app, guides narrative, generates custom scenes |
+| `appshot-images` | Creative director for screenshots — scans your app, designs layouts, generates custom scenes |
 
 `appshot-core` is loaded automatically by the other two. You interact with `appshot-videos` or `appshot-images` directly.
 
@@ -114,11 +105,11 @@ npm run build
 
 ## Example
 
-See [examples/bookstreak/](examples/bookstreak/) for a complete config that produces a 25-second reading app preview video with all 5 scene types.
+See [examples/bookstreak/](examples/bookstreak/) for a complete generated video for a reading app.
 
 ## Components
 
-All components accept brand colors via a `brand` prop:
+The primitives library that the AI composes into custom scenes. All components accept brand colors via a `brand` prop:
 
 | Component | Purpose |
 |-----------|---------|
@@ -168,10 +159,6 @@ export const appConfig: AppConfig = {
     height: 1920,
     device: "iphone-15",
   },
-  scenes: [
-    // Ordered array of scene configs
-    // Each has: type, durationInFrames, caption, and type-specific props
-  ],
 };
 ```
 
@@ -198,10 +185,9 @@ Default output is 1080x1920. For App Store submission, set `video.width` to 886.
 
 ## Customization
 
-- **Custom scenes** — Add `.tsx` files to `src/scenes/`, export from index, add a `case` in `AppPreview.tsx`
+- **Custom components** — Build on top of the existing primitives in `src/components/`
 - **Screenshots** — Use `staticFile("screenshot.png")` inside `PhoneFrame`
 - **Audio** — Place `.mp3` in `public/`, set `backgroundMusic` in config
-- **Custom components** — Build on top of the existing primitives in `src/components/`
 - **Category strategies** — The video skill includes strategies for habit tracking, fitness, finance, and more. Add your own in `skills/appshot-videos/strategies/`
 
 ## License

@@ -1,17 +1,26 @@
 ---
 name: appshot-videos
-description: Generate App Store / Google Play preview videos using Remotion. Use when the user wants to create a demo video, app preview, promo video, or marketing video for a mobile app. Builds on appshot-core foundation.
+description: Generate App Store / Google Play preview videos using Remotion. Scans the target app's codebase, proposes custom scenes, and writes bespoke .tsx scene files using shared animation primitives. Mobile apps only (iOS/Android). Use when the user wants to create a demo video, app preview, promo video, or marketing video for a mobile app. Builds on appshot-core foundation.
 user-invocable: true
 argument-hint: "[app name] [--quick]"
 license: MIT
 metadata:
   author: kiennguyen
-  version: 3.0.0
+  version: 4.0.0
 ---
 
 # Appshot Videos — App Store Preview Video Generator
 
-Generate polished, animated App Store preview videos by acting as creative director — not just config generator. Scan the codebase for app context, guide the user through narrative and copy decisions, then produce a ready-to-render Remotion config.
+You are a creative director for App Store preview videos. Your job is to scan the target app's source code, understand what the app does, propose a narrative with custom scenes, and write bespoke scene components that mock the app's actual UI using shared animation primitives.
+
+You do NOT fill in config templates. You write custom `.tsx` scene files from scratch for every project.
+
+## Prerequisites
+
+Read these before starting:
+- [appshot-core SKILL.md](../appshot-core/SKILL.md) — primitives library, config schema, project structure
+- [copy-principles.md](../shared/copy-principles.md) — writing rules for all text
+- [extract-app-context.md](../shared/extract-app-context.md) — how to scan a codebase
 
 ## Project context
 
@@ -21,17 +30,44 @@ Generate polished, animated App Store preview videos by acting as creative direc
 - Store metadata: !`cat fastlane/metadata/en-US/full_description.txt 2>/dev/null || cat fastlane/metadata/en-US/description.txt 2>/dev/null || cat fastlane/metadata/android/en-US/full_description.txt 2>/dev/null`
 - README excerpt: !`head -80 README.md 2>/dev/null`
 
-## What you do
+**CRITICAL RULE: You MUST execute phases in order. Each phase has a STOP gate — you present your output and wait for user confirmation before proceeding to the next phase. Never skip phases. Never combine phases. Never write code until phase 3.**
 
-You are a creative director for App Store preview videos. Your job is to help the user tell a compelling 15-30 second story about their app — not just fill in a config file.
+---
 
-**CRITICAL RULE: You MUST execute phases in order. Each phase has a STOP gate — you present your output and wait for user confirmation before proceeding to the next phase. Never skip phases. Never combine phases. Never generate a config file until phase 4.**
+## Phase 1: Extract & confirm → STOP
 
-### Phase 1: Extract & confirm → STOP
+Scan the target app's codebase thoroughly. This phase has two parts: standard extraction and deep analysis.
+
+### Part A: Standard extraction
 
 Review the project context above. Read [extract-app-context.md](../shared/extract-app-context.md) for detailed scan instructions if context is sparse.
 
-Present your findings in this exact format:
+### Part B: Deep analysis (NEW)
+
+Go beyond identity and colors. Understand what the app actually does.
+
+**Screen inventory.** Scan navigation files to discover all screens:
+- React Native / Expo: read `App.tsx`, any `*Navigator.tsx`, `*Router.tsx`, tab bar configs, `react-navigation` setup
+- Flutter: read `lib/main.dart`, router config, `GoRouter` or `MaterialApp` routes
+- iOS: read storyboard references, `UITabBarController` setup, SwiftUI `NavigationStack`/`TabView`
+- Look for: screen names, tab labels, navigation structure (tabs, stacks, drawers)
+
+**Feature analysis.** For each discovered screen, read the component file to understand:
+- What data it displays
+- What actions the user can take
+- What makes it visually interesting or unique
+
+**Value props / differentiators.** Extract from README, store description, CLAUDE.md, marketing copy, or landing page:
+- What problem does this app solve?
+- How is it different from competitors?
+- What is the emotional promise?
+
+**Core action loop.** Identify the single most frequent user action:
+- What does a user do every time they open the app?
+- How many taps/steps does it take?
+- What feedback do they get after completing it?
+
+### Present findings
 
 ```
 I scanned your project and found:
@@ -43,299 +79,332 @@ I scanned your project and found:
 - **Icon:** [file path]
 - **Category:** [category] based on [keywords/description]
 - **Store description:** [found at path / not found]
-- **Key features:** [bullet list of 3-5 main features extracted from code/docs]
-- **Core action loop:** [what users do most — e.g., "record voice → get transcript"]
+
+**Screen inventory:**
+- [Tab 1]: [ScreenName] — [what it shows]
+- [Tab 2]: [ScreenName] — [what it shows]
+- [Modal/Detail]: [ScreenName] — [what it shows]
+- ...
+
+**Key features:** [bullet list of 3-5 main features extracted from code/docs]
+
+**Core action loop:** [what users do most — e.g., "tap Log → enter page number → save (3 taps, ~5 seconds)"]
+
+**Value props:**
+- [Primary differentiator]
+- [Secondary differentiator]
+- [Emotional promise]
+
+**Pre-filled config:**
+[Show the AppConfig object with app, brand, and video sections filled in]
 
 Does this look right? Anything to correct before I proceed?
 ```
 
-**⛔ STOP. Wait for user confirmation. Do not proceed to phase 2 until the user confirms or corrects.**
+**STOP. Wait for user confirmation. Do not proceed to phase 2 until the user confirms or corrects.**
 
-### Phase 2: Strategy & creative brief → STOP
+---
 
-**Strategy selection (mandatory).** Based on the category identified in phase 1, check if a matching strategy file exists:
+## Phase 2: Creative direction → STOP
 
-- [habit-tracking.md](strategies/habit-tracking.md) — habits, streaks, self-improvement
-- [fitness.md](strategies/fitness.md) — workout, exercise, health tracking
-- [finance.md](strategies/finance.md) — budgeting, expenses, money management
-- [productivity.md](strategies/productivity.md) — tasks, notes, organization
+Based on the extracted context, make all creative decisions. There are no fixed scene types or narrative arcs — you derive the story from what this specific app does.
 
-For unlisted categories, use [_template.md](strategies/_template.md) as a framework and apply the general copy principles.
+### Step 1: Choose a narrative angle
 
-**You MUST read the matching strategy file and present your strategy decision in this format:**
+Pick the angle that best sells THIS app. Common angles (not an exhaustive list):
 
-```
-**Strategy:** Using [strategy file name] because [app matches this category because...]
-**Narrative arc:** [arc name] — [one sentence why this arc fits]
-**Scenes:** [ordered list of scene types, noting any scenes SKIPPED and why]
-```
+- **Persona-driven story:** Follow a user through their day. Best for habit, health, and lifestyle apps.
+- **Transformation / before-after:** Show life without the app, then with it. Best when the problem is visceral.
+- **Speed demo:** Show how fast the core action is. Best when speed is the differentiator.
+- **UI showcase:** Let the polished UI do the talking. Best when the interface IS the product.
+- **Problem-solution:** Name the pain, show the fix. Best for utility and productivity apps.
 
-If the strategy file recommends skipping a scene (e.g., productivity recommends skipping pain-point), you MUST follow that recommendation unless the user overrides it.
+State your angle and why it fits.
 
-**Creative brief.** After presenting the strategy, ask only what the scan couldn't answer:
-- What problem does your app solve? (the frustration)
-- What's the core action loop? (what users do daily)
-- What proof do you have? (metrics, milestones, outcomes)
-- What's the emotional payoff?
+### Step 2: Design the scene breakdown
 
-If the README, store description, or docs already answer these, **propose the answer and confirm** — don't ask open-ended.
+For each scene, describe in plain language:
 
-**⛔ STOP. Wait for user to confirm strategy, arc, and scene selection. Do not proceed to phase 3.**
+| # | Name | Duration | What the viewer sees | Copy overlay | Primitives used |
+|---|------|----------|---------------------|-------------|-----------------|
+| 1 | ... | Xs (N frames) | [Specific description of visuals — what app screen, what mockup elements, what movement] | Caption: "..." | PhoneFrame, FadeIn, ... |
+| 2 | ... | Xs (N frames) | ... | Caption: "..." | ... |
+| ... | | | | | |
 
-### Phase 3: Narrative & copy → STOP
+**Design rules:**
+- Total video: 15-30 seconds (450-900 frames at 30fps). Under 25s is ideal.
+- Each scene: 3-6 seconds (90-180 frames).
+- Every scene has a Caption.
+- Scene content must mock THIS app's actual screens (based on your source code analysis), not generic placeholder UI.
+- Use real screen names, real data shapes, real UI patterns from the codebase.
+- Final scene is always CTA: app icon + tagline + store badge.
 
-Read [copy-principles.md](../shared/copy-principles.md) for writing rules.
+### Step 3: Draft all copy
 
-Draft ALL text for the video — every caption, headline, tagline, pill, counter label, card title, success message, button label. Present everything together so the user can review the full narrative flow.
+Read [copy-principles.md](../shared/copy-principles.md) before writing any text.
 
-**Self-check before presenting — every item must pass:**
-- [ ] Each caption is under 8 words (billboard test)
+Draft ALL text — every caption, headline, tagline, card label, pill, stat, button label. Apply:
+- Billboard test: max 8 words per caption
+- Benefit-first: lead with what the user gets
+- Tagline formula: setup + differentiator (differentiator in brand color)
+- Specificity: include numbers, times, or concrete outcomes
+
+**Self-check before presenting:**
+- [ ] Each caption is under 8 words
 - [ ] Each caption is benefit-first, not feature-first
-- [ ] Speed-demo caption includes a specific number or time
+- [ ] At least one caption includes a specific number or time
 - [ ] CTA tagline follows setup + differentiator formula
 - [ ] Pills are benefits that differentiate, not feature names
-- [ ] No text is copied from the BookStreak example or template defaults
-- [ ] Every piece of copy references actual features/capabilities of THIS app
+- [ ] No text is copied from BookStreak or any other example
+- [ ] Every piece of copy references actual features of THIS app
 - [ ] Captions read as a coherent story top-to-bottom
 
-Present the copy grouped by scene:
+### Present the full plan
 
 ```
-**Scene 1: [type] ([duration]s)**
-- Caption: "[text]"
-- [other props with text: headline, card titles, etc.]
+**Narrative angle:** [angle] — [one sentence why]
 
-**Scene 2: [type] ([duration]s)**
-- Caption: "[text]"
-- [other props with text]
+**Scene breakdown:**
 
-[...all scenes...]
+| # | Name | Duration | Visuals | Caption | Primitives |
+|---|------|----------|---------|---------|------------|
+| 1 | [Name] | Xs | [description] | "[text]" | [list] |
+| 2 | [Name] | Xs | [description] | "[text]" | [list] |
+| ... | | | | | |
+
+**CTA:**
+- Tagline: "[setup]" + highlight: "[differentiator]"
+- Pills: ["Benefit 1", "Benefit 2"]
 
 **Full narrative flow (read top to bottom):**
 1. "[caption 1]"
 2. "[caption 2]"
 3. "[caption 3]"
-4. "[caption 4]"
-
-Does this narrative feel right for [app name]?
-```
-
-**⛔ STOP. Wait for user to approve copy. Do not generate config until copy is approved.**
-
-### Phase 4: Generate config
-
-Only now write `src/app-config.ts` with all creative decisions made in phases 1-3. Set up the project if needed (copy template, install deps).
-
-**Before writing the config, verify:**
-- Arc matches what was approved in phase 2
-- Scene order matches what was approved in phase 2
-- All text matches what was approved in phase 3 (copy verbatim, don't rephrase)
-- Brand colors are from the actual app (phase 1), not template defaults
-- App name, icon, tagline are from the actual app (phase 1)
-
-### Phase 5: Preview & iterate
-
-Run `npm run dev`, tell the user what to watch for:
-- Does the pain-point scene feel dramatic enough? (if applicable)
-- Are captions readable at speed?
-- Does the CTA have enough screen time (2+ seconds)?
-- Does the overall pacing feel rushed or draggy?
-- Do the scenes look like they belong to THIS app, not a generic template?
-
-### Quick mode
-
-If `$ARGUMENTS` contains "quick": compress phases 2-3 into inference. Use the extracted context to make all creative decisions autonomously. **You must still complete phase 1 (extract & confirm) and present the full output of phases 2-3 combined for approval before generating the config.** The difference is you don't ask questions — you make all creative decisions and present them for a single approval.
-
-Present in quick mode:
-
-```
-**Strategy:** [strategy file] — [reason]
-**Arc:** [arc name] — [reason]
-**Scenes:** [ordered list with skipped scenes noted]
-
-[Full copy for all scenes, same format as phase 3]
+...
 
 Approve this direction, or tell me what to change.
 ```
 
-**⛔ STOP. Wait for approval before generating config.**
+**STOP. Wait for user to approve the creative direction and copy. Do not write code until approved.**
 
-## Narrative arcs
+---
 
-Recommend one of these three based on category and app type. Explain your reasoning to the user.
+## Phase 3: Generate code
 
-### Problem-Solution-Proof (default)
+Only after phases 1-2 are approved, write all project files.
 
-**Scenes:** pain-point → feature-showcase → speed-demo → social-proof → call-to-action
+### Files to generate
 
-Best when the problem is visceral. Default for most apps.
+**1. `src/app-config.ts`** — Pre-filled from phase 1 extraction.
 
-Why: Viewer recognizes frustration → sees relief → watches how fast it works → sees proof → gets invited in.
+```typescript
+import type { AppConfig } from "./config";
 
-### Hook-Demo-Proof
-
-**Scenes:** feature-showcase → speed-demo → social-proof → call-to-action
-
-Best when the UI is the selling point and the problem is well-known. Skips pain-point.
-
-Why: The UI makes the first impression. Viewers who know the problem category don't need it explained.
-
-### Transformation
-
-**Scenes:** pain-point → feature-showcase → social-proof → speed-demo → call-to-action
-
-Best for self-improvement, habit, and health apps where identity journey is the story.
-
-Why: Emotional payoff (identity shift, milestones) lands harder before the practical "how fast" demo.
-
-## Timing & pacing
-
-Total video: 22-28 seconds (660-840 frames at 30fps).
-
-| Scene | Duration | Frames | Why |
-|---|---|---|---|
-| pain-point | 3-4s | 90-120 | Land the "ugh" moment, don't linger |
-| feature-showcase | 4-5s | 120-150 | Cards need time to animate and breathe |
-| speed-demo | 4-5s | 120-150 | Full type → save → toast loop |
-| social-proof | 5-6s | 150-180 | Heatmap and timeline draw progressively |
-| screenshot | 4-6s | 120-180 | Pan/zoom needs time to reveal detail |
-| call-to-action | 3-4s | 90-120 | Quick and clean, badge visible 2+ sec |
-
-### typeFrames
-
-Controls when each character appears during typing animation. Each value is a frame number.
-
-Formula from human-readable timing:
-```
-typeFrames = Array.from({length: N}, (_, i) =>
-  Math.round(startSec * fps + (i * typeDurationSec * fps) / N)
-)
+export const appConfig: AppConfig = {
+  app: {
+    name: "...",
+    tagline: "...",
+    icon: "icon.png",
+    platform: "ios",
+  },
+  brand: { /* from phase 1 */ },
+  video: {
+    fps: 30,
+    width: 1080,
+    height: 1920,
+    device: "iphone-15",
+  },
+};
 ```
 
-Example: `"243"` (3 chars), start at 0.6s, type over 0.3s at 30fps → `[18, 22, 26]`
+**2. `src/scenes/S1_[Name].tsx`, `S2_[Name].tsx`, etc.** — Custom scene components.
 
-Always tell the user: "Characters appear at 0.6s, 0.73s, 0.87s" alongside the raw frame numbers.
+Each scene file must:
+- Import and use primitives from `"../components"` (PhoneFrame, AmbientBackground, Caption, FadeIn, etc.)
+- Import `appConfig` from `"../app-config"` for brand colors
+- Use `useCurrentFrame()` and `useVideoConfig()` from Remotion for frame-based animation
+- Use `spring()` and `interpolate()` from Remotion for motion
+- Render a mockup of the target app's actual screen layout (based on source code analysis from phase 1)
+- Use brand colors from `appConfig.brand`
+- Include hardcoded demo data that represents realistic app content
+- Export a named React component: `export const S1_[Name]: React.FC = () => { ... }`
 
-## Scene props reference
+**Example scene structure** (generic — adapt entirely for the target app):
 
-### pain-point
-| Prop | Type | Purpose |
-|---|---|---|
-| `headline` | string | One word/phrase naming the problem |
-| `items` | `{label, filled}[]` | Progress dots — last one empty = the break |
-| `counterStart` | number | Starting value (the "before") |
-| `counterEnd` | number | Ending value (usually 0) |
-| `counterLabel` | string | Unit ("Days", "Hours", "Tasks") |
-| `caption` | string | Triggers recognition |
+```tsx
+import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
+import { AmbientBackground, PhoneFrame, Caption, FadeIn, FloatingCard } from "../components";
+import { appConfig } from "../app-config";
 
-### feature-showcase
-| Prop | Type | Purpose |
-|---|---|---|
-| `cards` | `{title, subtitle?, highlight?, items?[]}[]` | Feature cards (2-3 max) |
-| `caption` | string | Names the solution |
-| `backgroundVariant` | `"light"\|"medium"\|"deep"` | Background intensity |
-| `phoneScale` | number | Frame scale (default 1.8) |
-| `device` | DevicePreset | Override device |
+export const S2_CoreFeature: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const { brand } = appConfig;
 
-### speed-demo
-| Prop | Type | Purpose |
-|---|---|---|
-| `screenTitle` | string | App screen heading |
-| `steps` | `{label, value, typeFrames[]}[]` | Input steps with timing |
-| `successMessage` | string | Toast after save |
-| `buttonLabel` | string | Action button text |
-| `caption` | string | Includes a speed claim |
+  // Mock data representing what the app actually shows
+  const items = [
+    { title: "Morning Run", value: "5.2 km", time: "28:30" },
+    { title: "Evening Walk", value: "2.1 km", time: "35:15" },
+  ];
 
-### social-proof
-| Prop | Type | Purpose |
-|---|---|---|
-| `screenTitle` | string | Screen heading |
-| `statValue` | string | Big stat ("Top 12%") |
-| `statLabel` | string | Context ("of readers") |
-| `showHeatMap` | boolean | Show contribution grid |
-| `timeline` | `{week, label}[]` | Journey milestones (3 recommended) |
-| `caption` | string | Invokes identity |
+  return (
+    <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
+      <AmbientBackground brand={brand} variant="light" />
 
-### screenshot
-| Prop | Type | Purpose |
-|---|---|---|
-| `image` | string | Filename in `public/` — the actual app screenshot |
-| `caption` | string | Describes what the viewer is seeing |
-| `animation` | `"pan-up"\|"pan-down"\|"zoom-in"\|"zoom-out"\|"none"` | How the screenshot animates (default: "pan-up") |
-| `device` | DevicePreset | Override device |
-| `phoneScale` | number | Frame scale (default 1.8) |
+      <div className="relative z-10 flex flex-col items-center">
+        <PhoneFrame device={appConfig.video.device}>
+          {/* Mock the actual app screen layout here */}
+          <div style={{ padding: 20, background: brand.background, height: "100%" }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: brand.textPrimary }}>
+              Today's Activity
+            </div>
+            {items.map((item, i) => (
+              <FadeIn key={i} delay={15 + i * 12} distance={20}>
+                <FloatingCard delay={15 + i * 12} variant="solid">
+                  <div style={{ color: brand.textPrimary, fontWeight: 600 }}>{item.title}</div>
+                  <div style={{ color: brand.primary, fontSize: 28, fontWeight: 700 }}>{item.value}</div>
+                </FloatingCard>
+              </FadeIn>
+            ))}
+          </div>
+        </PhoneFrame>
+      </div>
 
-Use `screenshot` scenes to show the actual app UI. Place real screenshots of your app screens in `public/` and reference them by filename. This makes the video look like YOUR app, not a generic template.
-
-### call-to-action
-| Prop | Type | Purpose |
-|---|---|---|
-| `tagline` | string | CTA text (setup) |
-| `taglineHighlight` | string | Brand-colored line (differentiator) |
-| `pills` | `string[]` | Benefit badges (2-3 max) |
-| `caption` | string | Reduces friction |
-
-App name, icon, platform inherited from `appConfig.app`.
-
-## Device presets
-
-| Preset | Screen | Notch |
-|---|---|---|
-| `iphone-16-pro` | 393x852 | Dynamic Island |
-| `iphone-15` | 375x812 | Dynamic Island |
-| `ipad-pro-13` | 1024x1366 | None |
-| `pixel-9` | 412x915 | Punch hole |
-
-## Components
-
-All brand-aware via `brand` prop:
-
-- **PhoneFrame** — Device with bezel, buttons, notch
-- **AmbientBackground** — Gradient + floating orbs (light/medium/deep/dark)
-- **Caption** — Word-by-word entrance
-- **FadeIn** — Directional fade (up/down/left/right)
-- **SceneWrap** — 12-frame fade transitions
-- **HeatMap** — Contribution grid
-- **AppIcon** — Icon with glow
-- **AppStoreBadge** — iOS / Google Play badges
-
-## Store video requirements
-
-| Platform | Dimensions | Duration | Format |
-|---|---|---|---|
-| iPhone 6.7" | 886x1920 | 15-30s | H.264, MP4/MOV |
-| iPhone 6.1" | 886x1920 | 15-30s | H.264, MP4/MOV |
-| iPad 13" | 1200x1600 | 15-30s | H.264, MP4/MOV |
-
-Default output is 1080x1920. For submission, set `video.width` to 886.
-
-## Project setup
-
-```bash
-npx create-appshot appshot-video
-cd appshot-video
-npm run dev     # Preview at localhost:3000
-npm run build   # Render to out/AppPreview.mp4
+      <Caption text="Track every step without thinking." delay={5} />
+    </div>
+  );
+};
 ```
 
-## Customization
+**3. `src/[AppName]Preview.tsx`** — Orchestrator that sequences all scenes.
 
-- **Custom scenes** — Add `.tsx` in `src/scenes/`, export from index, add to `SceneType` union, add `case` in `AppPreview.tsx`
-- **Screenshots** — Place app screenshots in `public/`, use `screenshot` scene type to display them inside a phone frame with animation
-- **Audio** — `.mp3` in `public/`, set `backgroundMusic` in config
-- **Custom components** — Build on primitives in `src/components/`
+```tsx
+import { Sequence } from "remotion";
+import { SceneWrap } from "./components";
+import { appConfig } from "./app-config";
+import { S1_Hook } from "./scenes/S1_Hook";
+import { S2_CoreFeature } from "./scenes/S2_CoreFeature";
+import { S3_Proof } from "./scenes/S3_Proof";
+import { S4_CTA } from "./scenes/S4_CTA";
+
+const scenes = [
+  { component: S1_Hook, duration: 120 },
+  { component: S2_CoreFeature, duration: 150 },
+  { component: S3_Proof, duration: 150 },
+  { component: S4_CTA, duration: 120 },
+];
+
+export const FooAppPreview: React.FC = () => {
+  let offset = 0;
+  return (
+    <>
+      {scenes.map(({ component: Scene, duration }, i) => {
+        const from = offset;
+        offset += duration;
+        return (
+          <Sequence key={i} from={from} durationInFrames={duration}>
+            <SceneWrap durationInFrames={duration}>
+              <Scene />
+            </SceneWrap>
+          </Sequence>
+        );
+      })}
+    </>
+  );
+};
+```
+
+**4. Update `src/Root.tsx`** — Register the orchestrator as a Remotion composition.
+
+### Code quality rules
+
+- Every scene must be a self-contained `.tsx` file in `src/scenes/`
+- No scene should exceed ~150 lines — split complex animations into helper functions
+- Use Tailwind for layout, inline `style={}` for dynamic/brand-colored properties
+- All motion uses Remotion `spring()` or `interpolate()` — no CSS transitions
+- Demo data must look realistic (real names, plausible numbers, proper formatting)
+- Status bar time should be realistic (e.g., "9:41" for iOS)
+
+### Before writing code, verify
+
+- Scene order matches what was approved in phase 2
+- All text matches what was approved in phase 2 (copy verbatim, do not rephrase)
+- Brand colors are from the actual app (phase 1), not template defaults
+- App name, icon, tagline are from the actual app (phase 1)
+- Each scene mocks the actual app UI discovered in phase 1, not generic placeholders
+
+---
+
+## Phase 4: Preview & iterate
+
+Run `npm run dev` and tell the user what to watch for:
+
+- Are captions readable at playback speed?
+- Does each scene look like it belongs to THIS app (correct colors, correct UI patterns)?
+- Does the CTA have enough screen time (badge visible 2+ seconds)?
+- Does the overall pacing feel rushed or draggy?
+- Is the demo data realistic and representative?
+
+Guide the user through iteration. Each change should target a specific scene file.
+
+---
+
+## Quick mode
+
+If `$ARGUMENTS` contains "quick": compress phases 1-3. Extract context, make all creative decisions autonomously, and present the full plan + generated code in one shot.
+
+**You must still present the output of phases 1-2 for approval before writing files.** The difference is you do not ask questions — you make all decisions and present them for a single confirmation.
+
+Present in quick mode:
+
+```
+**Extraction summary:** [condensed phase 1 findings]
+
+**Narrative angle:** [angle] — [reason]
+
+**Scene breakdown:**
+[Full table from phase 2]
+
+**Full narrative flow:**
+[Numbered captions]
+
+Approve this direction and I'll generate all code, or tell me what to change.
+```
+
+**STOP. Wait for approval before generating code.**
+
+---
+
+## Critical rules
+
+1. **Phase gates are mandatory.** Never skip to code generation. Never combine extraction with creative direction. The user must approve the plan.
+
+2. **No generic content.** Every scene must mock THIS app's actual UI. Read the source code. Use real screen names, real data shapes, real navigation patterns. A scene that could belong to any app is a failed scene.
+
+3. **Copy quality.** Read [copy-principles.md](../shared/copy-principles.md). Apply the billboard test, benefit-first rule, and tagline formula. Every caption must be specific to this app.
+
+4. **Self-check before presenting copy:**
+   - No text copied from any example (BookStreak, Kernio, or others)
+   - Every piece of copy references actual features of THIS app
+   - Captions tell a coherent story when read in sequence
+
+5. **Primitives, not from-scratch.** Use the shared primitives library (see [appshot-core](../appshot-core/SKILL.md)). Build scene layouts on top of PhoneFrame, AmbientBackground, Caption, FadeIn, FloatingCard, etc. Only write raw HTML/Tailwind for app-specific UI mockups inside PhoneFrame.
+
+6. **Timing.** Total video 15-30 seconds. Each scene 3-6 seconds. CTA badge visible 2+ seconds. Caption every scene.
 
 ## Supporting resources
 
-- Annotated example: [bookstreak-annotated.md](examples/bookstreak-annotated.md) — creative reasoning behind every BookStreak choice
-- Raw config: `../../examples/bookstreak/app-config.ts`
+- Annotated example: [bookstreak-annotated.md](examples/bookstreak-annotated.md) — creative reasoning process (study the thinking, not the specific choices)
+- Copy principles: [copy-principles.md](../shared/copy-principles.md)
+- App context extraction: [extract-app-context.md](../shared/extract-app-context.md)
+- Primitives reference: [appshot-core SKILL.md](../appshot-core/SKILL.md)
 
 ## Tips
 
-- Under 30 seconds — attention drops after 20s
-- Pain first (dark) → solution (warm, branded)
-- Core loop in under 5 seconds
-- CTA + badge visible 2+ seconds
+- Under 25 seconds is the sweet spot — attention drops after 20s
+- Contrast matters: dark scenes before light scenes amplify impact
+- Core loop in under 5 seconds of screen time
+- CTA + badge visible 2+ seconds minimum
 - Caption every scene — many watch without sound
 - Use real app icon for recognition
-- Use `screenshot` scenes with actual app screens whenever possible — this is the single most effective way to make the video feel authentic
+- The more your scenes look like the actual app, the more the video converts
