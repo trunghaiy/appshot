@@ -8,6 +8,8 @@ Works with **Claude Code**, **Cursor**, **Windsurf**, **Codex**, and any AI agen
 
 Supports **React Native / Expo**, **Flutter**, **Swift (iOS)**, and **Kotlin/Java (Android)** projects out of the box — or any app if you provide context manually.
 
+**Used in production:** [BookStreak: Reading Tracker](https://apps.apple.com/us/app/bookstreak-reading-tracker/id6767014813) — App Store preview videos and screenshots generated entirely with Appshot.
+
 <!-- TODO: Add GIF or screenshot of example output here -->
 
 ## How It Works
@@ -107,9 +109,11 @@ npm run build                     # Both stores (if configured)
 # npm run build:play-store        # Play Store only
 ```
 
-## Example
+## Real-World Example: BookStreak
 
-See [examples/bookstreak/](examples/bookstreak/) for a complete generated video for a reading app.
+[BookStreak](https://apps.apple.com/us/app/bookstreak-reading-tracker/id6767014813) is a reading habit tracker on the App Store. Its preview videos and store screenshots were generated entirely with Appshot — no CapCut, no Canva, no video editing.
+
+See [examples/bookstreak/](examples/bookstreak/) for the generated config and scene files.
 
 ## Components
 
