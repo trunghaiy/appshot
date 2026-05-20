@@ -1,10 +1,10 @@
 ---
 name: appshot-core
-description: Foundation skill for Appshot. Defines the Remotion project architecture, primitives library, config schema, device presets, and store requirements. Referenced by appshot-videos and appshot-images skills.
+description: Foundation skill for Appshot. Defines the Remotion project architecture, primitives library, config schema, device presets, and store requirements. Owns the shared extraction phase used by appshot-videos and appshot-images.
 license: MIT
 metadata:
   author: kiennguyen
-  version: 2.0.0
+  version: 3.0.0
 ---
 
 # Appshot Core — Foundation
@@ -17,6 +17,229 @@ Reference skill for all Appshot skills. Read this before executing `appshot-vide
 - Config defines app metadata and brand only — scenes are custom `.tsx` files, not config entries
 - Each project has an orchestrator component (e.g., `FooPreview.tsx`) that sequences custom scenes via Remotion `<Sequence>` + `<SceneWrap>`
 - All primitives are brand-aware via a `brand` prop derived from the config's `BrandColors`
+
+## Project Context (auto-injected)
+
+- Package manifest: !`cat package.json 2>/dev/null || cat pubspec.yaml 2>/dev/null || cat app.json 2>/dev/null`
+- App colors: !`find . -maxdepth 4 \( -name 'colors.xml' -o -name 'Colors.swift' -o -name 'colors.ts' -o -name 'theme.ts' -o -name 'Color.kt' -o -name 'tailwind.config.js' -o -name 'tailwind.config.ts' \) 2>/dev/null | head -5 | xargs head -50 2>/dev/null`
+- App icon: !`find . -maxdepth 5 \( -name 'ic_launcher.png' -o -name 'icon.png' \) -type f 2>/dev/null | head -3`
+- Store metadata: !`cat fastlane/metadata/en-US/full_description.txt 2>/dev/null || cat fastlane/metadata/en-US/description.txt 2>/dev/null || cat fastlane/metadata/android/en-US/full_description.txt 2>/dev/null`
+- README excerpt: !`head -80 README.md 2>/dev/null`
+
+## Extraction & Context Caching
+
+Both `appshot-videos` and `appshot-images` use this extraction process. Results are cached to `.appshot-context.json` so extraction only runs once per project.
+
+### Check for cached context
+
+Before scanning, check if `.appshot-context.json` exists in the project root. If it does:
+1. Load and present a summary to the user
+2. Ask: "I found a previous extraction. Confirm this is still correct, or re-scan?"
+3. If confirmed, skip extraction and proceed to the calling skill's next phase
+4. If re-scan requested, run extraction below and overwrite the file
+
+### Extraction steps
+
+#### Step 1: Detect framework
+
+Check for marker files in this order. Stop at the first match.
+
+| Framework | Marker files |
+|---|---|
+| Expo / React Native | `app.json`, `app.config.ts`, `app.config.js` |
+| Flutter | `pubspec.yaml` |
+| iOS (Swift) | `*.xcodeproj/`, `*.xcworkspace/`, `Package.swift` |
+| Android (Kotlin/Java) | `app/src/main/AndroidManifest.xml`, `build.gradle.kts`, `build.gradle` |
+
+Use `ls` or `find . -maxdepth 3` to check. If none match, note that no framework was detected and move on — the user may describe their app verbally.
+
+#### Step 2: Extract app identity
+
+**Expo / React Native:**
+- **Name**: `app.json` -> `expo.name` or `name`
+- **Description/tagline**: `app.json` -> `expo.description` or `description`
+- **Bundle ID**: `app.json` -> `expo.ios.bundleIdentifier` or `expo.android.package`
+- **Also check**: `package.json` -> `name`, `description`
+
+**Flutter:**
+- **Name**: `pubspec.yaml` -> `name:`
+- **Description**: `pubspec.yaml` -> `description:`
+- **Also check**: `android/app/src/main/AndroidManifest.xml` -> `android:label`, `ios/Runner/Info.plist` -> `CFBundleDisplayName`
+
+**iOS (Swift):**
+- **Name**: `Info.plist` -> `CFBundleDisplayName` or `CFBundleName`
+- **Bundle ID**: `Info.plist` -> `CFBundleIdentifier`
+- **Also check**: `project.pbxproj` for product name
+
+**Android (Kotlin/Java):**
+- **Name**: `app/src/main/res/values/strings.xml` -> `<string name="app_name">`
+- **Package**: `AndroidManifest.xml` -> `package` attribute
+- **Also check**: `build.gradle.kts` or `build.gradle` -> `applicationId`
+
+#### Step 3: Extract brand colors
+
+Search for color definitions. Read the first match in each framework.
+
+**Expo / React Native** — search paths (in order):
+1. `src/theme.ts` or `src/theme.js`
+2. `src/colors.ts` or `src/constants/colors.ts`
+3. `theme/colors.ts` or `theme/index.ts`
+4. `tailwind.config.js` or `tailwind.config.ts` -> `theme.extend.colors`
+5. `app.json` -> `expo.primaryColor`, `expo.backgroundColor`
+
+Look for: named color exports (`primary`, `secondary`, `background`, `surface`, `accent`, `success`, `danger/error`), hex strings, `rgb()` values.
+
+**Flutter** — search paths:
+1. `lib/theme.dart` or `lib/theme/app_theme.dart`
+2. `lib/theme/colors.dart` or `lib/constants/colors.dart`
+3. `lib/main.dart` -> `ThemeData()`
+
+Look for: `Color(0xFF...)` constants, `primaryColor`, `accentColor`, `colorScheme` definitions.
+
+**iOS (Swift)** — search paths:
+1. `*.xcassets/Colors/**/*.colorset/Contents.json` — parse `components` for RGB
+2. `**/Theme.swift` or `**/Colors.swift` or `**/ColorScheme.swift`
+
+Look for: static `Color` properties, `UIColor` hex initializers, asset catalog color definitions.
+
+**Android** — search paths:
+1. `app/src/main/res/values/colors.xml` — `<color name="primary">#RRGGBB</color>`
+2. `app/src/main/res/values/themes.xml` — `<item name="colorPrimary">`
+3. `**/ui/theme/Color.kt` — Jetpack Compose `Color()` definitions
+
+#### Step 4: Find app icon
+
+| Framework | Where to look |
+|---|---|
+| Expo/RN | `app.json` -> `expo.icon` field (usually `./assets/icon.png`) |
+| Flutter | `android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` or `ios/Runner/Assets.xcassets/AppIcon.appiconset/` |
+| iOS | `*.xcassets/AppIcon.appiconset/` -> find the largest `.png` |
+| Android | `app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` |
+
+#### Step 5: Extract features & store metadata
+
+These sources exist across all frameworks:
+
+| Source | Path | What to extract |
+|---|---|---|
+| Fastlane (iOS) | `fastlane/metadata/en-US/description.txt` or `full_description.txt` | Full store description |
+| Fastlane (iOS) | `fastlane/metadata/en-US/subtitle.txt` | App Store subtitle |
+| Fastlane (iOS) | `fastlane/metadata/en-US/keywords.txt` | Search keywords |
+| Fastlane (Android) | `fastlane/metadata/android/en-US/full_description.txt` | Play Store description |
+| Fastlane (Android) | `fastlane/metadata/android/en-US/short_description.txt` | Short description |
+| README | `README.md` | First 80 lines — app description, feature bullets |
+| CLAUDE.md | `CLAUDE.md` | Project description if present |
+
+#### Step 6: Infer app category
+
+Based on extracted keywords, description, and feature names, infer the app category:
+
+| Category | Signals |
+|---|---|
+| Habit tracking | streak, habit, daily, routine, consistency, track days |
+| Fitness | workout, exercise, gym, reps, sets, calories, steps |
+| Finance | budget, expense, money, savings, transactions, spending |
+| Productivity | task, todo, note, project, organize, calendar |
+| Social | chat, message, friend, follow, post, share |
+| Education | learn, quiz, study, course, flashcard, practice |
+| Health | meditation, sleep, mood, journal, wellness, mindful |
+| Travel | trip, itinerary, booking, destination, explore |
+| Food | recipe, meal, restaurant, cooking, ingredients |
+
+If no clear match, note "uncategorized" — the user will clarify.
+
+### Deep analysis
+
+Go beyond identity and colors. Understand what the app actually does.
+
+**Screen inventory.** Scan navigation files to discover all screens:
+- React Native / Expo: read `App.tsx`, any `*Navigator.tsx`, `*Router.tsx`, tab bar configs, `react-navigation` setup
+- Flutter: read `lib/main.dart`, router config, `GoRouter` or `MaterialApp` routes
+- iOS: read storyboard references, `UITabBarController` setup, SwiftUI `NavigationStack`/`TabView`
+- Look for: screen names, tab labels, navigation structure (tabs, stacks, drawers)
+
+**Feature analysis.** For each discovered screen, read the component file to understand:
+- What data it displays
+- What actions the user can take
+- What makes it visually interesting or unique
+
+**Value props / differentiators.** Extract from README, store description, CLAUDE.md, marketing copy, or landing page:
+- What problem does this app solve?
+- How is it different from competitors?
+- What is the emotional promise?
+
+**Core action loop.** Identify the single most frequent user action:
+- What does a user do every time they open the app?
+- How many taps/steps does it take?
+- What feedback do they get after completing it?
+
+**Theme detection.** Check if the app supports light/dark modes:
+- Look for theme toggle, `useColorScheme`, `Appearance`, `ThemeProvider`, `darkMode` in config
+- Note which is the default or primary theme
+- Note if the app is dark-theme-only (some brands like Spotify, cinema apps)
+
+### Save context
+
+After extraction and user confirmation, save results to `.appshot-context.json` in the project root:
+
+```json
+{
+  "version": 1,
+  "extractedAt": "ISO timestamp",
+  "app": { "name": "", "tagline": "", "icon": "", "platform": "", "framework": "" },
+  "brand": { "primary": "", "primaryLight": "", "background": "", "surface": "", "textPrimary": "", "textSecondary": "", "success": "", "danger": "", "accent": "" },
+  "category": "string",
+  "theme": "light | dark | both",
+  "themeDefault": "light | dark",
+  "screens": [{ "name": "", "tab": "", "description": "" }],
+  "features": ["string"],
+  "coreAction": "string",
+  "valueProps": ["string"],
+  "storeDescription": "string or null",
+  "sources": { "name": "source file", "colors": "source file" }
+}
+```
+
+### Present findings
+
+Summarize what you found concisely. Always cite the source file so the user can verify.
+
+```
+I scanned your project and found:
+
+- **App:** [name] (from [source file])
+- **Tagline:** [text] (from [source file])
+- **Platform:** [iOS/Android/both] (from [evidence])
+- **Colors:** primary [hex], background [hex], surface [hex], ... (from [source file])
+- **Icon:** [file path]
+- **Category:** [category] based on [keywords/description]
+- **Store description:** [found at path / not found]
+- **Theme:** [light only / dark only / both — default is X]
+
+**Screen inventory:**
+- [Tab 1]: [ScreenName] — [what it shows]
+- [Tab 2]: [ScreenName] — [what it shows]
+- [Modal/Detail]: [ScreenName] — [what it shows]
+- ...
+
+**Key features:** [bullet list of 3-5 main features extracted from code/docs]
+
+**Core action loop:** [what users do most — e.g., "tap Log -> enter page number -> save (3 taps, ~5 seconds)"]
+
+**Value props:**
+- [Primary differentiator]
+- [Secondary differentiator]
+- [Emotional promise]
+
+**Pre-filled config:**
+[Show the AppConfig object with app, brand, and video sections filled in]
+
+Does this look right? Anything to correct before I proceed?
+```
+
+If fields are missing, note them: "I couldn't find brand colors — do you have a theme file, or should we pick colors together?"
+
+Only after confirmation, proceed to the calling skill's next phase — and skip any questions already answered by the scan.
 
 ## Project Structure
 
@@ -63,7 +286,7 @@ interface AppConfig {
   brand: BrandColors;
   video: {
     fps: number;         // 30
-    width: number;       // 1080
+    width: number;       // 886
     height: number;      // 1920
     device: DevicePreset;
     backgroundMusic?: string;       // Filename in public/
@@ -317,4 +540,4 @@ export const AppPreview: React.FC = () => {
 ## Shared Resources
 
 - Copy principles: [copy-principles.md](../shared/copy-principles.md)
-- App context extraction: [extract-app-context.md](../shared/extract-app-context.md)
+- Extraction logic is built into this skill (see Extraction & Context Caching above)
