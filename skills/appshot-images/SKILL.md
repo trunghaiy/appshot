@@ -17,27 +17,69 @@ You are a creative director for App Store screenshots. Your job is to present th
 
 Read [appshot-core SKILL.md](../appshot-core/SKILL.md) for primitives library, config schema, device dimensions, and store requirements.
 
+## CRITICAL: Phase gates
+
+You MUST complete phases in strict order. NEVER skip ahead. Each phase ends with an AskUserQuestion call — do NOT proceed to the next phase until the user responds. Do NOT combine multiple phases into one response.
+
 ## Phases
 
-### Phase 1: Extract & confirm → STOP
+### Phase 1: Extract & confirm
 
 Run extraction from [appshot-core](../appshot-core/SKILL.md). If `.appshot-context.json` exists from a previous run (e.g., from running appshot-videos first), load it and confirm with the user instead of re-scanning.
 
-After extraction is confirmed, proceed to Phase 2.
+After presenting the extraction summary, you MUST call AskUserQuestion:
 
-**STOP. Wait for user confirmation.**
+```
+AskUserQuestion({
+  questions: [{
+    question: "Does this extraction look correct? Any details to adjust?",
+    header: "Extraction",
+    options: [
+      { label: "Looks good", description: "Proceed to screenshot strategy" },
+      { label: "Needs changes", description: "I'll tell you what to adjust" }
+    ],
+    multiSelect: false
+  }]
+})
+```
 
-### Phase 2: Screenshot strategy → STOP
+STOP HERE. Do NOT proceed to Phase 2 until the user responds.
 
-Use AskUserQuestion to let the user choose:
-- How many screenshots (4, 6, 8, or custom)
-- Which features to highlight from the extracted feature list
-- Layout style (device centered, device offset left, device offset right)
+### Phase 2: Screenshot strategy
 
-Then decide ordering based on these principles:
+You MUST call AskUserQuestion with these choices:
 
-- **Screenshot 1 = hero shot.** Core value proposition. Most viewed. Often the only one seen. Pair with the strongest headline and the most impressive app screen.
-- **Screenshots 2-4 = key features.** In priority order — what users do most, what differentiates from competitors, what solves the biggest pain.
+```
+AskUserQuestion({
+  questions: [
+    {
+      question: "How many screenshots do you want?",
+      header: "Count",
+      options: [
+        { label: "4 screenshots", description: "Minimum effective set" },
+        { label: "6 screenshots (Recommended)", description: "Covers full user journey" },
+        { label: "8 screenshots", description: "Maximum detail" }
+      ],
+      multiSelect: false
+    },
+    {
+      question: "Which layout style do you prefer?",
+      header: "Layout",
+      options: [
+        { label: "Device centered (Recommended)", description: "Phone frame centered with text above/below" },
+        { label: "Device offset left", description: "Phone on left, text on right" },
+        { label: "Device offset right", description: "Phone on right, text on left" }
+      ],
+      multiSelect: false
+    }
+  ]
+})
+```
+
+After the user responds, decide ordering based on these principles:
+
+- **Screenshot 1 = hero shot.** Core value proposition. Most viewed. Often the only one seen.
+- **Screenshots 2-4 = key features.** Priority order — most used, most differentiating, biggest pain solved.
 - **Screenshot 5 = social proof or stats.** Concrete evidence the app delivers.
 - **Last screenshot = CTA or differentiator.** Final impression.
 
@@ -47,11 +89,26 @@ Then decide ordering based on these principles:
 - Device screens should show different states of the app. Never repeat the same screen.
 - The set should cover the full user journey: discovery, core action, result/payoff.
 
-Present the plan for approval.
+Present the ordering plan, then you MUST call AskUserQuestion:
 
-**STOP. Wait for user approval.**
+```
+AskUserQuestion({
+  questions: [{
+    question: "Does this screenshot plan look good?",
+    header: "Strategy",
+    options: [
+      { label: "Approved", description: "Proceed to copy and creative" },
+      { label: "Reorder", description: "I want to change the screenshot order" },
+      { label: "Change features", description: "I want different features highlighted" }
+    ],
+    multiSelect: false
+  }]
+})
+```
 
-### Phase 3: Per-screenshot creative → STOP
+STOP HERE. Do NOT proceed to Phase 3 until the user approves.
+
+### Phase 3: Per-screenshot creative
 
 For each screenshot, define:
 - Hero feature (what the device screen shows)
@@ -76,21 +133,87 @@ Read [copy-principles.md](../shared/copy-principles.md) before drafting any text
 - Generic claims ("Easy to use") — waste the slot
 - Placeholder text — always draft real copy
 
-**STOP. Wait for user to approve copy.**
+After presenting all copy, you MUST call AskUserQuestion:
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "How does the copy look?",
+    header: "Copy",
+    options: [
+      { label: "Approved", description: "Proceed to generation" },
+      { label: "Revise headlines", description: "I want to adjust some headlines" },
+      { label: "Revise subtitles", description: "I want to adjust some subtitles" },
+      { label: "Start over", description: "Redo the copy from scratch" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+STOP HERE. Do NOT proceed to Phase 4 until the user approves the copy.
 
 ### Phase 4: Generate outputs
 
-Ask the user which format they prefer using AskUserQuestion:
+You MUST call AskUserQuestion to choose format AND target platform:
 
-**Remotion compositions** (default) — React components rendered with `npx remotion still`:
+```
+AskUserQuestion({
+  questions: [
+    {
+      question: "Which output format do you prefer?",
+      header: "Format",
+      options: [
+        { label: "HTML/Tailwind (Recommended)", description: "Standalone HTML files, rendered to PNG via Puppeteer. No Remotion setup needed — faster to iterate." },
+        { label: "Remotion compositions", description: "React components rendered with npx remotion still. Reuses existing appshot-video project." },
+        { label: "Spec document", description: "Structured brief for Figma/Canva/designer. No code output." }
+      ],
+      multiSelect: false
+    },
+    {
+      question: "Which store are these screenshots for?",
+      header: "Platform",
+      options: [
+        { label: "iOS App Store", description: "iPhone 6.9\": 1320x2868 (required). 6.7\": 1290x2796, 6.5\": 1242x2688 (optional)." },
+        { label: "Google Play", description: "Phone: 1080x1920 (recommended). Tablet 7\": 1200x1920, 10\": 1600x2560." },
+        { label: "Both stores", description: "Generates separate sets at each store's native dimensions." }
+      ],
+      multiSelect: false
+    }
+  ]
+})
+```
+
+**Screenshot dimensions — use EXACT values or the store will reject uploads:**
+
+iOS App Store:
+| Device | Dimensions (portrait) | Required |
+|--------|----------------------|----------|
+| iPhone 6.9" | 1320x2868 | Yes (mandatory primary) |
+| iPhone 6.7" | 1290x2796 | Optional (Apple scales from 6.9") |
+| iPhone 6.5" | 1242x2688 | Optional (legacy) |
+| iPad 13" | 2064x2752 | Required if app supports iPad |
+
+Google Play:
+| Device | Dimensions (portrait) | Notes |
+|--------|----------------------|-------|
+| Phone | 1080x1920 | Recommended standard |
+| 7" Tablet | 1200x1920 | If app targets 7" tablets |
+| 10" Tablet | 1600x2560 | If app targets 10" tablets |
+
+Off-by-one pixel causes App Store rejection. When the user picks "iOS App Store", default to **1320x2868** (iPhone 6.9"). When the user picks "Google Play", default to **1080x1920**.
+
+**Remotion compositions** — rendered with `npx remotion still`:
 ```bash
 npx remotion still CompositionId --frame 0 --image-format png --output out/screenshot-1.png
 ```
-Each screenshot is a separate composition using the same primitives as the video skill. Set `width` and `height` to match target device (see appshot-core for dimensions).
 
-**HTML/Tailwind** — Standalone HTML files, one per screenshot:
+**HTML/Tailwind** — rendered with Puppeteer or Playwright:
 ```bash
-npx playwright screenshot screenshot-1.html screenshot-1.png --viewport-size 1290,2796
+# iOS App Store (iPhone 6.9")
+npx playwright screenshot screenshot-1.html screenshot-1.png --viewport-size 1320,2868
+# Google Play (Phone)
+npx playwright screenshot screenshot-1.html screenshot-1.png --viewport-size 1080,1920
 ```
 
 **Spec document** — Structured brief for Figma, Canva, or a designer. Numbered list with all creative decisions explicit.
@@ -107,7 +230,7 @@ Walk through the set:
 
 ### Quick mode
 
-If `$ARGUMENTS` contains "quick": compress phases 2-3 into inference. Make all creative decisions autonomously. Present the complete spec for approval, then generate.
+If `$ARGUMENTS` contains "quick": compress phases 2-3 into inference. Make all creative decisions autonomously. Present the complete spec for approval, then generate. Still ask for platform/format in Phase 4.
 
 ## Layout principles
 

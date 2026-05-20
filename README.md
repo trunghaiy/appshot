@@ -177,14 +177,22 @@ export const appConfig: AppConfig = {
 
 Default output is 886×1920. This canvas works for both App Store (iPhone 6.7″ native) and Google Play.
 
-### Screenshots
+### Screenshots — iOS App Store
 
-| Platform | Dimensions | Required |
-|----------|-----------|----------|
-| iPhone 6.7" | 1290x2796 | Yes |
-| iPhone 6.5" | 1242x2688 | Optional |
-| iPad 13" | 2064x2752 | Optional |
-| Android | 1080x1920 (min) | Recommended |
+| Device | Dimensions (portrait) | Required |
+|--------|----------------------|----------|
+| iPhone 6.9" | 1320x2868 | Yes (mandatory primary) |
+| iPhone 6.7" | 1290x2796 | Optional |
+| iPhone 6.5" | 1242x2688 | Optional (legacy) |
+| iPad 13" | 2064x2752 | Required if app supports iPad |
+
+### Screenshots — Google Play
+
+| Device | Dimensions (portrait) | Notes |
+|--------|----------------------|-------|
+| Phone | 1080x1920 | Recommended standard |
+| 7" Tablet | 1200x1920 | If app targets 7" tablets |
+| 10" Tablet | 1600x2560 | If app targets 10" tablets |
 
 ## Customization
 

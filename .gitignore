@@ -7,3 +7,4 @@ dist/
 *.mov
 template/node_modules/
 template/out/
+.claude/skills/

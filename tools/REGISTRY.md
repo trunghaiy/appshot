@@ -42,19 +42,20 @@ These are the 4 built-in device presets defined in `template/src/config.ts`:
 
 ### iOS App Store — Screenshots
 
-| Device | Dimensions | Required |
-|--------|-----------|----------|
-| iPhone 6.7" | 1290x2796 | Yes |
-| iPhone 6.5" | 1242x2688 | Optional |
-| iPad 13" | 2064x2752 | Optional |
+| Device | Dimensions (portrait) | Required |
+|--------|----------------------|----------|
+| iPhone 6.9" | 1320x2868 | Yes (mandatory primary) |
+| iPhone 6.7" | 1290x2796 | Optional |
+| iPhone 6.5" | 1242x2688 | Optional (legacy) |
+| iPad 13" | 2064x2752 | Required if app supports iPad |
 
 ### Google Play — Screenshots
 
-| Constraint | Value |
-|-----------|-------|
-| Min | 1080x1920 |
-| Max | 3840x2160 |
-| Recommended | 1080x1920 |
+| Device | Dimensions (portrait) | Notes |
+|--------|----------------------|-------|
+| Phone | 1080x1920 | Recommended standard |
+| 7" Tablet | 1200x1920 | If app targets 7" tablets |
+| 10" Tablet | 1600x2560 | If app targets 10" tablets |
 
 ## Dependencies
 

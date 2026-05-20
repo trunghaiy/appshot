@@ -494,12 +494,20 @@ Default output is 886×1920. This canvas works for both App Store (iPhone 6.7″
 
 ### Screenshots
 
-| Platform | Dimensions | Required |
-|----------|-----------|----------|
-| iPhone 6.7" | 1290x2796 | Yes |
-| iPhone 6.5" | 1242x2688 | Optional |
-| iPad 13" | 2064x2752 | Optional |
-| Android | 1080x1920 (min) | Recommended |
+iOS App Store:
+| Device | Dimensions (portrait) | Required |
+|--------|----------------------|----------|
+| iPhone 6.9" | 1320x2868 | Yes (mandatory primary) |
+| iPhone 6.7" | 1290x2796 | Optional (Apple scales from 6.9") |
+| iPhone 6.5" | 1242x2688 | Optional (legacy) |
+| iPad 13" | 2064x2752 | Required if app supports iPad |
+
+Google Play:
+| Device | Dimensions (portrait) | Notes |
+|--------|----------------------|-------|
+| Phone | 1080x1920 | Recommended standard |
+| 7" Tablet | 1200x1920 | If app targets 7" tablets |
+| 10" Tablet | 1600x2560 | If app targets 10" tablets |
 
 ## Project Setup
 
