@@ -10,7 +10,19 @@ Supports **React Native / Expo**, **Flutter**, **Swift (iOS)**, and **Kotlin/Jav
 
 **Used in production:** [BookStreak: Reading Tracker](https://apps.apple.com/us/app/bookstreak-reading-tracker/id6767014813) — App Store preview videos and screenshots generated entirely with Appshot.
 
-<!-- TODO: Add GIF or screenshot of example output here -->
+<p align="center">
+  <img src="examples/bookstreak/app-preview.gif" alt="BookStreak App Store preview video generated with Appshot" width="240" />
+</p>
+
+## Real-World Example: BookStreak
+
+[BookStreak](https://apps.apple.com/us/app/bookstreak-reading-tracker/id6767014813) is a reading habit tracker on the App Store. Its preview videos and store screenshots were generated entirely with Appshot — no CapCut, no Canva, no video editing.
+
+<p align="center">
+  <img src="examples/bookstreak/before-after.png" alt="The Old Way vs The Appshot Way" width="720" />
+</p>
+
+See [examples/bookstreak/](examples/bookstreak/) for the generated config and scene files.
 
 ## How It Works
 
@@ -108,12 +120,6 @@ npm run build                     # Both stores (if configured)
 # npm run build:app-store         # App Store only
 # npm run build:play-store        # Play Store only
 ```
-
-## Real-World Example: BookStreak
-
-[BookStreak](https://apps.apple.com/us/app/bookstreak-reading-tracker/id6767014813) is a reading habit tracker on the App Store. Its preview videos and store screenshots were generated entirely with Appshot — no CapCut, no Canva, no video editing.
-
-See [examples/bookstreak/](examples/bookstreak/) for the generated config and scene files.
 
 ## Components
 

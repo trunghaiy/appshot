@@ -5,6 +5,9 @@ dist/
 *.mp4
 *.gif
 *.mov
+!examples/**/*.mp4
+!examples/**/*.gif
 template/node_modules/
 template/out/
 .claude/skills/
+.ops/
