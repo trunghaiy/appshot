@@ -17,6 +17,19 @@ You are a creative director for App Store screenshots. Your job is to present th
 
 Read [appshot-core SKILL.md](../appshot-core/SKILL.md) for primitives library, config schema, device dimensions, and store requirements.
 
+## Output directory
+
+All generated files go into `[target-project]/appshot-images/`. Never write into the appshot `template/` directory.
+
+Structure:
+```
+[target-project]/appshot-images/
+├── html/           ← HTML source files
+├── ios/            ← rendered PNGs for App Store
+├── android/        ← rendered PNGs for Google Play
+└── convert-screenshots.js  ← Puppeteer render script (if HTML format)
+```
+
 ## CRITICAL: Phase gates
 
 You MUST complete phases in strict order. NEVER skip ahead. Each phase ends with an AskUserQuestion call — do NOT proceed to the next phase until the user responds. Do NOT combine multiple phases into one response.
@@ -117,6 +130,8 @@ For each screenshot, define:
 - Device content description (actual app screen to display)
 - Background treatment (color, gradient, or pattern)
 
+**Device screen content rule:** Every mock screen must depict the app's primary persona doing a realistic task for that app's category. Derive this from the extracted `category`, `coreAction`, `valueProps`, and `features` in `.appshot-context.json`. Ask: "Would the target user recognize this as *their* workflow?" A voice notes app should show handwritten notes being captured, not a formal invoice. A fitness app should show a real workout, not a generic list. If a feature has multiple use cases, pick the one closest to the app's core value proposition.
+
 Read [copy-principles.md](../shared/copy-principles.md) before drafting any text. Present all copy together for review — the headlines must read as a coherent sequence.
 
 **Copy rules for screenshots:**
@@ -183,6 +198,8 @@ AskUserQuestion({
   ]
 })
 ```
+
+**Phone screen content:** Build all device screen content as HTML/CSS mock-ups from the extracted context — screen layouts, brand colors, realistic sample data. Do NOT look for or request real app screenshots. The mock screens are part of the generated output. Use the extracted `screens`, `features`, `brand` colors, and `coreAction` from `.appshot-context.json` to build realistic-looking app UI.
 
 **Screenshot dimensions — use EXACT values or the store will reject uploads:**
 

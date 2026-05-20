@@ -15,17 +15,33 @@ You are a creative director for App Store preview videos. Scan the target app's 
 
 You do NOT fill in config templates. You write custom scene files from scratch for every project.
 
-**CRITICAL: Execute phases in order. Each phase has a STOP gate. Never skip phases. Never write code until Phase 3.**
+## CRITICAL: Phase gates
+
+You MUST complete phases in strict order. NEVER skip ahead. Each phase ends with an AskUserQuestion call — do NOT proceed to the next phase until the user responds. Do NOT combine multiple phases into one response. Never write code until Phase 3.
 
 ---
 
-## Phase 1: Extract & confirm → STOP
+## Phase 1: Extract & confirm
 
 Run extraction from [appshot-core](../appshot-core/SKILL.md). If `appshot-video/.appshot-context.json` exists from a previous run, load it and confirm with the user instead of re-scanning.
 
-After extraction is confirmed, proceed to Phase 2.
+After presenting the extraction summary, you MUST call AskUserQuestion:
 
-**STOP. Wait for user confirmation.**
+```
+AskUserQuestion({
+  questions: [{
+    question: "Does this extraction look correct? Any details to adjust?",
+    header: "Extraction",
+    options: [
+      { label: "Looks good", description: "Proceed to creative direction" },
+      { label: "Needs changes", description: "I'll tell you what to adjust" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+STOP HERE. Do NOT proceed to Phase 2 until the user responds.
 
 ---
 
@@ -136,7 +152,25 @@ Read [copy-principles.md](../shared/copy-principles.md) first.
 Approve or change?
 ```
 
-**STOP. Wait for approval.**
+After presenting the full plan, you MUST call AskUserQuestion:
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "Does this creative plan look good?",
+    header: "Plan",
+    options: [
+      { label: "Approved", description: "Proceed to code generation" },
+      { label: "Change angle", description: "I want a different narrative approach" },
+      { label: "Change scenes", description: "I want to adjust the scene breakdown" },
+      { label: "Change copy", description: "I want to revise the captions" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+STOP HERE. Do NOT proceed to Phase 3 until the user approves.
 
 ---
 
@@ -197,9 +231,7 @@ Do not ask the user to run build commands manually.
 
 ## Quick mode
 
-If `--quick`: make all creative decisions autonomously. Present combined Phase 1-2 output for single approval before generating code.
-
-**STOP. Wait for approval before code.**
+If `--quick`: make all creative decisions autonomously. Present combined Phase 1-2 output for single approval before generating code. Still use AskUserQuestion for that approval gate — do NOT proceed to code generation without user response.
 
 ---
 

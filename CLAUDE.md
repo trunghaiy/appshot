@@ -16,7 +16,6 @@ All video output is **886×1920px** (App Store native for iPhone 6.7"). Every si
 - `skills/appshot-videos/` — video creative director + `references/code-guide.md`
 - `skills/appshot-images/` — screenshot creative director
 - `.claude/skills/` — auto-populated by `npx skills add`, do NOT edit directly
-- Generated video projects go into `[target-project]/appshot-video/`, never into `template/`
 
 ## Build
 
