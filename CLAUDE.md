@@ -12,9 +12,10 @@ All video output is **886×1920px** (App Store native for iPhone 6.7"). Every si
 ## Where things live
 
 - `template/src/components/` — 11 animation primitives (the product)
-- `.claude/skills/appshot-core/` — extraction, config schema, primitives catalog
-- `.claude/skills/appshot-videos/` — video creative director + `references/code-guide.md`
-- `.claude/skills/appshot-images/` — screenshot creative director
+- `skills/appshot-core/` — extraction, config schema, primitives catalog
+- `skills/appshot-videos/` — video creative director + `references/code-guide.md`
+- `skills/appshot-images/` — screenshot creative director
+- `.claude/skills/` — auto-populated by `npx skills add`, do NOT edit directly
 - Generated video projects go into `[target-project]/appshot-video/`, never into `template/`
 
 ## Build

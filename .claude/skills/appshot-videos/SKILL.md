@@ -45,7 +45,17 @@ Pick the angle that best sells THIS app. Use AskUserQuestion with options:
 
 Use AskUserQuestion: light or dark theme. Default recommendation: light (higher visibility in App Store). Dark-only apps default to dark with high contrast.
 
-### Step 3: Background music
+### Step 3: Target stores
+
+If the app's platform is `"both"` (has both iOS and Android identifiers), recommend generating for both App Store and Play Store. Use AskUserQuestion:
+
+- **Both App Store + Play Store (Recommended)** — Same scenes, only the device frame (iPhone vs Pixel) and CTA badge differ. One prompt, two outputs.
+- **App Store only** — iPhone device frame, iOS badge.
+- **Play Store only** — Pixel device frame, Android badge.
+
+If platform is `"ios"` only or `"android"` only, skip this step and target the matching store.
+
+### Step 4: Background music
 
 Appshot ships with 8 royalty-free tracks in `public/music/`. Use AskUserQuestion to let the user pick:
 
@@ -79,7 +89,7 @@ Auto-recommend based on extracted category:
 
 Present as: "Based on your [category] app, I'd recommend **[track]** ([mood]). Want to use it, or pick a different one?" Use AskUserQuestion with the recommended track as first option, 2-3 alternatives, plus "No music" and "I'll provide my own."
 
-### Step 4: Scene breakdown
+### Step 5: Scene breakdown
 
 | # | Name | Duration | What the viewer sees | Caption | Primitives |
 |---|------|----------|---------------------|---------|------------|
@@ -91,7 +101,7 @@ Present as: "Based on your [category] app, I'd recommend **[track]** ([mood]). W
 - Content must mock THIS app's actual screens from extraction. No generic UI.
 - Final scene: CTA with app icon + tagline + store badge.
 
-### Step 5: Draft all copy
+### Step 6: Draft all copy
 
 Read [copy-principles.md](../shared/copy-principles.md) first.
 
@@ -110,6 +120,7 @@ Read [copy-principles.md](../shared/copy-principles.md) first.
 **Angle:** [angle] — [reason]
 **Theme:** [light/dark]
 **Music:** [track name]
+**Target stores:** [App Store (iPhone 16 Pro) / Play Store (Pixel 9) / App Store + Play Store]
 
 | # | Name | Duration | Visuals | Caption |
 |---|------|----------|---------|---------|
@@ -140,7 +151,11 @@ Key points (details in code-guide):
 - Scene 1: visible content at frame 0 (no TypeWriter first, no delayed springs)
 - Orchestrator: `fadeIn={!isFirst} fadeOut={!isLast}` on SceneWrap
 - Never `staticFile()` on AppIcon src
+- Multi-store: Root.tsx registers one `<Composition>` per target store. Orchestrator receives `device` as a prop. See store-to-device mapping in appshot-core.
+- CTA scene: `AppStoreBadge platform` must match the target store (`"ios"` for App Store, `"android"` for Play Store)
 - Remove unused imports
+
+**Existing projects:** If an `appshot-video/` directory already exists with a single composition, do not add multi-store compositions unless the user explicitly requests both stores.
 
 ---
 
@@ -153,6 +168,30 @@ Run `cd appshot-video && npm run dev`. Check:
 - CTA badge visible 2+ seconds?
 - Pacing: rushed or draggy?
 - Any contrast issues?
+
+---
+
+## Phase 5: Render & deliver
+
+After the user approves the preview, render the final video(s). Run `npx remotion render` for each target store composition:
+
+```bash
+cd appshot-video && npx remotion render [CompositionId] out/[CompositionId].mp4 --codec h264 --crf 18 --pixel-format yuv420p --color-space bt709
+```
+
+For example, if targeting both stores for an app called BookStreak:
+```bash
+cd appshot-video && npx remotion render BookStreakPreview-AppStore out/BookStreakPreview-AppStore.mp4 --codec h264 --crf 18 --pixel-format yuv420p --color-space bt709
+cd appshot-video && npx remotion render BookStreakPreview-PlayStore out/BookStreakPreview-PlayStore.mp4 --codec h264 --crf 18 --pixel-format yuv420p --color-space bt709
+```
+
+After render completes, report the absolute path to each output file:
+```
+✓ App Store video: /path/to/project/appshot-video/out/BookStreakPreview-AppStore.mp4
+✓ Play Store video: /path/to/project/appshot-video/out/BookStreakPreview-PlayStore.mp4
+```
+
+Do not ask the user to run build commands manually.
 
 ---
 

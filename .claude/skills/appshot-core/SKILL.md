@@ -463,12 +463,21 @@ Animated card container with glass, solid, or dark variants. Spring entrance ani
 
 ## Device Presets
 
-| Preset | Screen | Notch |
-|--------|--------|-------|
-| `iphone-16-pro` | 393x852 | Dynamic Island |
-| `iphone-15` | 375x812 | Dynamic Island |
-| `ipad-pro-13` | 1024x1366 | None |
-| `pixel-9` | 412x915 | Punch hole |
+| Preset | Screen | Notch | Store |
+|--------|--------|-------|-------|
+| `iphone-16-pro` | 393x852 | Dynamic Island | App Store |
+| `iphone-15` | 375x812 | Dynamic Island | App Store |
+| `ipad-pro-13` | 1024x1366 | None | App Store (iPad) |
+| `pixel-9` | 412x915 | Punch hole | Play Store |
+
+### Store-to-Device Mapping
+
+| Store | Composition ID suffix | Device preset | Badge platform |
+|-------|----------------------|---------------|----------------|
+| App Store | `-AppStore` | `iphone-16-pro` | `"ios"` |
+| Play Store | `-PlayStore` | `pixel-9` | `"android"` |
+
+For multi-store projects, Root.tsx registers one `<Composition>` per store. Scenes are shared — only the device frame and CTA badge differ. Canvas stays 886×1920 for both.
 
 ## Store Requirements
 
@@ -479,8 +488,9 @@ Animated card container with glass, solid, or dark variants. Spring entrance ani
 | iPhone 6.7" | 886x1920 | 15-30s | H.264, MP4/MOV |
 | iPhone 6.1" | 886x1920 | 15-30s | H.264, MP4/MOV |
 | iPad 13" | 1200x1600 | 15-30s | H.264, MP4/MOV |
+| Google Play | 886x1920 | 15-30s | H.264, MP4 |
 
-Default output is 886x1920 (App Store native for iPhone 6.7"). All sizing rules in appshot-videos are calibrated for this canvas width.
+Default output is 886×1920. This canvas works for both App Store (iPhone 6.7″ native) and Google Play. All sizing rules in appshot-videos are calibrated for this canvas width.
 
 ### Screenshots
 

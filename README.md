@@ -13,7 +13,7 @@ Works with **Claude Code**, **Cursor**, **Windsurf**, **Codex**, and any AI agen
 The AI skill generates custom `.tsx` scene files for each project — no fixed scene templates, no one-size-fits-all layouts:
 
 1. **Install the skills** into your mobile app project
-2. **Ask your AI agent** — "Generate an App Store preview video for this app"
+2. **Ask your AI agent** — "Generate App Store and Play Store preview videos for this app"
 3. **The skill scans your codebase** — extracts app name, brand colors, icon, features, and store metadata automatically
 4. **You answer a few creative questions** — what problem does your app solve? What's the core action? What proof do you have?
 5. **The skill generates custom scenes** — writes bespoke `.tsx` components using Appshot primitives, wired into a Remotion composition
@@ -69,7 +69,7 @@ git submodule add https://github.com/trunghaiy/appshot.git .agents/appshot
 
 ### Videos
 
-15-30 second animated preview videos for App Store and Google Play. The AI generates custom scenes per project using the primitives library — each video is unique to your app's story, brand, and features.
+15-30 second animated preview videos for App Store and Google Play. The skill generates both store versions in one session — same scenes, only the device frame (iPhone vs Pixel) and store badge differ. Each video is unique to your app's story, brand, and features.
 
 ### Screenshots
 
@@ -100,7 +100,9 @@ cd my-video
 npm run dev
 
 # 4. Render to MP4
-npm run build
+npm run build                     # Both stores (if configured)
+# npm run build:app-store         # App Store only
+# npm run build:play-store        # Play Store only
 ```
 
 ## Example
@@ -124,12 +126,12 @@ The primitives library that the AI composes into custom scenes. All components a
 
 ## Device Presets
 
-| Preset | Screen | Notch |
-|--------|--------|-------|
-| `iphone-16-pro` | 393x852 | Dynamic Island |
-| `iphone-15` | 375x812 | Dynamic Island |
-| `ipad-pro-13` | 1024x1366 | None |
-| `pixel-9` | 412x915 | Punch hole |
+| Preset | Screen | Notch | Store |
+|--------|--------|-------|-------|
+| `iphone-16-pro` | 393x852 | Dynamic Island | App Store |
+| `iphone-15` | 375x812 | Dynamic Island | App Store |
+| `ipad-pro-13` | 1024x1366 | None | App Store (iPad) |
+| `pixel-9` | 412x915 | Punch hole | Play Store |
 
 ## Config Reference
 
@@ -171,8 +173,9 @@ export const appConfig: AppConfig = {
 | iPhone 6.7" | 886x1920 | 15-30s | H.264, MP4/MOV |
 | iPhone 6.1" | 886x1920 | 15-30s | H.264, MP4/MOV |
 | iPad 13" | 1200x1600 | 15-30s | H.264, MP4/MOV |
+| Google Play | 886x1920 | 15-30s | H.264, MP4 |
 
-Default output is 886x1920 (App Store native for iPhone 6.7").
+Default output is 886×1920. This canvas works for both App Store (iPhone 6.7″ native) and Google Play.
 
 ### Screenshots
 

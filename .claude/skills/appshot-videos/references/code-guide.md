@@ -76,6 +76,7 @@ export const appConfig: AppConfig = {
 ```tsx
 import { AmbientBackground, PhoneFrame, Caption, FadeIn, FloatingCard } from "../components";
 import { appConfig } from "../app-config";
+import type { DevicePreset } from "../config";
 import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 // Only import what you use. Remove unused imports.
 ```
@@ -83,7 +84,7 @@ import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 **Scene 1 — Frame 0 thumbnail rule:**
 ```tsx
 // CORRECT — FloatingCard visible at frame 0
-export const S1_Hook: React.FC = () => {
+export const S1_Hook: React.FC<{ device: DevicePreset }> = ({ device }) => {
   const { brand } = appConfig;
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
@@ -108,7 +109,7 @@ export const S1_Hook: React.FC = () => {
 **PhoneFrame scale:**
 ```tsx
 // CORRECT — scale 1.5 fills ~67% of 886px canvas. Range: 1.4-1.6.
-<PhoneFrame device={appConfig.video.device} scale={1.5} screenBackground={brand.background}>
+<PhoneFrame device={device} scale={1.5} screenBackground={brand.background}>
 
 // WRONG — scale 1.8 overflows 886px canvas
 // WRONG — missing scale (defaults to 1.0, tiny phone)
@@ -167,6 +168,7 @@ import { S1_Hook } from "./scenes/S1_Hook";
 import { S2_CoreFeature } from "./scenes/S2_CoreFeature";
 import { S3_Proof } from "./scenes/S3_Proof";
 import { S4_CTA } from "./scenes/S4_CTA";
+import type { DevicePreset } from "./config";
 
 const scenes = [
   { component: S1_Hook, duration: 120 },
@@ -177,7 +179,7 @@ const scenes = [
 
 export const TOTAL_DURATION = scenes.reduce((sum, s) => sum + s.duration, 0);
 
-export const FooAppPreview: React.FC = () => {
+export const FooAppPreview: React.FC<{ device: DevicePreset }> = ({ device }) => {
   let offset = 0;
   return (
     <>
@@ -190,7 +192,7 @@ export const FooAppPreview: React.FC = () => {
           <Sequence key={i} from={from} durationInFrames={duration}>
             {/* CRITICAL: fadeIn={false} on first scene prevents black frame 0 */}
             <SceneWrap durationInFrames={duration} fadeIn={!isFirst} fadeOut={!isLast}>
-              <Scene />
+              <Scene device={device} />
             </SceneWrap>
           </Sequence>
         );
@@ -208,17 +210,33 @@ export const FooAppPreview: React.FC = () => {
 import { Composition } from "remotion";
 import { FooAppPreview, TOTAL_DURATION } from "./FooAppPreview";
 import { appConfig } from "./app-config";
+import type { DevicePreset } from "./config";
 import "./styles.css";
 
+const STORE_DEVICE: Record<string, DevicePreset> = {
+  AppStore: "iphone-16-pro",
+  PlayStore: "pixel-9",
+};
+
+// For single-store: use just ["AppStore"] or ["PlayStore"]
+// For both: use ["AppStore", "PlayStore"]
+const targetStores = ["AppStore", "PlayStore"];
+
 export const RemotionRoot: React.FC = () => (
-  <Composition
-    id="AppPreview"
-    component={FooAppPreview}
-    durationInFrames={TOTAL_DURATION}
-    fps={appConfig.video.fps}
-    width={appConfig.video.width}
-    height={appConfig.video.height}
-  />
+  <>
+    {targetStores.map((store) => (
+      <Composition
+        key={store}
+        id={`FooAppPreview-${store}`}
+        component={FooAppPreview}
+        defaultProps={{ device: STORE_DEVICE[store] }}
+        durationInFrames={TOTAL_DURATION}
+        fps={appConfig.video.fps}
+        width={appConfig.video.width}
+        height={appConfig.video.height}
+      />
+    ))}
+  </>
 );
 ```
 
@@ -228,7 +246,7 @@ export const RemotionRoot: React.FC = () => (
 - Tailwind for layout, `style={}` for brand-colored/dynamic properties
 - All motion: Remotion `spring()` or `interpolate()` — no CSS transitions
 - Demo data: realistic names, plausible numbers, proper formatting
-- Status bar: "9:41" for iOS
+- Status bar: "9:41" for App Store (iPhone), "12:30" for Play Store (Pixel)
 - Remove unused imports
 
 ## Pre-Write Checklist
@@ -257,3 +275,6 @@ export const RemotionRoot: React.FC = () => (
 7. **staticFile:** Only in `<Audio>` or raw `<img>`. Never near `<AppIcon`.
 8. **Unused imports:** Remove `spring`, `interpolate`, etc. if not used.
 9. **Caption present:** Every scene has `<Caption>`.
+10. **Multi-store Root.tsx:** One `<Composition>` per target store with correct `defaultProps={{ device }}`?
+11. **CTA badge:** `AppStoreBadge platform` matches target store (`"ios"` for AppStore, `"android"` for PlayStore)?
+12. **Device prop threading:** Orchestrator accepts `{ device: DevicePreset }`, passes to each scene, scenes pass to `<PhoneFrame>`?
