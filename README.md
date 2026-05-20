@@ -6,6 +6,8 @@ Appshot is a **primitives library + AI skill** that acts as a creative director:
 
 Works with **Claude Code**, **Cursor**, **Windsurf**, **Codex**, and any AI agent that supports the [Agent Skills spec](https://agentskills.io).
 
+Supports **React Native / Expo**, **Flutter**, **Swift (iOS)**, and **Kotlin/Java (Android)** projects out of the box — or any app if you provide context manually.
+
 <!-- TODO: Add GIF or screenshot of example output here -->
 
 ## How It Works
