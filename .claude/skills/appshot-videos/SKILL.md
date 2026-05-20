@@ -60,7 +60,24 @@ Appshot ships with 8 royalty-free tracks in `public/music/`. Use AskUserQuestion
 | `bright-acoustic.mp3` | Bright, friendly | Food, travel |
 | `cinematic-build.mp3` | Cinematic, dramatic | Premium, launch |
 
-Recommend a default based on app category. Include "No music" and "I'll provide my own" options.
+Auto-recommend based on extracted category:
+
+| Category | Default track |
+|----------|---------------|
+| productivity, utility, tools | `minimal-electronic.mp3` |
+| habit, self-improvement, education | `warm-inspiring.mp3` |
+| fitness, health, workout | `energetic-tech.mp3` |
+| wellness, meditation, mindfulness | `calm-ambient.mp3` |
+| finance, budget, money | `minimal-electronic.mp3` |
+| social, messaging | `energetic-tech.mp3` |
+| food, travel, lifestyle | `bright-acoustic.mp3` |
+| reading, journaling, notes | `lofi-chill.mp3` |
+| gaming, entertainment | `energetic-tech.mp3` |
+| premium, creative tools | `cinematic-build.mp3` |
+| business, SaaS | `upbeat-corporate.mp3` |
+| uncategorized | `warm-inspiring.mp3` |
+
+Present as: "Based on your [category] app, I'd recommend **[track]** ([mood]). Want to use it, or pick a different one?" Use AskUserQuestion with the recommended track as first option, 2-3 alternatives, plus "No music" and "I'll provide my own."
 
 ### Step 4: Scene breakdown
 
