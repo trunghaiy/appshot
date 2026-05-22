@@ -195,13 +195,19 @@ Key points (details in code-guide):
 
 ## Phase 4: Preview & iterate
 
-Run `cd appshot-video && npm run dev`. Check:
-- Frame 0: content visible (not black)?
-- Text readable at playback speed?
-- Each scene looks like THIS app?
-- CTA badge visible 2+ seconds?
-- Pacing: rushed or draggy?
-- Any contrast issues?
+Start Remotion Studio for preview:
+
+1. Launch in background: `cd appshot-video && npm run dev &` — capture the PID
+2. Wait for server ready (poll `localhost:3000` for a 200 response, max 30s)
+3. Open the preview and check:
+   - Frame 0: content visible (not black)?
+   - Text readable at playback speed?
+   - Each scene looks like THIS app?
+   - CTA badge visible 2+ seconds?
+   - Pacing: rushed or draggy?
+   - Any contrast issues?
+4. Iterate with user until approved
+5. **Before proceeding to Phase 5:** kill the dev server process (`kill $PID`). Fallback if PID lost: `lsof -ti:3000 | xargs kill 2>/dev/null`. Verify the port is free before starting render.
 
 ---
 
