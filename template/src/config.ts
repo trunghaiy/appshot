@@ -1,4 +1,6 @@
 export type DevicePreset = "iphone-16-pro" | "iphone-15" | "ipad-pro-13" | "pixel-9";
+export type BrowserPreset = "chrome-desktop" | "chrome-dark";
+export type FramePreset = DevicePreset | BrowserPreset;
 
 export interface BrandColors {
   primary: string;
@@ -17,14 +19,16 @@ export interface AppConfig {
     name: string;
     tagline: string;
     icon: string;
-    platform: "ios" | "android" | "both";
+    platform: "ios" | "android" | "both" | "web";
+    url?: string;
   };
   brand: BrandColors;
   video: {
     fps: number;
     width: number;
     height: number;
-    device: DevicePreset;
+    device?: DevicePreset;
+    browser?: BrowserPreset;
     backgroundMusic?: string;
     backgroundMusicVolume?: number;
   };
@@ -67,6 +71,22 @@ export const DEVICE_DIMENSIONS: Record<
     bezelRadius: 40,
     bezelWidth: 6,
     notchType: "punch-hole",
+  },
+};
+
+export const BROWSER_DIMENSIONS: Record<
+  BrowserPreset,
+  { viewportWidth: number; viewportHeight: number; chromeVariant: "light" | "dark" }
+> = {
+  "chrome-desktop": {
+    viewportWidth: 1440,
+    viewportHeight: 900,
+    chromeVariant: "light",
+  },
+  "chrome-dark": {
+    viewportWidth: 1440,
+    viewportHeight: 900,
+    chromeVariant: "dark",
   },
 };
 

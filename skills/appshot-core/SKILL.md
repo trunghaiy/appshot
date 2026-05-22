@@ -50,6 +50,12 @@ Check for marker files in this order. Stop at the first match.
 | Flutter | `pubspec.yaml` |
 | iOS (Swift) | `*.xcodeproj/`, `*.xcworkspace/`, `Package.swift` |
 | Android (Kotlin/Java) | `app/src/main/AndroidManifest.xml`, `build.gradle.kts`, `build.gradle` |
+| Next.js | `next.config.js`, `next.config.ts`, `next.config.mjs` |
+| SvelteKit | `svelte.config.js` |
+| Nuxt | `nuxt.config.ts`, `nuxt.config.js` |
+| Astro | `astro.config.mjs`, `astro.config.ts` |
+| Remix | `remix.config.js`, `app/root.tsx` (with @remix-run import) |
+| Vite (React/Vue/Solid) | `vite.config.ts`, `vite.config.js` (check `package.json` for react/vue/solid) |
 
 Use `ls` or `find . -maxdepth 3` to check. If none match, note that no framework was detected and move on — the user may describe their app verbally.
 
@@ -75,6 +81,19 @@ Use `ls` or `find . -maxdepth 3` to check. If none match, note that no framework
 - **Name**: `app/src/main/res/values/strings.xml` -> `<string name="app_name">`
 - **Package**: `AndroidManifest.xml` -> `package` attribute
 - **Also check**: `build.gradle.kts` or `build.gradle` -> `applicationId`
+
+**Next.js:**
+- **Name**: `package.json` → `name`; also check `next.config.*` → `env.APP_NAME`
+- **Description/tagline**: `package.json` → `description`; also check `app/layout.tsx` → `metadata.description`
+- **URL**: check `.env` or `.env.local` → `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL`
+
+**SvelteKit:**
+- **Name**: `package.json` → `name`
+- **Description**: `package.json` → `description`; check `src/app.html` → `<title>`, `<meta name="description">`
+
+**Vite (React/Vue):**
+- **Name**: `package.json` → `name`
+- **Description**: `package.json` → `description`; check `index.html` → `<title>`, `<meta name="description">`
 
 #### Step 3: Extract brand colors
 
@@ -107,6 +126,12 @@ Look for: static `Color` properties, `UIColor` hex initializers, asset catalog c
 2. `app/src/main/res/values/themes.xml` — `<item name="colorPrimary">`
 3. `**/ui/theme/Color.kt` — Jetpack Compose `Color()` definitions
 
+**Web (all frameworks)** — search paths (in order):
+1. `tailwind.config.js` or `tailwind.config.ts` → `theme.extend.colors`
+2. `src/styles/globals.css` or `src/app/globals.css` → CSS custom properties (`--primary`, `--background`, etc.)
+3. `src/theme.*` or `src/lib/theme.*`
+4. `src/styles/variables.css`
+
 #### Step 4: Find app icon
 
 | Framework | Where to look |
@@ -115,6 +140,7 @@ Look for: static `Color` properties, `UIColor` hex initializers, asset catalog c
 | Flutter | `android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` or `ios/Runner/Assets.xcassets/AppIcon.appiconset/` |
 | iOS | `*.xcassets/AppIcon.appiconset/` -> find the largest `.png` |
 | Android | `app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` |
+| Web (all) | `public/favicon.svg`, `public/favicon.ico`, `public/logo.svg`, `public/logo.png`, `app/favicon.ico`, `src/assets/logo.*` |
 
 #### Step 5: Extract features & store metadata
 
@@ -145,6 +171,12 @@ Based on extracted keywords, description, and feature names, infer the app categ
 | Health | meditation, sleep, mood, journal, wellness, mindful |
 | Travel | trip, itinerary, booking, destination, explore |
 | Food | recipe, meal, restaurant, cooking, ingredients |
+| SaaS | dashboard, subscription, plan, pricing, onboarding, workspace, team, analytics |
+| E-commerce | cart, checkout, product, shop, order, payment, inventory |
+| Developer tool | API, SDK, CLI, documentation, playground, sandbox, webhook |
+| Content/publishing | blog, article, post, publish, editor, CMS, newsletter |
+| AI/ML | model, inference, prompt, generate, embed, vector, chat, completion |
+| Community | forum, discussion, thread, community, member, profile |
 
 If no clear match, note "uncategorized" — the user will clarify.
 
@@ -157,6 +189,18 @@ Go beyond identity and colors. Understand what the app actually does.
 - Flutter: read `lib/main.dart`, router config, `GoRouter` or `MaterialApp` routes
 - iOS: read storyboard references, `UITabBarController` setup, SwiftUI `NavigationStack`/`TabView`
 - Look for: screen names, tab labels, navigation structure (tabs, stacks, drawers)
+
+**Page/route inventory (web).** Scan router config to discover all pages:
+- Next.js: read `app/` directory structure (each folder with `page.tsx` = route), or `pages/` directory
+- SvelteKit: read `src/routes/` directory structure (each folder with `+page.svelte` = route)
+- Vite/React: read router config (`react-router`, `tanstack-router`), or scan for route definitions
+- Look for: page names, layout structure, protected vs public routes
+
+**Landing page analysis.** If a landing/marketing page exists:
+- Extract hero headline and subheadline
+- Extract feature sections
+- Note CTA text ("Get Started", "Sign Up Free", etc.)
+- Note pricing structure if visible
 
 **Feature analysis.** For each discovered screen, read the component file to understand:
 - What data it displays
@@ -184,14 +228,16 @@ After extraction and user confirmation, save results to `.appshot-context.json` 
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "extractedAt": "ISO timestamp",
-  "app": { "name": "", "tagline": "", "icon": "", "platform": "", "framework": "" },
+  "app": { "name": "", "tagline": "", "icon": "", "platform": "", "framework": "", "url": "string or null" },
   "brand": { "primary": "", "primaryLight": "", "background": "", "surface": "", "textPrimary": "", "textSecondary": "", "success": "", "danger": "", "accent": "" },
   "category": "string",
   "theme": "light | dark | both",
   "themeDefault": "light | dark",
   "screens": [{ "name": "", "tab": "", "description": "" }],
+  "pages": [{ "route": "", "name": "", "description": "", "layout": "" }],
+  "landingPage": { "heroHeadline": "string or null", "heroSubheadline": "string or null", "cta": "string or null", "featureSections": ["string"] },
   "features": ["string"],
   "coreAction": "string",
   "valueProps": ["string"],
@@ -199,6 +245,12 @@ After extraction and user confirmation, save results to `.appshot-context.json` 
   "sources": { "name": "source file", "colors": "source file" }
 }
 ```
+
+Notes on schema v2:
+- `app.framework` valid values: `"expo"` | `"flutter"` | `"ios"` | `"android"` | `"nextjs"` | `"sveltekit"` | `"nuxt"` | `"astro"` | `"remix"` | `"vite"` | `"web"`
+- `app.platform` valid values: `"ios"` | `"android"` | `"both"` | `"web"`
+- `pages` — web route inventory (empty array for mobile apps)
+- `landingPage` — extracted landing page data (null for mobile apps)
 
 ### Present findings
 
@@ -221,6 +273,15 @@ I scanned your project and found:
 - [Tab 2]: [ScreenName] — [what it shows]
 - [Modal/Detail]: [ScreenName] — [what it shows]
 - ...
+
+**Page inventory (web):**
+- `/` — [Landing page] — [hero headline, feature sections]
+- `/dashboard` — [Dashboard] — [what it shows]
+- `/settings` — [Settings] — [configuration options]
+- ...
+
+**Landing page:** [hero headline] / [CTA text] / [number of feature sections]
+**URL:** [extracted URL or "not found"]
 
 **Key features:** [bullet list of 3-5 main features extracted from code/docs]
 

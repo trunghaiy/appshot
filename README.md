@@ -1,12 +1,12 @@
 # Appshot
 
-Generate polished App Store and Google Play preview videos and screenshots — from your app's codebase, not a video editor.
+Generate polished App Store preview videos, Google Play preview videos, and **website demo videos** — from your codebase, not a video editor.
 
-Appshot is a **primitives library + AI skill** that acts as a creative director: it scans your project, understands your app, and generates custom scene files tailored to your product. No video editing experience required.
+Appshot is a **primitives library + AI skill** that acts as a creative director: it scans your project, understands your app, and generates custom scene files tailored to your product. No video editing experience required. For mobile apps, it generates store-compliant preview videos. For websites and SaaS products, it generates 1920×1080 product demo videos with browser mockups.
 
 Works with **Claude Code**, **Cursor**, **Windsurf**, **Codex**, and any AI agent that supports the [Agent Skills spec](https://agentskills.io).
 
-Supports **React Native / Expo**, **Flutter**, **Swift (iOS)**, and **Kotlin/Java (Android)** projects out of the box — or any app if you provide context manually.
+Supports **React Native / Expo**, **Flutter**, **Swift (iOS)**, and **Kotlin/Java (Android)** for mobile, plus **Next.js**, **SvelteKit**, **Nuxt**, **Astro**, **Remix**, and **Vite** projects for web.
 
 **Used in production:** [BookStreak: Reading Tracker](https://apps.apple.com/us/app/bookstreak-reading-tracker/id6767014813) — App Store preview videos and screenshots generated entirely with Appshot.
 
@@ -43,6 +43,12 @@ Don't want a conversation? Add `--quick` and the skill makes all creative decisi
 
 ```
 Generate an App Store preview video for this app --quick
+```
+
+Quick mode works for web videos too:
+
+```
+Generate a product demo video for this website --quick
 ```
 
 ## Install
@@ -91,15 +97,20 @@ git submodule add https://github.com/trunghaiy/appshot.git .agents/appshot
 
 Store listing screenshots with device frames, captions, and branded backgrounds. Supports all required App Store and Google Play dimensions.
 
+### Web Demo Videos
+
+1920×1080 landscape product demo videos for websites and SaaS products. The skill generates custom scenes with browser mockups (Chrome-style frame), animated cursor interactions, and bespoke UI recreations of your product's actual pages. Perfect for landing page heroes, product tours, and marketing videos.
+
 ## Skills
 
 | Skill | What it does |
 |-------|-------------|
 | `appshot-core` | Foundation — architecture, config schema, component inventory, device presets |
-| `appshot-videos` | Creative director for preview videos — scans your app, guides narrative, generates custom scenes |
+| `appshot-videos` | Creative director for mobile preview videos — scans your app, guides narrative, generates custom scenes |
+| `appshot-web-videos` | Creative director for web demo videos — scans your web project, generates browser mockup scenes |
 | `appshot-images` | Creative director for screenshots — scans your app, designs layouts, generates custom scenes |
 
-`appshot-core` is loaded automatically by the other two. You interact with `appshot-videos` or `appshot-images` directly.
+`appshot-core` is loaded automatically by the other skills. You interact with `appshot-videos`, `appshot-web-videos`, or `appshot-images` directly.
 
 ## Manual Quick Start
 
@@ -128,13 +139,20 @@ The primitives library that the AI composes into custom scenes. All components a
 | Component | Purpose |
 |-----------|---------|
 | `PhoneFrame` | Realistic device with bezel, side buttons, notch/Dynamic Island |
+| `BrowserFrame` | Chrome-style browser window with address bar and traffic lights |
 | `AmbientBackground` | Animated gradient with floating orbs (light/medium/deep/dark) |
 | `Caption` | Bottom caption with word-by-word entrance animation |
 | `FadeIn` | Directional fade-in (up/down/left/right) |
 | `SceneWrap` | 12-frame fade transitions between scenes |
+| `AnimatedCursor` | Keyframe-driven mouse cursor for browser interaction demos |
+| `ProgressBar` | Animated horizontal bar (loading, progress, metrics) |
+| `Icon` | 30 SVG stroke icons for UI mockups |
 | `HeatMap` | GitHub-style contribution grid |
 | `AppIcon` | Icon with optional glow effect |
 | `AppStoreBadge` | iOS App Store / Google Play badges |
+| `StatCard` | Before/after stat with animated counter |
+| `FloatingCard` | Glass/solid/dark card with spring entrance |
+| `TypeWriter` | Character-by-character text reveal |
 
 ## Device Presets
 
@@ -144,6 +162,13 @@ The primitives library that the AI composes into custom scenes. All components a
 | `iphone-15` | 375x812 | Dynamic Island | App Store |
 | `ipad-pro-13` | 1024x1366 | None | App Store (iPad) |
 | `pixel-9` | 412x915 | Punch hole | Play Store |
+
+## Browser Presets
+
+| Preset | Viewport | Chrome | Use case |
+|--------|----------|--------|----------|
+| `chrome-desktop` | 1440x900 | Light | Default for web demo videos |
+| `chrome-dark` | 1440x900 | Dark | Dark-themed web apps, developer tools |
 
 ## Config Reference
 
@@ -176,6 +201,36 @@ export const appConfig: AppConfig = {
 };
 ```
 
+### Web video config
+
+```typescript
+export const appConfig: AppConfig = {
+  app: {
+    name: "MyProduct",
+    tagline: "Your tagline",
+    icon: "logo.png",
+    platform: "web",
+    url: "myproduct.com",
+  },
+  brand: {
+    primary: "#2563EB",
+    primaryLight: "#DBEAFE",
+    background: "#FFFFFF",
+    surface: "#F8FAFC",
+    textPrimary: "#0F172A",
+    textSecondary: "#64748B",
+    success: "#22C55E",
+    danger: "#EF4444",
+  },
+  video: {
+    fps: 30,
+    width: 1920,
+    height: 1080,
+    browser: "chrome-desktop",
+  },
+};
+```
+
 ## Store Requirements
 
 ### Videos
@@ -188,6 +243,15 @@ export const appConfig: AppConfig = {
 | Google Play | 886x1920 | 15-30s | H.264, MP4 |
 
 Default output is 886×1920. This canvas works for both App Store (iPhone 6.7″ native) and Google Play.
+
+### Web Demo Videos
+
+| Format | Dimensions | Duration | Codec |
+|--------|-----------|----------|-------|
+| Landing page hero | 1920x1080 | 20-45s | H.264, MP4 |
+| Full product demo | 1920x1080 | 30-60s | H.264, MP4 |
+
+No store-specific constraints. Output is standard 16:9 landscape video suitable for YouTube, landing pages, social media embeds, and product documentation.
 
 ### Screenshots — iOS App Store
 
