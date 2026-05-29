@@ -41,7 +41,9 @@ AskUserQuestion({
 })
 ```
 
-STOP HERE. Do NOT proceed to Phase 2 until the user responds.
+After extraction is confirmed, run the **Collect screenshots** step from [appshot-core](../appshot-core/SKILL.md#collect-screenshots-optional). If the user provides screenshots, copy them into `appshot-video/public/screens/` and save the mapping to `.appshot-context.json`.
+
+STOP HERE. Do NOT proceed to Phase 2 until the user responds to both questions.
 
 ---
 
@@ -116,16 +118,22 @@ Present as: "Based on your [category] app, I'd recommend **[track]** ([mood]). W
 
 ### Step 6: Scene breakdown
 
-| # | Name | Duration | What the viewer sees | Caption | Primitives |
-|---|------|----------|---------------------|---------|------------|
-| 1 | ... | Xs (N frames) | [description] | "..." | [list] |
+| # | Name | Duration | Screenshot | What the viewer sees | Caption |
+|---|------|----------|------------|---------------------|---------|
+| 1 | Hook | Xs | — | [text-only or composed graphic] | "..." |
+| 2 | Feature | Xs | `recording.png` | [real app screen with overlay] | "..." |
+| 3 | ... | Xs | mock | [generated mock UI] | "..." |
+
+The **Screenshot** column shows which user-provided screenshot is used (`filename.png`), `mock` for generated mock UI, or `—` for composed scenes (hook, CTA) that don't show app screens. If the user didn't provide screenshots, all app screen scenes use `mock`.
 
 **Rules:**
 - Total: 15-30 seconds (under 25s ideal). Each scene: 3-6 seconds.
 - Every scene has a Caption.
-- Content must mock THIS app's actual screens from extraction. No generic UI.
-- **App Store Preview target:** Every mock screen must include navigation chrome (status bar, nav bar, tab bar) from the extracted `navigation` data. Screens should look like real screenshots, not isolated UI fragments. No PhoneFrame.
-- **Marketing target:** PhoneFrame wraps the mock screen. Navigation chrome inside the phone is nice-to-have.
+- **Screenshot scenes:** Use the real screenshot as the full visual. The skill only adds Caption overlay and optional zoom/pan animation. No mock UI needed.
+- **Mock scenes:** Content must mock THIS app's actual screens from extraction using `uiPatterns`. No generic UI.
+- **App Store Preview target:** Full-bleed screens (screenshot or mock) with navigation chrome. No PhoneFrame.
+- **Marketing target:** PhoneFrame wraps the screen content (screenshot or mock).
+- Hook and CTA scenes typically don't use screenshots — they use composed primitives (FloatingCard, AppIcon, AppStoreBadge).
 - Final scene: CTA with app icon + tagline + store badge.
 
 ### Step 7: Draft all copy
@@ -197,7 +205,9 @@ STOP HERE. Do NOT proceed to Phase 3 until the user approves.
 Key points (details in code-guide):
 - Scaffold `appshot-video/` inside the target project, never in appshot template
 - Canvas: 886×1920px (App Store native)
-- **App Store Preview target:** No PhoneFrame. Full-bleed app UI with navigation chrome (status bar, nav bar, tab bar). Text overlays on top. See code-guide section 5.
+- **Screenshot scenes:** Use `<Img src={staticFile("screens/filename.png")} />` filling the canvas. Add only Caption overlay and optional zoom/pan. See code-guide section 6.
+- **Mock scenes:** Build UI from extracted patterns using `uiPatterns` and `brand` colors.
+- **App Store Preview target:** No PhoneFrame. Full-bleed screens (screenshot or mock) with navigation chrome. Text overlays on top. See code-guide section 5.
 - **Marketing target:** PhoneFrame `scale={1.5}`, text outside phone: 24px+ body, 34px+ titles
 - Scene 1: visible content at frame 0 (no TypeWriter first, no delayed springs)
 - Orchestrator: `fadeIn={!isFirst} fadeOut={!isLast}` on SceneWrap

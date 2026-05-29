@@ -173,7 +173,14 @@ Based on extracted keywords, description, and feature names, infer the app categ
 
 If no clear match, note "uncategorized" — the user will clarify.
 
-## Step 8: Present Findings
+## Step 8: Collect Screenshots (optional)
+
+After the extraction is presented and confirmed, ask if the user has real app screenshots to use as visual content. This is handled by the calling skill (appshot-videos or appshot-images) via appshot-core's "Collect screenshots" section.
+
+If screenshots are provided: read each image, map to extracted screens, note gaps.
+If declined: proceed with mock UI generation.
+
+## Step 9: Present Findings
 
 Summarize what you found concisely. Always cite the source file so the user can verify.
 

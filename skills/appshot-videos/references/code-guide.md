@@ -16,7 +16,8 @@ Scaffold an `appshot-video/` directory in the target project's root:
 │   ├── tailwind.config.ts
 │   ├── tsconfig.json
 │   ├── public/
-│   │   └── icon.png        ← copy app icon here
+│   │   ├── icon.png        ← copy app icon here
+│   │   └── screens/        ← user-provided screenshots (if any)
 │   └── src/
 │       ├── index.ts
 │       ├── Root.tsx
@@ -325,6 +326,66 @@ Use the extracted `navigation` data from `.appshot-context.json` for tab labels,
 - **Android bottom navigation**: Same concept as iOS tab bar, Material style.
 
 **Marketing target:** Continue using PhoneFrame as in sections 2-4 above. Navigation chrome inside the phone is nice-to-have.
+
+### 6. Screenshot-based scenes
+
+When the user provides real screenshots, use them as the visual base instead of building mock UI. The screenshot provides all the visual fidelity — the skill only adds overlay text and animation.
+
+```tsx
+import { Img, interpolate, useCurrentFrame } from "remotion";
+import { staticFile } from "remotion";
+import { Caption } from "../components";
+
+// CORRECT — Screenshot fills canvas, caption overlays on top
+export const S2_Record: React.FC = () => {
+  const frame = useCurrentFrame();
+  // Slow Ken Burns zoom adds motion to static screenshot
+  const scale = interpolate(frame, [0, 150], [1, 1.05], {
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <div className="relative h-full w-full overflow-hidden">
+      <Img
+        src={staticFile("screens/recording.png")}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          transform: `scale(${scale})`,
+        }}
+      />
+      <Caption text="Record thoughts in one tap." delay={5} />
+    </div>
+  );
+};
+
+// WRONG — Building mock UI when a real screenshot is available
+export const S2_Record: React.FC = () => {
+  return (
+    <div style={{ background: brand.background }}>
+      {/* ... 80 lines of mock UI that won't match the real app ... */}
+      <Caption text="Record thoughts in one tap." delay={5} />
+    </div>
+  );
+};
+```
+
+**Animation options for screenshot scenes:**
+- **Ken Burns zoom**: `interpolate(frame, [0, duration], [1, 1.05])` — subtle slow zoom, most versatile
+- **Pan up/down**: `translateY` interpolation — good for scrollable content
+- **Static**: No animation — fine for short scenes (3-4 seconds)
+- **Highlight pulse**: Animated glow/border on a specific area (requires absolute-positioned overlay div)
+
+**Mixed scenes:** Some scenes use screenshots, others use mock UI or composed primitives. This is the expected case — hook and CTA scenes rarely use screenshots.
+
+**Marketing target with screenshots:** Wrap the screenshot in PhoneFrame instead of filling the canvas:
+```tsx
+<PhoneFrame device={device} scale={1.5} screenBackground="transparent">
+  <Img src={staticFile("screens/recording.png")}
+       style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+</PhoneFrame>
+```
 
 ## Code Quality Rules
 

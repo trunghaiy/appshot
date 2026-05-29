@@ -301,12 +301,14 @@ After extraction and user confirmation, save results to `.appshot-context.json` 
   "coreAction": "string",
   "valueProps": ["string"],
   "keywords": ["string — ranked ASO keywords, most important first, max 12"],
+  "screenshots": [{ "file": "relative path in public/screens/", "screen": "matched screen name", "description": "what this screenshot shows" }],
   "storeDescription": "string or null",
   "sources": { "name": "source file", "colors": "source file", "keywords": "source file or 'derived'" }
 }
 ```
 
 Notes on schema v2:
+- `screenshots` — empty array if user chose auto-mock; populated if user provided real screenshots
 - `app.framework` valid values: `"expo"` | `"flutter"` | `"ios"` | `"android"` | `"nextjs"` | `"sveltekit"` | `"nuxt"` | `"astro"` | `"remix"` | `"vite"` | `"web"`
 - `app.platform` valid values: `"ios"` | `"android"` | `"both"` | `"web"`
 - `pages` — web route inventory (empty array for mobile apps)
@@ -369,7 +371,56 @@ Does this look right? Anything to correct before I proceed?
 
 If fields are missing, note them: "I couldn't find brand colors — do you have a theme file, or should we pick colors together?"
 
-Only after confirmation, proceed to the calling skill's next phase — and skip any questions already answered by the scan.
+Only after confirmation, proceed to the screenshot collection step below.
+
+### Collect screenshots (optional)
+
+After the extraction is confirmed, ask the user if they want to provide real app screenshots. This is the highest-fidelity path — real screenshots as the visual base, with skill-generated overlay copy on top.
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "Do you have screenshots of your app to use as screen content?",
+    header: "Screenshots",
+    options: [
+      { label: "Yes, I'll provide screenshots", description: "Higher fidelity — your real app UI is used directly. Drop files into the screens folder." },
+      { label: "No, generate mock screens", description: "Skill builds UI from extracted code patterns. Good enough for most cases." }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+**If the user provides screenshots:**
+
+1. Create `appshot-video/public/screens/` (or `appshot-images/screens/`) directory
+2. Ask the user to drop their screenshot files there, or provide file paths
+3. Read each screenshot image to understand what it shows
+4. Map each screenshot to a screen from the extraction:
+   ```
+   I mapped your screenshots to app screens:
+   
+   - recording.png → Voice Recording screen
+   - transcription.png → Transcription Detail screen  
+   - scan-preview.png → Document Scan screen
+   - home.png → Home / Notes List screen
+   
+   Missing: Settings screen (will use mock UI for this one)
+   
+   Does this mapping look right?
+   ```
+5. Note any gaps — screens that have no screenshot. These will fall back to mock UI.
+6. Save the mapping to `screenshots` in `.appshot-context.json`
+
+**Screenshot requirements** (tell the user):
+- Native resolution or higher
+- Clean state — no notifications, no debug banners, no personal data
+- One screenshot per distinct screen/feature. Multiple states of the same screen welcome.
+- The skill will add overlay text and animations — the screenshot is the visual base only.
+
+**If the user declines**, set `screenshots: []` and proceed. The skill will generate mock UI from extracted patterns as before.
+
+After this step, proceed to the calling skill's next phase.
 
 ## Project Structure
 
