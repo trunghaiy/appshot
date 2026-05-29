@@ -190,6 +190,19 @@ Go beyond identity and colors. Understand what the app actually does.
 - iOS: read storyboard references, `UITabBarController` setup, SwiftUI `NavigationStack`/`TabView`
 - Look for: screen names, tab labels, navigation structure (tabs, stacks, drawers)
 
+**Navigation chrome extraction.** For realistic mock screens, extract the navigation patterns the user actually sees:
+- **Navigation type**: tabs, stack, drawer, or combination
+- **Tab bar**: label text for each tab, icon descriptions (e.g., "house icon", "magnifying glass", "person circle"), which tab is default/home
+- **Navigation headers**: title style (large title vs inline), back button presence, right bar button items (e.g., "gear icon", "plus", "bell")
+- **Status bar style**: light content (white text, for dark backgrounds) or dark content (black text, for light backgrounds)
+- **Home indicator**: present on all modern iPhones (bottom bar), absent on older devices
+
+Where to find this:
+- React Native / Expo: `screenOptions`, `tabBarLabel`, `tabBarIcon`, `headerTitle`, `headerRight`, `navigationOptions` in navigator files
+- Flutter: `BottomNavigationBar` items, `AppBar` title/actions, `Scaffold` configuration
+- iOS: `UITabBarItem` setup, `navigationItem.title`, `navigationItem.rightBarButtonItems`, SwiftUI `.tabItem` / `.navigationTitle` / `.toolbar`
+- Android: `BottomNavigationView` menu XML, `Toolbar`/`TopAppBar` setup, Jetpack Compose `NavigationBar` items
+
 **Page/route inventory (web).** Scan router config to discover all pages:
 - Next.js: read `app/` directory structure (each folder with `page.tsx` = route), or `pages/` directory
 - SvelteKit: read `src/routes/` directory structure (each folder with `+page.svelte` = route)
@@ -235,6 +248,12 @@ After extraction and user confirmation, save results to `.appshot-context.json` 
   "category": "string",
   "theme": "light | dark | both",
   "themeDefault": "light | dark",
+  "navigation": {
+    "type": "tabs | stack | drawer | tabs+stack",
+    "tabs": [{ "label": "", "iconDescription": "", "isDefault": false }],
+    "headerStyle": "largeTitle | inline",
+    "statusBarStyle": "light | dark"
+  },
   "screens": [{ "name": "", "tab": "", "description": "" }],
   "pages": [{ "route": "", "name": "", "description": "", "layout": "" }],
   "landingPage": { "heroHeadline": "string or null", "heroSubheadline": "string or null", "cta": "string or null", "featureSections": ["string"] },
@@ -267,6 +286,10 @@ I scanned your project and found:
 - **Category:** [category] based on [keywords/description]
 - **Store description:** [found at path / not found]
 - **Theme:** [light only / dark only / both — default is X]
+
+**Navigation:** [tabs / stack / drawer] — [header style: large title / inline]
+**Tab bar:** [Tab1 (icon)] | [Tab2 (icon)] | [Tab3 (icon)] — default: [Tab1]
+**Status bar:** [dark content / light content]
 
 **Screen inventory:**
 - [Tab 1]: [ScreenName] — [what it shows]
@@ -539,6 +562,31 @@ Animated card container with glass, solid, or dark variants. Spring entrance ani
 | Play Store | `-PlayStore` | `pixel-9` | `"android"` |
 
 For multi-store projects, Root.tsx registers one `<Composition>` per store. Scenes are shared — only the device frame and CTA badge differ. Canvas stays 886×1920 for both.
+
+## Output Targets
+
+AppShot supports two output targets with different visual rules:
+
+| Target | Use case | Device frame | Overlay text | Screen content |
+|--------|----------|-------------|-------------|----------------|
+| **App Store Preview** | App Store / Play Store video previews and screenshots | **No device frame.** Full-bleed app screen fills the entire canvas edge-to-edge. | Text overlays appear *on top of* the app screen (semi-transparent pill background for readability). | Must include navigation chrome (status bar, nav bar, tab bar) to look like a real screenshot. |
+| **Marketing** | Social media, website, pitch decks, ads | Device frame (PhoneFrame) wrapping the app screen. | Text and cards appear *beside* or *around* the device frame. | Navigation chrome optional (PhoneFrame provides the "device" context). |
+
+**Why this matters:** Apple rejects App Store previews that include device frames or that don't sufficiently show the app in use. The App Store Preview target ensures compliance. The Marketing target preserves the current polished look for non-store contexts.
+
+**Default:** App Store Preview for `appshot-videos` and `appshot-images`. Marketing for social/web contexts.
+
+When the user selects **App Store Preview** target:
+- Do NOT use PhoneFrame in any scene
+- App UI fills the full 886×1920 canvas (videos) or store-required dimensions (screenshots)
+- Include status bar, navigation bar, tab bar, and home indicator in every mock screen
+- Caption/overlay text uses a semi-transparent pill background so it's readable over the app UI
+- The result should look like a screen recording with text overlays
+
+When the user selects **Marketing** target:
+- Use PhoneFrame at scale 1.5 as before
+- Text, cards, and badges appear outside/around the device frame
+- Navigation chrome inside the phone is nice-to-have but not required
 
 ## Store Requirements
 

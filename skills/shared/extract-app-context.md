@@ -96,7 +96,28 @@ These sources exist across all frameworks:
 | README | `README.md` | First 80 lines — app description, feature bullets |
 | CLAUDE.md | `CLAUDE.md` | Project description if present |
 
-## Step 6: Infer App Category
+## Step 6: Extract Navigation Chrome
+
+For realistic mock screens, extract the navigation patterns visible to the user.
+
+**What to extract:**
+- **Navigation type**: tabs, stack, drawer, or combination
+- **Tab bar**: label text for each tab, icon descriptions (e.g., "house icon", "magnifying glass"), which tab is default
+- **Navigation headers**: title style (large title vs inline), back button presence, right action buttons
+- **Status bar style**: light content (white text) or dark content (black text)
+
+**Where to find it:**
+
+| Framework | Tab bar | Nav header | Status bar |
+|---|---|---|---|
+| Expo / React Native | `tabBarLabel`, `tabBarIcon` in navigator `screenOptions` | `headerTitle`, `headerRight`, `headerLeft` | `StatusBar` component or `statusBarStyle` option |
+| Flutter | `BottomNavigationBar` items in `Scaffold` | `AppBar` title/actions | `SystemUiOverlayStyle` in `AppBar` |
+| iOS (Swift) | `UITabBarItem` setup, SwiftUI `.tabItem` | `navigationItem.title`, `.navigationTitle`, `.toolbar` | `preferredStatusBarStyle`, `.statusBarHidden` |
+| Android | `BottomNavigationView` menu XML, Compose `NavigationBar` | `Toolbar`/`TopAppBar` title and actions | `WindowInsetsController` or theme `statusBarColor` |
+
+If navigation files are not found, note it — the user may describe their navigation verbally.
+
+## Step 7: Infer App Category
 
 Based on extracted keywords, description, and feature names, infer the app category:
 
@@ -114,7 +135,7 @@ Based on extracted keywords, description, and feature names, infer the app categ
 
 If no clear match, note "uncategorized" — the user will clarify.
 
-## Step 7: Present Findings
+## Step 8: Present Findings
 
 Summarize what you found concisely. Always cite the source file so the user can verify.
 
@@ -127,6 +148,8 @@ I scanned your project and found:
 - **Colors:** primary [hex], background [hex], ... (from [source file])
 - **Icon:** [file path]
 - **Category:** [inferred category] based on [keywords/description]
+- **Navigation:** [tabs / stack / drawer] — [tab labels] — default: [tab]
+- **Status bar:** [dark content / light content]
 - **Store description:** [found at path / not found]
 
 Does this look right? Anything to correct?

@@ -66,6 +66,15 @@ You MUST call AskUserQuestion with these choices:
 AskUserQuestion({
   questions: [
     {
+      question: "What is the output target?",
+      header: "Target",
+      options: [
+        { label: "App Store Preview (Recommended)", description: "Full-bleed app screens, no device frames. Compliant with Apple/Google requirements." },
+        { label: "Marketing", description: "Device frames with text around them. For social media, website, pitch decks." }
+      ],
+      multiSelect: false
+    },
+    {
       question: "How many screenshots do you want?",
       header: "Count",
       options: [
@@ -79,15 +88,18 @@ AskUserQuestion({
       question: "Which layout style do you prefer?",
       header: "Layout",
       options: [
-        { label: "Device centered (Recommended)", description: "Phone frame centered with text above/below" },
-        { label: "Device offset left", description: "Phone on left, text on right" },
-        { label: "Device offset right", description: "Phone on right, text on left" }
+        { label: "Full-bleed (Recommended for App Store Preview)", description: "App screen fills canvas. Text overlays on top." },
+        { label: "Device centered", description: "Phone frame centered with text above/below (Marketing only)" },
+        { label: "Device offset left", description: "Phone on left, text on right (Marketing only)" },
+        { label: "Device offset right", description: "Phone on right, text on left (Marketing only)" }
       ],
       multiSelect: false
     }
   ]
 })
 ```
+
+Read [Output Targets](../appshot-core/SKILL.md#output-targets) for full rules on App Store Preview vs Marketing.
 
 After the user responds, decide ordering based on these principles:
 
@@ -131,6 +143,8 @@ For each screenshot, define:
 - Background treatment (color, gradient, or pattern)
 
 **Device screen content rule:** Every mock screen must depict the app's primary persona doing a realistic task for that app's category. Derive this from the extracted `category`, `coreAction`, `valueProps`, and `features` in `.appshot-context.json`. Ask: "Would the target user recognize this as *their* workflow?" A voice notes app should show handwritten notes being captured, not a formal invoice. A fitness app should show a real workout, not a generic list. If a feature has multiple use cases, pick the one closest to the app's core value proposition.
+
+**Navigation chrome rule (App Store Preview target):** Every mock screen must include the app's navigation chrome from the extracted `navigation` data — status bar ("9:41" for iOS, "12:30" for Android), navigation bar (title, back button), tab bar (if the app uses tabs), and home indicator. This makes screenshots look like actual app screens. For the Marketing target, PhoneFrame provides the device context so chrome is optional.
 
 Read [copy-principles.md](../shared/copy-principles.md) before drafting any text. Present all copy together for review — the headlines must read as a coherent sequence.
 
@@ -199,7 +213,11 @@ AskUserQuestion({
 })
 ```
 
-**Phone screen content:** Build all device screen content as HTML/CSS mock-ups from the extracted context — screen layouts, brand colors, realistic sample data. Do NOT look for or request real app screenshots. The mock screens are part of the generated output. Use the extracted `screens`, `features`, `brand` colors, and `coreAction` from `.appshot-context.json` to build realistic-looking app UI.
+**Phone screen content:** Build all device screen content as HTML/CSS mock-ups from the extracted context — screen layouts, brand colors, realistic sample data. Do NOT look for or request real app screenshots. The mock screens are part of the generated output. Use the extracted `screens`, `features`, `navigation`, `brand` colors, and `coreAction` from `.appshot-context.json` to build realistic-looking app UI.
+
+**App Store Preview target:** The mock screen fills the entire screenshot canvas edge-to-edge. Include status bar, navigation bar, tab bar, and home indicator. Headline and subtitle text overlay on top of the app screen with a semi-transparent background for readability. No device frames.
+
+**Marketing target:** The mock screen goes inside a device frame (HTML/CSS phone mockup or Remotion PhoneFrame). Headline and subtitle text appear above/below/beside the device frame.
 
 **Screenshot dimensions — use EXACT values or the store will reject uploads:**
 
@@ -250,6 +268,18 @@ Walk through the set:
 If `$ARGUMENTS` contains "quick": compress phases 2-3 into inference. Make all creative decisions autonomously. Present the complete spec for approval, then generate. Still ask for platform/format in Phase 4.
 
 ## Layout principles
+
+### App Store Preview target
+
+**Full-bleed screen** — App UI fills the entire canvas. The screenshot IS the app screen with navigation chrome.
+
+**Text placement** — Headlines and subtitles overlay on top of the app screen. Use a semi-transparent pill or banner background (e.g., `rgba(0,0,0,0.6)` or `rgba(255,255,255,0.85)`) for readability. Position at top or bottom third of the screen, avoiding the navigation chrome areas.
+
+**Background** — The app's own background IS the screenshot background. No separate background layer.
+
+**Consistency** — Same text overlay style, position, and size across all screenshots. Navigation chrome in every screen. Vary the app screen content, not the overlay structure.
+
+### Marketing target
 
 **Device frame** — Centered or offset, always showing real app UI. Large enough for screen content to be legible at store listing size. Consistent positioning across the set.
 

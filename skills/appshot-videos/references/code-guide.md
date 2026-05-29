@@ -240,6 +240,92 @@ export const RemotionRoot: React.FC = () => (
 );
 ```
 
+### 5. Full-screen mode (App Store Preview target)
+
+When the user selects the **App Store Preview** target, scenes must NOT use PhoneFrame. Instead, the app UI fills the entire 886×1920 canvas.
+
+```tsx
+// CORRECT — App Store Preview: full-bleed app screen
+export const S2_Feature: React.FC = () => {
+  const { brand } = appConfig;
+  return (
+    <div className="relative flex h-full w-full flex-col overflow-hidden"
+         style={{ background: brand.background }}>
+      {/* Status bar */}
+      <div className="flex items-center justify-between px-8 pt-4" style={{ height: 54 }}>
+        <span style={{ fontSize: 17, fontWeight: 600, color: brand.textPrimary }}>9:41</span>
+        <StatusBarIcons color={brand.textPrimary} />
+      </div>
+
+      {/* Navigation bar */}
+      <div className="flex items-center justify-between px-6" style={{ height: 56 }}>
+        <span style={{ fontSize: 34, fontWeight: 700, color: brand.textPrimary }}>Library</span>
+        <span style={{ fontSize: 28, color: brand.primary }}>＋</span>
+      </div>
+
+      {/* App content area — your mock UI goes here */}
+      <div className="flex-1 px-6 pt-4">
+        {/* ... realistic app content ... */}
+      </div>
+
+      {/* Tab bar */}
+      <div className="flex items-center justify-around border-t px-4 pb-8 pt-2"
+           style={{ borderColor: `${brand.textSecondary}20`, background: brand.surface }}>
+        <div className="flex flex-col items-center gap-1">
+          <span style={{ fontSize: 11, color: brand.primary, fontWeight: 600 }}>Home</span>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <span style={{ fontSize: 11, color: brand.textSecondary }}>Search</span>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <span style={{ fontSize: 11, color: brand.textSecondary }}>Profile</span>
+        </div>
+      </div>
+
+      {/* Home indicator */}
+      <div className="flex justify-center pb-2">
+        <div style={{ width: 134, height: 5, borderRadius: 3, background: brand.textPrimary, opacity: 0.2 }} />
+      </div>
+
+      {/* Caption overlays on top of app UI */}
+      <Caption text="Your entire library, organized." delay={5} />
+    </div>
+  );
+};
+
+// WRONG — Using PhoneFrame in App Store Preview mode
+<PhoneFrame device={device} scale={1.5}>...</PhoneFrame>
+
+// WRONG — No status bar or tab bar (looks like a cropped UI fragment, not a real app)
+<div style={{ background: brand.background }}>
+  <h1>Library</h1>
+  {/* ... just content, no chrome ... */}
+</div>
+```
+
+**Text sizes for full-screen mode (886px canvas):**
+```tsx
+// Status bar time: 17px, weight 600
+// Nav bar large title: 34px, weight 700
+// Nav bar inline title: 20px, weight 600
+// Body text: 17-20px
+// Tab bar labels: 11-12px
+// Caption: unchanged (44px default, overlaid with pill background)
+```
+
+**Navigation chrome reference:**
+Use the extracted `navigation` data from `.appshot-context.json` for tab labels, icon descriptions, header style, and status bar style. The chrome must match the actual app — don't invent navigation that doesn't exist.
+
+- **iOS status bar**: "9:41" left, signal + wifi + battery icons right. Use `<StatusBarIcons>` from components.
+- **iOS large title nav bar**: 34px bold title, left-aligned. Optional right action button.
+- **iOS inline nav bar**: 20px semibold title, centered. Back arrow left, action right.
+- **iOS tab bar**: Icon + label per tab, active tab in `brand.primary`, inactive in `brand.textSecondary`. Bottom safe area padding.
+- **iOS home indicator**: 134×5px rounded bar, centered, 20% opacity.
+- **Android status bar**: "12:30" left, icons right.
+- **Android bottom navigation**: Same concept as iOS tab bar, Material style.
+
+**Marketing target:** Continue using PhoneFrame as in sections 2-4 above. Navigation chrome inside the phone is nice-to-have.
+
 ## Code Quality Rules
 
 - Every scene: self-contained `.tsx` in `src/scenes/`, max ~150 lines
@@ -267,14 +353,16 @@ export const RemotionRoot: React.FC = () => (
 
 **Each scene:**
 1. **S1 frame 0:** Fully visible element at frame 0? FAIL if TypeWriter first, `frame - N` first, or all delayed FadeIns.
-2. **PhoneFrame scale:** `scale={1.5}` present? Missing scale = bug.
-3. **Text outside PhoneFrame:** Body under 24px or titles under 34px = too small.
-4. **Card widths outside PhoneFrame:** Under 700px = too narrow.
+2. **PhoneFrame scale:** `scale={1.5}` present? Missing scale = bug. (Marketing target only — App Store Preview must NOT use PhoneFrame.)
+3. **Text outside PhoneFrame:** Body under 24px or titles under 34px = too small. (Marketing target only.)
+4. **Card widths outside PhoneFrame:** Under 700px = too narrow. (Marketing target only.)
 5. **Text contrast:** Every `color:` traced against its `background:`. Both dark = bug. TypeWriter needs explicit color via parent style.
-6. **Caption overlap:** PhoneFrame at 1.5+ scale may overlap Caption. Add `maxWidth={720}` if tight.
+6. **Caption overlap:** PhoneFrame at 1.5+ scale may overlap Caption. Add `maxWidth={720}` if tight. (Marketing target only.)
 7. **staticFile:** Only in `<Audio>` or raw `<img>`. Never near `<AppIcon`.
 8. **Unused imports:** Remove `spring`, `interpolate`, etc. if not used.
 9. **Caption present:** Every scene has `<Caption>`.
 10. **Multi-store Root.tsx:** One `<Composition>` per target store with correct `defaultProps={{ device }}`?
 11. **CTA badge:** `AppStoreBadge platform` matches target store (`"ios"` for AppStore, `"android"` for PlayStore)?
-12. **Device prop threading:** Orchestrator accepts `{ device: DevicePreset }`, passes to each scene, scenes pass to `<PhoneFrame>`?
+12. **Device prop threading:** Orchestrator accepts `{ device: DevicePreset }`, passes to each scene, scenes pass to `<PhoneFrame>`? (Marketing target only.)
+13. **Navigation chrome (App Store Preview):** Every mock screen has status bar + navigation bar + tab bar (if the app uses tabs)? Chrome matches extracted `navigation` data?
+14. **No device frames (App Store Preview):** Zero uses of `<PhoneFrame>` in any scene? App UI fills full canvas?
