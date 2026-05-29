@@ -131,6 +131,30 @@ Apple and Google now read text in screenshots and videos. Extract a keyword list
 
 Output a ranked list (most important first), max 12 keywords. Include both single words and short phrases.
 
+## Step 6c: Extract UI Patterns
+
+Scan component styling to capture the app's visual design language. This data helps mock screens match the real app's look.
+
+**What to extract:**
+- **Border radius**: button, card, and input corner radius (e.g., "pill buttons", "8px cards")
+- **Spacing**: horizontal padding, section gaps (e.g., "16px padding", "24px gaps")
+- **Typography**: font family (custom or system), heading weight, body size, ALL CAPS headers?
+- **Button style**: shape, size, fill vs outline, icon-only
+- **Card style**: background, border, shadow, glass/blur effects
+- **Icon library**: SF Symbols, Material Icons, Lucide, Ionicons, custom SVG
+- **Special elements**: waveforms, progress rings, gradients, tags/chips, badges
+
+**Where to find it:**
+
+| Framework | Style sources |
+|---|---|
+| Expo / React Native | `StyleSheet.create()`, inline `style={}`, NativeWind/Tailwind classes, component library imports |
+| Flutter | `BoxDecoration`, `BorderRadius`, `TextStyle`, `ButtonStyle`, theme data |
+| iOS (Swift) | `.cornerRadius`, `.font()`, `.padding()`, SF Symbol names |
+| Android | `shapes.xml`, `styles.xml`, Compose `RoundedCornerShape()`, Material icon imports |
+
+Read 2-3 of the most visually rich screen components to get representative patterns. Don't exhaustively scan every file.
+
 ## Step 7: Infer App Category
 
 Based on extracted keywords, description, and feature names, infer the app category:
@@ -164,6 +188,7 @@ I scanned your project and found:
 - **Category:** [inferred category] based on [keywords/description]
 - **Navigation:** [tabs / stack / drawer] — [tab labels] — default: [tab]
 - **Status bar:** [dark content / light content]
+- **UI patterns:** [font], [button style], [card style], [border radius], [icon library]
 - **ASO keywords:** [keyword1], [keyword2], [keyword3], ... (from [source])
 - **Store description:** [found at path / not found]
 

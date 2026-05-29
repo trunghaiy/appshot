@@ -234,6 +234,23 @@ Where to find this:
 - What actions the user can take
 - What makes it visually interesting or unique
 
+**UI pattern extraction.** Scan component styling to capture the app's visual design language. Mock screens that don't match the real app's look undermine credibility — this data closes the gap.
+
+What to extract:
+- **Border radius**: button radius, card radius, input radius (e.g., "fully rounded buttons", "8px card corners", "pill-shaped inputs")
+- **Spacing rhythm**: padding/margin values used in containers and between elements (e.g., "16px horizontal padding", "24px section gaps")
+- **Typography**: font family (custom or system), heading weights (e.g., 700 vs 800), body size, whether the app uses ALL CAPS for section headers
+- **Button style**: shape (rounded rectangle, pill, circle), size, fill vs outline, icon-only buttons
+- **Card style**: background color, border, shadow depth, glass/blur effects
+- **Icon library**: which icon set (SF Symbols, Material Icons, Lucide, custom SVGs, Ionicons)
+- **Special UI elements**: waveform visualizers, progress rings, gradient backgrounds, tag/chip styles, badge indicators
+
+Where to find this:
+- React Native / Expo: `StyleSheet.create()` blocks, inline `style={}`, NativeWind/Tailwind classes, component library imports (`react-native-paper`, `tamagui`, `gluestack`)
+- Flutter: `BoxDecoration`, `BorderRadius`, `TextStyle`, `ButtonStyle` in widget files and theme data
+- iOS (Swift): `.cornerRadius`, `.font()`, `.padding()`, `UIFont` descriptors, SF Symbol names in SwiftUI/UIKit
+- Android: `shapes.xml`, `styles.xml`, Compose `RoundedCornerShape()`, `MaterialTheme.typography`, Material icon imports
+
 **Value props / differentiators.** Extract from README, store description, CLAUDE.md, marketing copy, or landing page:
 - What problem does this app solve?
 - How is it different from competitors?
@@ -271,6 +288,15 @@ After extraction and user confirmation, save results to `.appshot-context.json` 
   "screens": [{ "name": "", "tab": "", "description": "" }],
   "pages": [{ "route": "", "name": "", "description": "", "layout": "" }],
   "landingPage": { "heroHeadline": "string or null", "heroSubheadline": "string or null", "cta": "string or null", "featureSections": ["string"] },
+  "uiPatterns": {
+    "borderRadius": { "button": "string", "card": "string", "input": "string" },
+    "spacing": { "horizontal": "string", "sectionGap": "string" },
+    "typography": { "fontFamily": "string or 'system'", "headingWeight": "number", "bodySize": "string", "capsHeaders": "boolean" },
+    "buttonStyle": "string — e.g., 'pill filled, 56px height' or 'rounded-lg outline'",
+    "cardStyle": "string — e.g., 'dark surface, 16px radius, no border, subtle shadow'",
+    "iconLibrary": "string — e.g., 'SF Symbols' or 'Ionicons' or 'custom SVG'",
+    "specialElements": ["string — e.g., 'waveform visualizer', 'gradient background', 'pill-shaped tags'"]
+  },
   "features": ["string"],
   "coreAction": "string",
   "valueProps": ["string"],
@@ -329,6 +355,9 @@ I scanned your project and found:
 - [Primary differentiator]
 - [Secondary differentiator]
 - [Emotional promise]
+
+**UI patterns:** [font family], [heading weight], [button style], [card style], [border radius], [icon library]
+**Special elements:** [waveform, gradient bg, pill tags, ...]
 
 **ASO keywords:** [keyword1], [keyword2], [keyword3], ... (from [fastlane/keywords.txt / derived])
 

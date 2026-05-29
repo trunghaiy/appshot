@@ -335,12 +335,36 @@ Use the extracted `navigation` data from `.appshot-context.json` for tab labels,
 - Status bar: "9:41" for App Store (iPhone), "12:30" for Play Store (Pixel)
 - Remove unused imports
 
+## Matching the App's Visual Language
+
+When building mock UI (not using real screenshots), use the extracted `uiPatterns` from `.appshot-context.json` to match the real app's design:
+
+- **Border radius**: If the app uses pill buttons (`borderRadius: 9999`), your mock buttons should too. If the app uses `8px` card corners, don't use `16px`.
+- **Button style**: Match shape, size, and fill style. A dark app with large rounded-square buttons (like the voice recorder example) should not get small pill-shaped buttons.
+- **Card style**: Match background color, border presence, and shadow depth. If the app uses dark surface cards with no border, don't add light cards with borders.
+- **Typography**: Use the same font weight hierarchy. If the app uses `800` weight headings, use that. If section headers are ALL CAPS with letter spacing, replicate it.
+- **Icon style**: Reference the correct icon library. Don't render SF Symbols if the app uses Ionicons.
+- **Spacing**: Match the app's density. A spacious app with `24px` section gaps should not get cramped `8px` gaps.
+
+```tsx
+// CORRECT — matches app's dark card style with rounded corners
+<div style={{
+  background: brand.surface,       // dark card bg from extraction
+  borderRadius: 16,                // from uiPatterns.borderRadius.card
+  padding: 20,                     // from uiPatterns.spacing
+}}>
+
+// WRONG — generic light card that doesn't match the app
+<div className="bg-white rounded-lg shadow-md p-4">
+```
+
 ## Pre-Write Checklist
 
 - [ ] Scene order matches Phase 2 approval
 - [ ] All text matches Phase 2 copy (verbatim)
 - [ ] Brand colors from extraction, not template defaults
 - [ ] Each scene mocks actual app UI from extraction
+- [ ] Mock UI matches extracted `uiPatterns` (border radius, button style, card style, typography)
 
 ## Post-Write Self-Check
 
