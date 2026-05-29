@@ -140,6 +140,8 @@ Read [copy-principles.md](../shared/copy-principles.md) first.
 - [ ] Pills are benefits, not feature names
 - [ ] No text copied from BookStreak, Kernio, or any example
 - [ ] Captions read as a coherent story top-to-bottom
+- [ ] Captions collectively cover at least 3 extracted ASO keywords (naturally, not stuffed)
+- [ ] Keywords spread across scenes, not clustered in one caption
 
 ### Present the full plan
 
@@ -156,6 +158,8 @@ Read [copy-principles.md](../shared/copy-principles.md) first.
 
 **CTA:** "[setup]" + "[differentiator]"
 **Pills:** ["...", "..."]
+
+**ASO keywords covered:** [keyword1] (S1), [keyword2] (S2), [keyword3] (S3 + CTA) — [N of M keywords]
 
 **Narrative flow:**
 1. "..."

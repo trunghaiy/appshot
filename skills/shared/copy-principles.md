@@ -55,6 +55,22 @@ The differentiator should answer: "Why this app instead of the 50 others?"
 - First screenshot headline = the core value proposition (most important — often the only one seen).
 - Subtitles add one specific detail or number below the headline.
 
+## ASO Keyword Integration
+
+Apple and Google now use visual intelligence to read text in screenshots and videos. Overlay text is indexed — making it a search optimization surface alongside the store listing metadata.
+
+**Rules:**
+1. **Natural inclusion.** Overlay text should naturally incorporate 2-3 high-value keywords from the extracted `keywords` list. Never keyword-stuff — the billboard test still applies.
+2. **Prefer keyword phrasings.** When choosing between two equally good phrasings, prefer the one that includes a target keyword. "Track your reading habit" beats "Stay on top of your books" if "reading habit" is a keyword.
+3. **Spread across scenes.** Distribute keywords across different captions/headlines rather than clustering them in one. Aim for at least 3 distinct keywords covered across the full set.
+4. **Headlines > subtitles > captions.** Keywords in headlines carry more weight than subtitles, which carry more weight than video captions. Prioritize placement in the most prominent text.
+5. **Don't sacrifice clarity.** A clear, benefit-first headline that misses a keyword is better than a keyword-stuffed headline that reads like SEO spam.
+
+**Self-check:**
+- [ ] Do the captions/headlines collectively cover at least 3 extracted keywords?
+- [ ] Is every keyword used naturally — would a human copywriter write it this way?
+- [ ] Are keywords spread across scenes, not clustered in one?
+
 ## Common Mistakes
 
 - **"Your [Feature] Here"** — never use placeholder text. Always draft real copy, even if it needs revision.

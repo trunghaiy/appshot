@@ -117,6 +117,20 @@ For realistic mock screens, extract the navigation patterns visible to the user.
 
 If navigation files are not found, note it — the user may describe their navigation verbally.
 
+## Step 6b: Extract ASO Keywords
+
+Apple and Google now read text in screenshots and videos. Extract a keyword list so overlay text can incorporate high-value search terms.
+
+**Primary source:** `fastlane/metadata/en-US/keywords.txt` (comma-separated).
+
+**Fallback sources** (if no Fastlane keywords): derive 8-12 keyword candidates from:
+1. App Store subtitle (`fastlane/metadata/en-US/subtitle.txt`)
+2. Store description — most repeated nouns and action verbs
+3. Feature names — mapped to user-facing search terms
+4. Category terms from Step 7's signals table
+
+Output a ranked list (most important first), max 12 keywords. Include both single words and short phrases.
+
 ## Step 7: Infer App Category
 
 Based on extracted keywords, description, and feature names, infer the app category:
@@ -150,6 +164,7 @@ I scanned your project and found:
 - **Category:** [inferred category] based on [keywords/description]
 - **Navigation:** [tabs / stack / drawer] — [tab labels] — default: [tab]
 - **Status bar:** [dark content / light content]
+- **ASO keywords:** [keyword1], [keyword2], [keyword3], ... (from [source])
 - **Store description:** [found at path / not found]
 
 Does this look right? Anything to correct?

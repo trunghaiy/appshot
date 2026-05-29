@@ -156,11 +156,19 @@ Read [copy-principles.md](../shared/copy-principles.md) before drafting any text
 
 **Sequence test** — Read all headlines top-to-bottom. They should tell the complete app story without images.
 
+**ASO keyword integration** — Read the ASO section in [copy-principles.md](../shared/copy-principles.md). Headlines are the highest-weight text surface for search indexing. When choosing between two equally good phrasings, prefer the one that includes a target keyword from the extracted `keywords` list.
+
 **Common mistakes:**
 - Feature names as headlines ("Smart Recovery Mode") — use benefits ("Never lose your streak")
 - Repeating the app name in every headline — mention it once at most
 - Generic claims ("Easy to use") — waste the slot
 - Placeholder text — always draft real copy
+
+**Copy self-check:**
+- [ ] Headlines read as a coherent sequence top-to-bottom
+- [ ] Headlines collectively cover at least 3 extracted ASO keywords
+- [ ] Keywords spread across screenshots, not clustered in one
+- [ ] Every keyword used naturally — would a human copywriter write it this way?
 
 After presenting all copy, you MUST call AskUserQuestion:
 

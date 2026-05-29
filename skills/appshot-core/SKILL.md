@@ -156,6 +156,20 @@ These sources exist across all frameworks:
 | README | `README.md` | First 80 lines — app description, feature bullets |
 | CLAUDE.md | `CLAUDE.md` | Project description if present |
 
+#### Step 5b: Extract ASO keywords
+
+Apple and Google can now read text in screenshots and videos via visual intelligence. Extract a keyword list so overlay text can naturally incorporate high-value search terms.
+
+**Primary source:** `fastlane/metadata/en-US/keywords.txt` (comma-separated). This is the developer's own keyword strategy — use it as the authoritative list.
+
+**Fallback sources** (if no Fastlane keywords exist): derive 8-12 keyword candidates from:
+1. App Store subtitle (`fastlane/metadata/en-US/subtitle.txt`) — split into individual terms
+2. Store description — extract the most repeated nouns and action verbs
+3. Feature names from extraction — map feature names to user-facing search terms
+4. App category terms from Step 6 signals table
+
+**Output:** A ranked list of keywords, most important first. Include both single words ("habits", "streak") and short phrases ("reading tracker", "book log"). Cap at 12 keywords.
+
 #### Step 6: Infer app category
 
 Based on extracted keywords, description, and feature names, infer the app category:
@@ -260,8 +274,9 @@ After extraction and user confirmation, save results to `.appshot-context.json` 
   "features": ["string"],
   "coreAction": "string",
   "valueProps": ["string"],
+  "keywords": ["string — ranked ASO keywords, most important first, max 12"],
   "storeDescription": "string or null",
-  "sources": { "name": "source file", "colors": "source file" }
+  "sources": { "name": "source file", "colors": "source file", "keywords": "source file or 'derived'" }
 }
 ```
 
@@ -314,6 +329,8 @@ I scanned your project and found:
 - [Primary differentiator]
 - [Secondary differentiator]
 - [Emotional promise]
+
+**ASO keywords:** [keyword1], [keyword2], [keyword3], ... (from [fastlane/keywords.txt / derived])
 
 **Pre-filled config:**
 [Show the AppConfig object with app, brand, and video sections filled in]
