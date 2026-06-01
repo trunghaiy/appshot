@@ -16,8 +16,7 @@ Scaffold an `appshot-video/` directory in the target project's root:
 │   ├── tailwind.config.ts
 │   ├── tsconfig.json
 │   ├── public/
-│   │   ├── icon.png        ← copy app icon here
-│   │   └── screens/        ← user-provided screenshots (if any)
+│   │   └── icon.png        ← copy app icon here
 │   └── src/
 │       ├── index.ts
 │       ├── Root.tsx
@@ -327,65 +326,102 @@ Use the extracted `navigation` data from `.appshot-context.json` for tab labels,
 
 **Marketing target:** Continue using PhoneFrame as in sections 2-4 above. Navigation chrome inside the phone is nice-to-have.
 
-### 6. Screenshot-based scenes
+### 6. Screenshots are reference material, not content
 
-When the user provides real screenshots, use them as the visual base instead of building mock UI. The screenshot provides all the visual fidelity — the skill only adds overlay text and animation.
+**CRITICAL: Never use `<Img>` to embed a user-provided screenshot directly into a scene.** Screenshots are visual references that inform how to build animated mock UI — they are NOT content to be rendered in the output.
+
+Why: AppShot's value is animated, living mock UI — elements entering with spring animations, counters ticking, waveforms pulsing, text typing in. A static screenshot with a Ken Burns zoom is just a slideshow. Build the mock JSX so it looks like the screenshot but can animate.
+
+**The workflow:**
+1. User provides screenshots → visual reference analysis produces a `visualSpec` for each
+2. The `visualSpec` documents exact colors, component shapes, spacing, typography
+3. Scene code builds animated mock UI that matches the `visualSpec` pixel-for-pixel
+4. The result looks like the real app AND has motion
 
 ```tsx
-import { Img, interpolate, useCurrentFrame } from "remotion";
-import { staticFile } from "remotion";
-import { Caption } from "../components";
-
-// CORRECT — Screenshot fills canvas, caption overlays on top
+// CORRECT — Animated mock UI built from visualSpec of recording.png
+// The scene LOOKS like the screenshot but elements animate in
 export const S2_Record: React.FC = () => {
   const frame = useCurrentFrame();
-  // Slow Ken Burns zoom adds motion to static screenshot
-  const scale = interpolate(frame, [0, 150], [1, 1.05], {
-    extrapolateRight: "clamp",
-  });
+  const { fps } = useVideoConfig();
+
+  const waveformProgress = interpolate(frame, [10, 80], [0, 1], { extrapolateRight: "clamp" });
+  const timerSeconds = Math.floor(interpolate(frame, [0, 150], [0, 5], { extrapolateRight: "clamp" }));
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
-      <Img
-        src={staticFile("screens/recording.png")}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          transform: `scale(${scale})`,
-        }}
-      />
+    <div style={{ background: "#0A1628", height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Status bar */}
+      <div className="flex items-center justify-between px-7 pt-3" style={{ height: 50 }}>
+        <span style={{ fontSize: 17, fontWeight: 600, color: "#E8ECF1" }}>9:41</span>
+        <StatusBarIcons color="#E8ECF1" />
+      </div>
+
+      {/* Nav — 48px rounded-square back button matching visualSpec */}
+      <FadeIn delay={0} direction="down">
+        <div className="flex items-center px-5" style={{ height: 56 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: "#1A2940",
+                        display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ color: "#E8ECF1", fontSize: 20 }}>‹</span>
+          </div>
+          <span style={{ fontSize: 20, fontWeight: 600, color: "#E8ECF1", marginLeft: 12 }}>Voice Recording</span>
+        </div>
+      </FadeIn>
+
+      {/* Recording indicator — animates in */}
+      <FadeIn delay={8} direction="none" className="flex flex-col items-center pt-20">
+        <div className="flex items-center gap-2">
+          <div style={{ width: 10, height: 10, borderRadius: 5,
+                        background: "#FF4444", opacity: 0.5 + Math.sin(frame * 0.15) * 0.5 }} />
+          <span style={{ fontSize: 16, color: "#FF6B6B", fontWeight: 500 }}>Recording</span>
+        </div>
+      </FadeIn>
+
+      {/* Animated waveform — bars grow over time */}
+      <div className="flex items-center justify-center px-12 pt-8" style={{ height: 80 }}>
+        {Array.from({ length: 40 }).map((_, i) => {
+          const barHeight = Math.sin(i * 0.5 + frame * 0.1) * 20 + 25;
+          const visible = i / 40 < waveformProgress;
+          return (
+            <div key={i} style={{
+              width: 4, height: visible ? barHeight : 2, marginRight: 3,
+              background: "#3BB8E0", borderRadius: 2,
+              transition: "height 0.1s",
+            }} />
+          );
+        })}
+      </div>
+
+      {/* Animated timer */}
+      <div className="flex justify-center pt-6">
+        <span style={{ fontSize: 72, fontWeight: 300, color: "#E8ECF1", fontVariantNumeric: "tabular-nums" }}>
+          {`0${Math.floor(timerSeconds / 60)}:${String(timerSeconds % 60).padStart(2, "0")}`}
+        </span>
+      </div>
+
       <Caption text="Record thoughts in one tap." delay={5} />
     </div>
   );
 };
 
-// WRONG — Building mock UI when a real screenshot is available
-export const S2_Record: React.FC = () => {
-  return (
-    <div style={{ background: brand.background }}>
-      {/* ... 80 lines of mock UI that won't match the real app ... */}
-      <Caption text="Record thoughts in one tap." delay={5} />
-    </div>
-  );
-};
+// WRONG — Embedding screenshot as static image
+<Img src={staticFile("screens/recording.png")} style={{ width: "100%", height: "100%" }} />
+
+// WRONG — Generic mock UI that ignores the visualSpec
+<div style={{ background: brand.background }}>
+  <span className="text-white text-sm">← VOICE RECORDING</span>
+  {/* ... looks nothing like the real app ... */}
+</div>
 ```
 
-**Animation options for screenshot scenes:**
-- **Ken Burns zoom**: `interpolate(frame, [0, duration], [1, 1.05])` — subtle slow zoom, most versatile
-- **Pan up/down**: `translateY` interpolation — good for scrollable content
-- **Static**: No animation — fine for short scenes (3-4 seconds)
-- **Highlight pulse**: Animated glow/border on a specific area (requires absolute-positioned overlay div)
-
-**Mixed scenes:** Some scenes use screenshots, others use mock UI or composed primitives. This is the expected case — hook and CTA scenes rarely use screenshots.
-
-**Marketing target with screenshots:** Wrap the screenshot in PhoneFrame instead of filling the canvas:
-```tsx
-<PhoneFrame device={device} scale={1.5} screenBackground="transparent">
-  <Img src={staticFile("screens/recording.png")}
-       style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-</PhoneFrame>
-```
+**What can animate in mock scenes:**
+- Waveform bars growing/pulsing
+- Timer counting up
+- Recording indicator pulsing
+- Cards sliding in with `FadeIn` or `spring()`
+- Text typing in with `TypeWriter`
+- Counters incrementing with `StatCard`
+- Progress bars filling
+- Elements appearing in sequence (staggered `delay`)
 
 ## Code Quality Rules
 

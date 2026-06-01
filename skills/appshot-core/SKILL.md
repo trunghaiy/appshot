@@ -302,10 +302,10 @@ After extraction and user confirmation, save results to `.appshot-context.json` 
   "valueProps": ["string"],
   "keywords": ["string — ranked ASO keywords, most important first, max 12"],
   "screenshots": [{
-    "file": "relative path in public/screens/",
+    "referenceFile": "original file path (for re-reading if needed)",
     "screen": "matched screen name",
     "description": "what this screenshot shows",
-    "visualSpec": "structured visual analysis — layout, colors, components, typography, special elements"
+    "visualSpec": "structured visual analysis — layout, colors, components, typography, special elements (the actual styling reference for mock UI)"
   }],
   "storeDescription": "string or null",
   "sources": { "name": "source file", "colors": "source file", "keywords": "source file or 'derived'" }
@@ -380,7 +380,7 @@ Only after confirmation, proceed to the screenshot collection step below.
 
 ### Collect screenshots (optional)
 
-After the extraction is confirmed, ask the user if they want to provide real app screenshots. This is the highest-fidelity path — real screenshots as the visual base, with skill-generated overlay copy on top.
+After the extraction is confirmed, ask the user if they want to provide real app screenshots as visual references. Screenshots are **reference material, not content** — they are never embedded in the final output. Instead, the visual reference analysis extracts exact colors, shapes, spacing, and typography from the screenshots, which the skill uses to build animated mock UI that looks like the real app.
 
 ```
 AskUserQuestion({
@@ -388,8 +388,8 @@ AskUserQuestion({
     question: "Do you have screenshots of your app to use as screen content?",
     header: "Screenshots",
     options: [
-      { label: "Yes, I'll provide screenshots", description: "Higher fidelity — your real app UI is used directly. Drop files into the screens folder." },
-      { label: "No, generate mock screens", description: "Skill builds UI from extracted code patterns. Good enough for most cases." }
+      { label: "Yes, I'll provide screenshots", description: "Highest fidelity — your screenshots are analyzed and the mock UI is built to match exactly." },
+      { label: "No, generate mock screens", description: "Skill builds UI from extracted code patterns. Good for most cases." }
     ],
     multiSelect: false
   }]
@@ -398,10 +398,9 @@ AskUserQuestion({
 
 **If the user provides screenshots:**
 
-1. Create `appshot-video/public/screens/` (or `appshot-images/screens/`) directory
-2. Ask the user to drop their screenshot files there, or provide file paths
-3. Read each screenshot image to understand what it shows
-4. Map each screenshot to a screen from the extraction:
+1. Ask the user to provide screenshot file paths or drop them in the conversation
+2. Read each screenshot image to understand what it shows
+3. Map each screenshot to a screen from the extraction:
    ```
    I mapped your screenshots to app screens:
    
@@ -414,9 +413,9 @@ AskUserQuestion({
    
    Does this mapping look right?
    ```
-5. **Run visual reference analysis** on each screenshot (see below)
-6. Note any gaps — screens that have no screenshot. These will fall back to mock UI.
-7. Save the mapping AND the visual analysis to `screenshots` in `.appshot-context.json`
+4. **Run visual reference analysis** on each screenshot (see below)
+5. Note any gaps — screens that have no screenshot. These will fall back to mock UI built from `uiPatterns`.
+6. Save the mapping AND the visual analysis to `screenshots` in `.appshot-context.json`
 
 ### Visual reference analysis
 
@@ -472,10 +471,10 @@ For each provided screenshot, study the image and write a structured visual spec
 - This analysis overrides `uiPatterns` from code extraction when they conflict — the screenshot is the visual truth.
 
 **Screenshot requirements** (tell the user):
-- Native resolution or higher
-- Clean state — no notifications, no debug banners, no personal data
+- Any resolution — these are reference images, not embedded in the output
+- Clean state — no notifications or debug banners (so the analysis captures the real design)
 - One screenshot per distinct screen/feature. Multiple states of the same screen welcome.
-- The skill will add overlay text and animations — the screenshot is the visual base only.
+- The skill will analyze your screenshots and build animated mock UI that matches your app's look exactly.
 
 **If the user declines**, set `screenshots: []` and proceed. The skill will generate mock UI from extracted patterns as before.
 

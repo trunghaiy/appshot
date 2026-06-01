@@ -56,7 +56,7 @@ AskUserQuestion({
 })
 ```
 
-After extraction is confirmed, run the **Collect screenshots** step from [appshot-core](../appshot-core/SKILL.md#collect-screenshots-optional). If the user provides screenshots, copy them into `appshot-images/screens/` and save the mapping to `.appshot-context.json`.
+After extraction is confirmed, run the **Collect screenshots** step from [appshot-core](../appshot-core/SKILL.md#collect-screenshots-optional). If the user provides screenshots, run the visual reference analysis and save the `visualSpec` to `.appshot-context.json`. Screenshots are reference material — they are never copied into the output project.
 
 STOP HERE. Do NOT proceed to Phase 2 until the user responds to both questions.
 
@@ -271,21 +271,7 @@ npx playwright screenshot screenshot-1.html screenshot-1.png --viewport-size 108
 
 Produce the chosen format with all creative decisions baked in. No placeholders.
 
-**Screenshot-based rendering:** When the user provided real screenshots, use the screenshot image as the screen content instead of building mock UI. The screenshot fills the device screen area (App Store Preview: full canvas; Marketing: inside device frame). Add headline and subtitle as overlays with a semi-transparent background. The screenshot provides all visual fidelity — the skill only adds text and layout.
-
-```html
-<!-- App Store Preview: screenshot fills canvas, text overlays on top -->
-<div style="width: 1320px; height: 2868px; position: relative; overflow: hidden;">
-  <img src="screens/recording.png" style="width: 100%; height: 100%; object-fit: cover;" />
-  <div style="position: absolute; bottom: 200px; left: 0; right: 0; text-align: center;">
-    <div style="display: inline-block; padding: 16px 32px; background: rgba(0,0,0,0.65); border-radius: 16px;">
-      <h2 style="color: white; font-size: 64px;">Record thoughts in one tap.</h2>
-    </div>
-  </div>
-</div>
-```
-
-For screenshots that don't have matching user-provided images, fall back to mock UI built from extracted `uiPatterns`.
+**Screenshots are reference material, not content.** Never embed user-provided screenshots as `<img>` tags in the output. Screenshots inform the `visualSpec` — the mock HTML/CSS must match the visual spec's exact colors, shapes, spacing, and typography, but the UI is always built as HTML/CSS (not an embedded image). This ensures the screenshot dimensions match the store requirements exactly and text renders crisply at any size.
 
 ### Phase 5: Review & iterate
 

@@ -41,7 +41,7 @@ AskUserQuestion({
 })
 ```
 
-After extraction is confirmed, run the **Collect screenshots** step from [appshot-core](../appshot-core/SKILL.md#collect-screenshots-optional). If the user provides screenshots, copy them into `appshot-video/public/screens/` and save the mapping to `.appshot-context.json`.
+After extraction is confirmed, run the **Collect screenshots** step from [appshot-core](../appshot-core/SKILL.md#collect-screenshots-optional). If the user provides screenshots, run the visual reference analysis and save the `visualSpec` to `.appshot-context.json`. Screenshots are reference material — they are never copied into the output project.
 
 STOP HERE. Do NOT proceed to Phase 2 until the user responds to both questions.
 
@@ -118,22 +118,23 @@ Present as: "Based on your [category] app, I'd recommend **[track]** ([mood]). W
 
 ### Step 6: Scene breakdown
 
-| # | Name | Duration | Screenshot | What the viewer sees | Caption |
+| # | Name | Duration | Visual ref | What the viewer sees | Caption |
 |---|------|----------|------------|---------------------|---------|
 | 1 | Hook | Xs | — | [text-only or composed graphic] | "..." |
-| 2 | Feature | Xs | `recording.png` | [real app screen with overlay] | "..." |
-| 3 | ... | Xs | mock | [generated mock UI] | "..." |
+| 2 | Feature | Xs | `recording.png` | [animated mock matching visualSpec] | "..." |
+| 3 | ... | Xs | `transcription.png` | [animated mock matching visualSpec] | "..." |
 
-The **Screenshot** column shows which user-provided screenshot is used (`filename.png`), `mock` for generated mock UI, or `—` for composed scenes (hook, CTA) that don't show app screens. If the user didn't provide screenshots, all app screen scenes use `mock`.
+The **Visual ref** column shows which user-provided screenshot is used as the styling reference for that scene's mock UI (`filename.png`), or `—` for composed scenes (hook, CTA) that don't depict app screens. If the user didn't provide screenshots, leave this column out.
 
 **Rules:**
 - Total: 15-30 seconds (under 25s ideal). Each scene: 3-6 seconds.
 - Every scene has a Caption.
-- **Screenshot scenes:** Use the real screenshot as the full visual. The skill only adds Caption overlay and optional zoom/pan animation. No mock UI needed.
-- **Mock scenes:** Content must mock THIS app's actual screens from extraction using `uiPatterns`. No generic UI.
-- **App Store Preview target:** Full-bleed screens (screenshot or mock) with navigation chrome. No PhoneFrame.
-- **Marketing target:** PhoneFrame wraps the screen content (screenshot or mock).
-- Hook and CTA scenes typically don't use screenshots — they use composed primitives (FloatingCard, AppIcon, AppStoreBadge).
+- **All app screen scenes are animated mock UI.** Screenshots are never embedded directly — they are visual references only. Build mock JSX that matches the `visualSpec` and adds animation (elements entering, counters ticking, waveforms pulsing).
+- **If screenshots provided:** Use the `visualSpec` for exact colors, shapes, spacing, typography. The mock must look like the screenshot.
+- **If no screenshots:** Use `uiPatterns` and `brand` colors. No generic UI.
+- **App Store Preview target:** Full-bleed animated mock screens with navigation chrome. No PhoneFrame.
+- **Marketing target:** PhoneFrame wraps the animated mock screen.
+- Hook and CTA scenes use composed primitives (FloatingCard, AppIcon, AppStoreBadge).
 - Final scene: CTA with app icon + tagline + store badge.
 
 ### Step 7: Draft all copy
@@ -205,8 +206,9 @@ STOP HERE. Do NOT proceed to Phase 3 until the user approves.
 Key points (details in code-guide):
 - Scaffold `appshot-video/` inside the target project, never in appshot template
 - Canvas: 886×1920px (App Store native)
-- **Screenshot scenes:** Use `<Img src={staticFile("screens/filename.png")} />` filling the canvas. Add only Caption overlay and optional zoom/pan. See code-guide section 6.
-- **Mock scenes:** Build UI from extracted patterns using `uiPatterns` and `brand` colors.
+- **Screenshots are reference, not content.** Never embed screenshots as `<Img>` in scenes. Build animated mock UI that matches the `visualSpec` from screenshot analysis. See code-guide section 6.
+- **If screenshots provided:** Use `visualSpec` for exact colors, shapes, spacing. Mock JSX should look like the screenshot but with animated elements.
+- **If no screenshots:** Build mock UI from `uiPatterns` and `brand` colors.
 - **App Store Preview target:** No PhoneFrame. Full-bleed screens (screenshot or mock) with navigation chrome. Text overlays on top. See code-guide section 5.
 - **Marketing target:** PhoneFrame `scale={1.5}`, text outside phone: 24px+ body, 34px+ titles
 - Scene 1: visible content at frame 0 (no TypeWriter first, no delayed springs)
