@@ -301,7 +301,12 @@ After extraction and user confirmation, save results to `.appshot-context.json` 
   "coreAction": "string",
   "valueProps": ["string"],
   "keywords": ["string — ranked ASO keywords, most important first, max 12"],
-  "screenshots": [{ "file": "relative path in public/screens/", "screen": "matched screen name", "description": "what this screenshot shows" }],
+  "screenshots": [{
+    "file": "relative path in public/screens/",
+    "screen": "matched screen name",
+    "description": "what this screenshot shows",
+    "visualSpec": "structured visual analysis — layout, colors, components, typography, special elements"
+  }],
   "storeDescription": "string or null",
   "sources": { "name": "source file", "colors": "source file", "keywords": "source file or 'derived'" }
 }
@@ -409,8 +414,62 @@ AskUserQuestion({
    
    Does this mapping look right?
    ```
-5. Note any gaps — screens that have no screenshot. These will fall back to mock UI.
-6. Save the mapping to `screenshots` in `.appshot-context.json`
+5. **Run visual reference analysis** on each screenshot (see below)
+6. Note any gaps — screens that have no screenshot. These will fall back to mock UI.
+7. Save the mapping AND the visual analysis to `screenshots` in `.appshot-context.json`
+
+### Visual reference analysis
+
+**CRITICAL:** This step is mandatory when screenshots are provided. Without it, mock scenes will look generic and not match the real app.
+
+For each provided screenshot, study the image and write a structured visual spec. This spec is used in two ways:
+- **Direct use scenes**: The screenshot is used as-is via `<Img>`, so the spec confirms what it shows
+- **Mock scenes and gap-fill**: When a scene needs mock UI (for animation, missing screenshots, or modified content), the spec is the source of truth for how to style it
+
+**For each screenshot, document:**
+
+```
+## [filename] → [Screen Name]
+
+**Layout:**
+- [top-to-bottom description of what appears: nav bar, content sections, bottom bar]
+- [approximate vertical proportions: "nav bar 8%, content 78%, tab bar 8%, home indicator 6%"]
+
+**Colors (sample from the image):**
+- Background: [exact color, e.g., "#0A1628 — very dark navy, NOT pure black"]
+- Cards/surfaces: [e.g., "#1A2940 — slightly lighter navy with subtle border"]
+- Accent: [e.g., "#3BB8E0 — teal/cyan for CTAs and active states"]
+- Text primary: [e.g., "#E8ECF1 — off-white"]
+- Text secondary: [e.g., "#6B7A8D — muted blue-grey"]
+- Highlight/badge: [e.g., "#E5C044 — warm yellow for 'Voice Recording' badge"]
+
+**Components (describe exactly what you see):**
+- Back button: [e.g., "48px rounded-square (#1A2940 bg), white chevron, no text"]
+- Nav actions: [e.g., "three icon buttons: more (⋯), share (↑), delete (🗑), same rounded-square style"]
+- Type badge: [e.g., "'Voice Recording' in yellow text on dark pill, microphone emoji prefix"]
+- Content cards: [e.g., "rounded-xl (~16px), #1A2940 bg, 1px border #2A3A50, 20px padding"]
+- Buttons: [e.g., "'Enhance · 2 credits' — outlined, teal border, rounded-full, 48px height"]
+- Tab bar: [e.g., "3 tabs with SF Symbol icons above labels, active=teal, inactive=grey, dark bg"]
+
+**Typography:**
+- Headings: [e.g., "32px, weight 700, white — 'May 28 at 11:03 PM'"]
+- Section headers: [e.g., "ALL CAPS, 13px, weight 600, letter-spacing 1px, teal — 'TRANSCRIPTION'"]
+- Body: [e.g., "16px, weight 400, off-white, line-height ~1.5"]
+- Labels: [e.g., "12px, weight 500, muted grey — metadata, tab labels"]
+
+**Special elements:**
+- [e.g., "Waveform: grey rounded-rect container, horizontal bars, blue play button 48px circle"]
+- [e.g., "Speed pills: row of 4 (0.75x, 1x, 1.5x, 2x), active has teal bg, others have dark bg"]
+- [e.g., "Coral/red horizontal divider line below title, 2px height"]
+- [e.g., "Vietnamese flag emoji + 'VI' in language selector pill"]
+```
+
+**Rules for the analysis:**
+- Be precise about colors — sample from the actual image, don't guess. "#0A1628" is very different from "#000000".
+- Describe component shapes exactly: "48px rounded-square" not "rounded button".
+- Note spacing: "20px padding inside cards", "12px gap between elements".
+- Note what is NOT there: "no shadow on cards", "no border on buttons", "no separator between list items".
+- This analysis overrides `uiPatterns` from code extraction when they conflict — the screenshot is the visual truth.
 
 **Screenshot requirements** (tell the user):
 - Native resolution or higher

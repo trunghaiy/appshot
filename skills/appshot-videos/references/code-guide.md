@@ -398,10 +398,98 @@ export const S2_Record: React.FC = () => {
 
 ## Matching the App's Visual Language
 
-When building mock UI (not using real screenshots), use the extracted `uiPatterns` from `.appshot-context.json` to match the real app's design:
+### Visual spec is the source of truth
+
+**CRITICAL: When screenshots are provided, the `visualSpec` from the screenshot analysis is the primary reference for mock UI — not `uiPatterns`, not `brand` colors, not your assumptions.** The visual spec documents exact colors, component shapes, spacing, and typography sampled directly from the real app. If the visual spec says the background is `#0A1628` but `brand.background` says `#1A1A2E`, use `#0A1628`.
+
+**Before writing ANY mock scene**, check if a screenshot exists for that screen (or a similar screen) in `.appshot-context.json`. If it does:
+1. Read the `visualSpec` for that screenshot
+2. Use the exact colors, border radii, spacing, and component styles from the spec
+3. Replicate the layout structure described in the spec (vertical proportions, section order)
+4. Match typography exactly: font size, weight, case, letter-spacing
+
+If no screenshot exists for the scene, use `visualSpec` from the most visually similar screenshot as a style reference — the overall app style (colors, card shapes, button styles) should stay consistent across scenes even when the content differs.
+
+### Example: mock scene WITH visual spec vs WITHOUT
+
+```tsx
+// CORRECT — uses exact values from visualSpec of transcription.png
+// visualSpec says: bg #0A1628, cards #1A2940 with 1px #2A3A50 border,
+// 16px radius, back button is 48px rounded-square, section headers
+// are ALL CAPS 13px teal with 1px letter-spacing
+export const S2_Transcription: React.FC = () => {
+  return (
+    <div style={{ background: "#0A1628", height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Status bar */}
+      <div className="flex items-center justify-between px-7 pt-3" style={{ height: 50 }}>
+        <span style={{ fontSize: 17, fontWeight: 600, color: "#E8ECF1" }}>9:41</span>
+        <StatusBarIcons color="#E8ECF1" />
+      </div>
+
+      {/* Nav bar — 48px rounded-square back button, icon actions right */}
+      <div className="flex items-center justify-between px-5" style={{ height: 56 }}>
+        <div style={{ width: 48, height: 48, borderRadius: 12, background: "#1A2940",
+                      display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ color: "#E8ECF1", fontSize: 20 }}>‹</span>
+        </div>
+        <div className="flex gap-4">
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: "#1A2940",
+                        display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ color: "#E8ECF1", fontSize: 16 }}>⋯</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Type badge */}
+      <div className="px-5 pt-3">
+        <span style={{ background: "#1A3A28", color: "#E5C044", fontSize: 13, fontWeight: 600,
+                        padding: "4px 12px", borderRadius: 8 }}>🎙 Voice Recording</span>
+      </div>
+
+      {/* Title */}
+      <div className="px-5 pt-3">
+        <span style={{ fontSize: 32, fontWeight: 700, color: "#E8ECF1" }}>Client strategy call</span>
+      </div>
+
+      {/* Section header — ALL CAPS, teal, letter-spacing */}
+      <div className="px-5 pt-6">
+        <span style={{ fontSize: 13, fontWeight: 600, color: "#3BB8E0",
+                        textTransform: "uppercase", letterSpacing: 1 }}>TRANSCRIPTION</span>
+      </div>
+
+      {/* ... content matching visual spec ... */}
+
+      <Caption text="AI transcribes in 47 languages." delay={5} />
+    </div>
+  );
+};
+
+// WRONG — ignores visual spec, uses generic styling
+export const S2_Transcription: React.FC = () => {
+  const { brand } = appConfig;
+  return (
+    <div style={{ background: brand.background }} className="flex flex-col h-full">
+      {/* Generic nav with tiny back arrow */}
+      <div className="flex items-center px-4 pt-4">
+        <span style={{ color: brand.textPrimary }}>←</span>
+        <span style={{ fontSize: 14, color: brand.textSecondary, marginLeft: 8 }}>VOICE RECORDING</span>
+      </div>
+      {/* Generic title — wrong size, wrong weight, wrong color */}
+      <h1 className="px-4 pt-2 text-xl font-bold text-white">Client strategy call</h1>
+      {/* Generic section header — not ALL CAPS, not teal, no letter-spacing */}
+      <span className="px-4 pt-4 text-sm text-gray-400">Transcription</span>
+      {/* ... generic content that doesn't match the app ... */}
+    </div>
+  );
+};
+```
+
+### Fallback: no screenshots provided
+
+When building mock UI without screenshots, use the extracted `uiPatterns` from `.appshot-context.json`:
 
 - **Border radius**: If the app uses pill buttons (`borderRadius: 9999`), your mock buttons should too. If the app uses `8px` card corners, don't use `16px`.
-- **Button style**: Match shape, size, and fill style. A dark app with large rounded-square buttons (like the voice recorder example) should not get small pill-shaped buttons.
+- **Button style**: Match shape, size, and fill style. A dark app with large rounded-square buttons should not get small pill-shaped buttons.
 - **Card style**: Match background color, border presence, and shadow depth. If the app uses dark surface cards with no border, don't add light cards with borders.
 - **Typography**: Use the same font weight hierarchy. If the app uses `800` weight headings, use that. If section headers are ALL CAPS with letter spacing, replicate it.
 - **Icon style**: Reference the correct icon library. Don't render SF Symbols if the app uses Ionicons.
@@ -425,7 +513,8 @@ When building mock UI (not using real screenshots), use the extracted `uiPattern
 - [ ] All text matches Phase 2 copy (verbatim)
 - [ ] Brand colors from extraction, not template defaults
 - [ ] Each scene mocks actual app UI from extraction
-- [ ] Mock UI matches extracted `uiPatterns` (border radius, button style, card style, typography)
+- [ ] **If screenshots provided:** Mock scenes use exact colors, shapes, and spacing from `visualSpec` — not generic values
+- [ ] **If no screenshots:** Mock UI matches extracted `uiPatterns` (border radius, button style, card style, typography)
 
 ## Post-Write Self-Check
 

@@ -223,9 +223,13 @@ AskUserQuestion({
 })
 ```
 
-**Phone screen content:** Build all device screen content as HTML/CSS mock-ups from the extracted context — screen layouts, brand colors, realistic sample data. Use the extracted `screens`, `features`, `navigation`, `uiPatterns`, `brand` colors, and `coreAction` from `.appshot-context.json` to build realistic-looking app UI. Match the app's visual design language from `uiPatterns` — border radius, button style, card style, typography weight, icon library, and spacing. Generic-looking mock UI that doesn't match the real app undermines credibility.
+**Phone screen content:** Build all device screen content as HTML/CSS mock-ups from the extracted context — screen layouts, brand colors, realistic sample data. Use the extracted `screens`, `features`, `navigation`, `uiPatterns`, `brand` colors, and `coreAction` from `.appshot-context.json` to build realistic-looking app UI.
 
-If the user provided real screenshots (see `screenshots` in context), use those instead of building mock UI — see the screenshot-based scene guidance below.
+**If screenshots were provided:** The `visualSpec` from the screenshot analysis is the primary style reference. Before writing any mock HTML/CSS for a screen, check if a screenshot exists for that screen (or a similar one). Use the exact colors, border radii, spacing, component shapes, and typography from the visual spec — not generic values. If the spec says the background is `#0A1628` and cards are `#1A2940` with `1px #2A3A50` border, use those exact values. For screens without a matching screenshot, use the visual spec from the most similar screenshot to maintain consistent styling.
+
+**If no screenshots:** Match the app's visual design language from `uiPatterns` — border radius, button style, card style, typography weight, icon library, and spacing. Generic-looking mock UI that doesn't match the real app undermines credibility.
+
+For screens that have a direct screenshot match, prefer using the screenshot image directly (`<img>` tag) with text overlay rather than building mock HTML — this gives the highest fidelity.
 
 **App Store Preview target:** The mock screen fills the entire screenshot canvas edge-to-edge. Include status bar, navigation bar, tab bar, and home indicator. Headline and subtitle text overlay on top of the app screen with a semi-transparent background for readability. No device frames.
 
