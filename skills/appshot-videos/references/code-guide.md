@@ -257,10 +257,12 @@ export const S2_Feature: React.FC = () => {
         <StatusBarIcons color={brand.textPrimary} />
       </div>
 
-      {/* Navigation bar — 77px title (34px × 2.25), 63px action icon (28px × 2.25) */}
+      {/* Navigation bar — 77px title (34px × 2.25), SVG action icon */}
       <div className="flex items-center justify-between" style={{ height: 126, padding: "0 45px" }}>
         <span style={{ fontSize: 77, fontWeight: 700, color: brand.textPrimary }}>Library</span>
-        <span style={{ fontSize: 63, color: brand.primary }}>＋</span>
+        <svg width={56} height={56} viewBox="0 0 24 24" stroke={brand.primary} strokeWidth={2.5} fill="none">
+          <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+        </svg>
       </div>
 
       {/* App content area */}
@@ -359,7 +361,7 @@ Use the extracted `navigation` data from `.appshot-context.json` for tab labels,
 
 All sizes below are canvas-scaled (886px). Phone-logical sizes in parentheses.
 
-- **iOS status bar**: "9:41" at 38px (17px) left, StatusBarIcons right. Height: 110px (50px).
+- **iOS status bar**: "9:41" at 38px (17px) left, StatusBarIcons right. Height: 110px (50px). Note: the `<StatusBarIcons>` component renders at a fixed small size — wrap it in a `<div style={{ transform: "scale(2.25)" }}>` to match the canvas scale.
 - **iOS large title nav bar**: 77px (34px) bold title, left-aligned. Optional right action button.
 - **iOS inline nav bar**: 38px (17px) semibold title, centered. Back button 108px (48px) square left.
 - **iOS tab bar**: Icon 54px (24px) + label 25px (11px) per tab, active in `brand.primary`, inactive in `brand.textSecondary`. Height: ~130px (58px).
@@ -401,7 +403,9 @@ export const S2_Record: React.FC = () => {
         <div className="flex items-center" style={{ height: 126, padding: "0 40px" }}>
           <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
                         display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ color: "#E8ECF1", fontSize: 50 }}>‹</span>
+            <svg width={44} height={44} viewBox="0 0 24 24" fill="none" stroke="#E8ECF1" strokeWidth={2.5}>
+              <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
           <span style={{ fontSize: 45, fontWeight: 600, color: "#E8ECF1", marginLeft: 27 }}>Voice Recording</span>
         </div>
@@ -560,19 +564,34 @@ export const S2_Transcription: React.FC = () => {
         <StatusBarIcons color="#E8ECF1" />
       </div>
 
-      {/* ── Nav bar: 108px buttons (48×2.25), icon text 50px ── */}
+      {/* ── Nav bar: 108px buttons (48×2.25), SVG icons ── */}
       <div className="flex items-center justify-between" style={{ padding: "0 40px", height: 126 }}>
         <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
                       display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ color: "#E8ECF1", fontSize: 50 }}>‹</span>
+          <svg width={44} height={44} viewBox="0 0 24 24" fill="none" stroke="#E8ECF1" strokeWidth={2.5}>
+            <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
         <div className="flex" style={{ gap: 14 }}>
-          {["⋯", "↑", "🗑"].map((icon, i) => (
-            <div key={i} style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
-                                  display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ color: i === 2 ? "#E85D5D" : "#E8ECF1", fontSize: 40 }}>{icon}</span>
-            </div>
-          ))}
+          {/* More, Share, Trash — all as inline SVG */}
+          <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
+                        display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width={44} height={44} viewBox="0 0 24 24" fill="#E8ECF1">
+              <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
+            </svg>
+          </div>
+          <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
+                        display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width={44} height={44} viewBox="0 0 24 24" fill="none" stroke="#E8ECF1" strokeWidth={2}>
+              <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 3v12M7 8l5-5 5 5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
+                        display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width={44} height={44} viewBox="0 0 24 24" fill="none" stroke="#E85D5D" strokeWidth={2}>
+              <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
         </div>
       </div>
 
@@ -600,7 +619,7 @@ export const S2_Transcription: React.FC = () => {
             <div className="flex items-center" style={{ gap: 14 }}>
               <div style={{ width: 99, height: 99, borderRadius: 50, background: "#3BB8E0",
                             display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ color: "#FFF", fontSize: 36 }}>▶</span>
+                <svg width={36} height={36} viewBox="0 0 24 24" fill="#FFF"><path d="M5 3l14 9-14 9V3z" /></svg>
               </div>
               <span style={{ fontSize: 31, color: "#6B7A8D", fontVariantNumeric: "tabular-nums" }}>0:00 / 4:23</span>
             </div>
@@ -725,13 +744,18 @@ When building mock UI without screenshots, use the extracted `uiPatterns` from `
 - **Icon style**: Reference the correct icon library. Don't render SF Symbols if the app uses Ionicons.
 - **Spacing**: Match the app's density. A spacious app with `24px` section gaps should not get cramped `8px` gaps.
 
+All sizes from `uiPatterns` are phone-logical — apply the ×2.25 canvas scale factor.
+
 ```tsx
-// CORRECT — matches app's dark card style with rounded corners
+// CORRECT — matches app's dark card style, canvas-scaled
 <div style={{
   background: brand.surface,       // dark card bg from extraction
-  borderRadius: 16,                // from uiPatterns.borderRadius.card
-  padding: 20,                     // from uiPatterns.spacing
+  borderRadius: 36,                // 16px × 2.25 from uiPatterns.borderRadius.card
+  padding: 45,                     // 20px × 2.25 from uiPatterns.spacing
 }}>
+
+// WRONG — phone-logical sizes (too small on 886px canvas)
+<div style={{ borderRadius: 16, padding: 20 }}>
 
 // WRONG — generic light card that doesn't match the app
 <div className="bg-white rounded-lg shadow-md p-4">
@@ -745,6 +769,9 @@ When building mock UI without screenshots, use the extracted `uiPatterns` from `
 - [ ] Each scene mocks actual app UI from extraction
 - [ ] **If screenshots provided:** Mock scenes use exact colors, shapes, and spacing from `visualSpec` — not generic values
 - [ ] **If no screenshots:** Mock UI matches extracted `uiPatterns` (border radius, button style, card style, typography)
+- [ ] All sizes are canvas-scaled (×2.25 for 886px). No phone-logical values anywhere in scene code.
+- [ ] All icons are inline SVG. No Unicode characters.
+- [ ] Every element from the visualSpec/screen is present. No abbreviations.
 
 ## Post-Write Self-Check
 
@@ -770,3 +797,6 @@ When building mock UI without screenshots, use the extracted `uiPatterns` from `
 12. **Device prop threading:** Orchestrator accepts `{ device: DevicePreset }`, passes to each scene, scenes pass to `<PhoneFrame>`? (Marketing target only.)
 13. **Navigation chrome (App Store Preview):** Every mock screen has status bar + navigation bar + tab bar (if the app uses tabs)? Chrome matches extracted `navigation` data?
 14. **No device frames (App Store Preview):** Zero uses of `<PhoneFrame>` in any scene? App UI fills full canvas?
+15. **Canvas scale (App Store Preview):** ALL sizes multiplied by 2.25? No phone-logical values (17px, 48px, 11px) used directly? Smallest text should be ~25px, smallest interactive element ~90px.
+16. **Icons:** All icons are inline SVG? Zero Unicode characters used for icons (`⌂`, `⚲`, `⚙`, `⋯`, `↑`, `🗑`, `▶`, `‹` etc.)?
+17. **Completeness:** Every visible element from the visualSpec present in the scene? No `{/* ... */}` placeholder comments? Count elements in spec vs elements in code.
