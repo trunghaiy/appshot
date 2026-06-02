@@ -268,21 +268,29 @@ export const S2_Feature: React.FC = () => {
         {/* ... realistic app content at scaled sizes ... */}
       </div>
 
-      {/* Tab bar — icons 54px, labels 25px (11px × 2.25) */}
+      {/* Tab bar — 54px SVG icons, 25px labels */}
       <div className="flex items-center justify-around"
            style={{ borderTop: `2px solid ${brand.textSecondary}20`, background: brand.surface,
                     height: 130, paddingBottom: 18 }}>
         {[
-          { icon: "⌂", label: "Home", active: true },
-          { icon: "⚲", label: "Search", active: false },
-          { icon: "👤", label: "Profile", active: false },
-        ].map((tab, i) => (
-          <div key={i} className="flex flex-col items-center" style={{ gap: 4 }}>
-            <span style={{ fontSize: 54, color: tab.active ? brand.primary : brand.textSecondary }}>{tab.icon}</span>
-            <span style={{ fontSize: 25, fontWeight: tab.active ? 600 : 400,
-                            color: tab.active ? brand.primary : brand.textSecondary }}>{tab.label}</span>
-          </div>
-        ))}
+          { label: "Home", active: true },
+          { label: "Search", active: false },
+          { label: "Profile", active: false },
+        ].map((tab, i) => {
+          const color = tab.active ? brand.primary : brand.textSecondary;
+          return (
+            <div key={i} className="flex flex-col items-center" style={{ gap: 4 }}>
+              {/* Use inline SVG — never Unicode. See Icon Rendering section. */}
+              <svg width={54} height={54} viewBox="0 0 24 24" fill={i === 0 ? color : "none"}
+                   stroke={i === 0 ? "none" : color} strokeWidth={2}>
+                {i === 0 && <path d="M3 12l9-9 9 9v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />}
+                {i === 1 && <><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" strokeLinecap="round" /></>}
+                {i === 2 && <><circle cx="12" cy="8" r="4" /><path d="M20 21a8 8 0 10-16 0" /></>}
+              </svg>
+              <span style={{ fontSize: 25, fontWeight: tab.active ? 600 : 400, color }}>{tab.label}</span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Home indicator — 302×11px (134×5 × 2.25) */}
@@ -453,6 +461,47 @@ export const S2_Record: React.FC = () => {
 - Progress bars filling
 - Elements appearing in sequence (staggered `delay`)
 
+## Icon Rendering
+
+**Never use Unicode characters for icons.** Unicode glyphs (`⌂`, `⚲`, `⚙`, `⋯`) render as OS-specific shapes that don't match the app's real icons. Instead, draw icons as inline SVG paths that match the icon descriptions from the visual spec.
+
+```tsx
+// CORRECT — inline SVG that matches the app's actual "house" tab icon
+<svg width={54} height={54} viewBox="0 0 24 24" fill={tab.active ? "#3BB8E0" : "#6B7A8D"}>
+  <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z" />
+</svg>
+
+// CORRECT — inline SVG for "magnifying glass" search icon
+<svg width={54} height={54} viewBox="0 0 24 24" fill="none" stroke={tab.active ? "#3BB8E0" : "#6B7A8D"} strokeWidth={2}>
+  <circle cx="11" cy="11" r="7" />
+  <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
+</svg>
+
+// CORRECT — inline SVG for "gear" settings icon
+<svg width={54} height={54} viewBox="0 0 24 24" fill="none" stroke={tab.active ? "#3BB8E0" : "#6B7A8D"} strokeWidth={2}>
+  <circle cx="12" cy="12" r="3" />
+  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+</svg>
+
+// WRONG — Unicode characters that don't match the app's icons
+<span style={{ fontSize: 54 }}>⌂</span>    // OS-dependent, wrong shape
+<span style={{ fontSize: 54 }}>⚲</span>    // Not a search icon on most systems
+<span style={{ fontSize: 54 }}>⚙</span>    // Generic gear, wrong weight/style
+```
+
+**Common icons as SVG (viewBox 0 0 24 24, scale with width/height):**
+- **Home**: filled house shape — `M3 12l9-9 9 9v8a2 2 0 01-2 2H5a2 2 0 01-2-2z`
+- **Search**: circle + diagonal line — `<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>`
+- **Settings/Gear**: circle center + cog path (see example above)
+- **Back chevron**: `M15 18l-6-6 6-6` (stroke, no fill)
+- **More/ellipsis**: three circles — `<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>`
+- **Share/upload**: `M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 3v12M7 8l5-5 5 5`
+- **Trash**: `M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14`
+- **Play**: `M5 3l14 9-14 9V3z` (filled triangle)
+- **Pause**: two rectangles — `M6 4h4v16H6zM14 4h4v16h-4z`
+
+Read the icon descriptions from the `visualSpec` and pick the SVG path that best matches. For app-specific icons not listed here, draw a simplified SVG that captures the recognizable shape.
+
 ## Code Quality Rules
 
 - Every scene: self-contained `.tsx` in `src/scenes/`, typically 80-150 lines (complex screens with many elements may reach 180+)
@@ -460,6 +509,7 @@ export const S2_Record: React.FC = () => {
 - All motion: Remotion `spring()` or `interpolate()` — no CSS transitions
 - Demo data: realistic names, plausible numbers, proper formatting
 - Status bar: "9:41" for App Store (iPhone), "12:30" for Play Store (Pixel)
+- Icons: inline SVG paths, never Unicode characters (see Icon Rendering section above)
 - Remove unused imports
 
 ## Matching the App's Visual Language
@@ -619,21 +669,36 @@ export const S2_Transcription: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Tab bar: 54px icons (24×2.25), 25px labels (11×2.25), height 130px ── */}
+      {/* ── Tab bar: 54px SVG icons, 25px labels, height 130px ── */}
       <div className="flex items-center justify-around"
            style={{ borderTop: "2px solid #1A2940", background: "#0D1520",
                     height: 130, padding: "0 36px 10px" }}>
         {[
-          { icon: "⌂", label: "Home", active: true },
-          { icon: "⚲", label: "Search", active: false },
-          { icon: "⚙", label: "Settings", active: false },
-        ].map((tab, i) => (
-          <div key={i} className="flex flex-col items-center" style={{ gap: 4 }}>
-            <span style={{ fontSize: 54, color: tab.active ? "#3BB8E0" : "#6B7A8D" }}>{tab.icon}</span>
-            <span style={{ fontSize: 25, fontWeight: tab.active ? 600 : 400,
-                            color: tab.active ? "#3BB8E0" : "#6B7A8D" }}>{tab.label}</span>
-          </div>
-        ))}
+          { label: "Home", active: true, path: "M3 12l9-9 9 9v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" },
+          { label: "Search", active: false, path: "" },
+          { label: "Settings", active: false, path: "" },
+        ].map((tab, i) => {
+          const color = tab.active ? "#3BB8E0" : "#6B7A8D";
+          return (
+            <div key={i} className="flex flex-col items-center" style={{ gap: 4 }}>
+              {i === 0 && (
+                <svg width={54} height={54} viewBox="0 0 24 24" fill={color}><path d={tab.path} /></svg>
+              )}
+              {i === 1 && (
+                <svg width={54} height={54} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
+                  <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" strokeLinecap="round" />
+                </svg>
+              )}
+              {i === 2 && (
+                <svg width={54} height={54} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                </svg>
+              )}
+              <span style={{ fontSize: 25, fontWeight: tab.active ? 600 : 400, color }}>{tab.label}</span>
+            </div>
+          );
+        })}
       </div>
 
       {/* ── Home indicator: 302×11px (134×5 × 2.25) ── */}
