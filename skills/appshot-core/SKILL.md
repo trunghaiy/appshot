@@ -470,6 +470,7 @@ For each provided screenshot, study the image and write a structured visual spec
 - Note spacing: "20px padding inside cards", "12px gap between elements".
 - Note what is NOT there: "no shadow on cards", "no border on buttons", "no separator between list items".
 - This analysis overrides `uiPatterns` from code extraction when they conflict — the screenshot is the visual truth.
+- **Sizes in the visual spec are phone-logical.** The 886px App Store Preview canvas is 2.25× wider than an iPhone 16 Pro (393px). All sizes must be multiplied by 2.25 when writing scene code: a 48px button becomes 108px, 16px text becomes 36px, 11px tab labels become 25px. The code-guide has a complete scale table.
 
 **Screenshot requirements** (tell the user):
 - Any resolution — these are reference images, not embedded in the output

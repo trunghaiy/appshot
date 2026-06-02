@@ -245,49 +245,51 @@ export const RemotionRoot: React.FC = () => (
 When the user selects the **App Store Preview** target, scenes must NOT use PhoneFrame. Instead, the app UI fills the entire 886×1920 canvas.
 
 ```tsx
-// CORRECT — App Store Preview: full-bleed app screen
+// CORRECT — App Store Preview: full-bleed, all sizes scaled for 886px canvas
 export const S2_Feature: React.FC = () => {
   const { brand } = appConfig;
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden"
          style={{ background: brand.background }}>
-      {/* Status bar */}
-      <div className="flex items-center justify-between px-8 pt-4" style={{ height: 54 }}>
-        <span style={{ fontSize: 17, fontWeight: 600, color: brand.textPrimary }}>9:41</span>
+      {/* Status bar — 38px text (17px × 2.25) */}
+      <div className="flex items-center justify-between" style={{ height: 110, padding: "0 45px", paddingTop: 20 }}>
+        <span style={{ fontSize: 38, fontWeight: 600, color: brand.textPrimary }}>9:41</span>
         <StatusBarIcons color={brand.textPrimary} />
       </div>
 
-      {/* Navigation bar */}
-      <div className="flex items-center justify-between px-6" style={{ height: 56 }}>
-        <span style={{ fontSize: 34, fontWeight: 700, color: brand.textPrimary }}>Library</span>
-        <span style={{ fontSize: 28, color: brand.primary }}>＋</span>
+      {/* Navigation bar — 77px title (34px × 2.25), 63px action icon (28px × 2.25) */}
+      <div className="flex items-center justify-between" style={{ height: 126, padding: "0 45px" }}>
+        <span style={{ fontSize: 77, fontWeight: 700, color: brand.textPrimary }}>Library</span>
+        <span style={{ fontSize: 63, color: brand.primary }}>＋</span>
       </div>
 
-      {/* App content area — your mock UI goes here */}
-      <div className="flex-1 px-6 pt-4">
-        {/* ... realistic app content ... */}
+      {/* App content area */}
+      <div style={{ flex: 1, padding: "18px 45px" }}>
+        {/* ... realistic app content at scaled sizes ... */}
       </div>
 
-      {/* Tab bar */}
-      <div className="flex items-center justify-around border-t px-4 pb-8 pt-2"
-           style={{ borderColor: `${brand.textSecondary}20`, background: brand.surface }}>
-        <div className="flex flex-col items-center gap-1">
-          <span style={{ fontSize: 11, color: brand.primary, fontWeight: 600 }}>Home</span>
-        </div>
-        <div className="flex flex-col items-center gap-1">
-          <span style={{ fontSize: 11, color: brand.textSecondary }}>Search</span>
-        </div>
-        <div className="flex flex-col items-center gap-1">
-          <span style={{ fontSize: 11, color: brand.textSecondary }}>Profile</span>
-        </div>
+      {/* Tab bar — icons 54px, labels 25px (11px × 2.25) */}
+      <div className="flex items-center justify-around"
+           style={{ borderTop: `2px solid ${brand.textSecondary}20`, background: brand.surface,
+                    height: 130, paddingBottom: 18 }}>
+        {[
+          { icon: "⌂", label: "Home", active: true },
+          { icon: "⚲", label: "Search", active: false },
+          { icon: "👤", label: "Profile", active: false },
+        ].map((tab, i) => (
+          <div key={i} className="flex flex-col items-center" style={{ gap: 4 }}>
+            <span style={{ fontSize: 54, color: tab.active ? brand.primary : brand.textSecondary }}>{tab.icon}</span>
+            <span style={{ fontSize: 25, fontWeight: tab.active ? 600 : 400,
+                            color: tab.active ? brand.primary : brand.textSecondary }}>{tab.label}</span>
+          </div>
+        ))}
       </div>
 
-      {/* Home indicator */}
-      <div className="flex justify-center pb-2">
-        <div style={{ width: 134, height: 5, borderRadius: 3, background: brand.textPrimary, opacity: 0.2 }} />
+      {/* Home indicator — 302×11px (134×5 × 2.25) */}
+      <div className="flex justify-center" style={{ paddingBottom: 14 }}>
+        <div style={{ width: 302, height: 11, borderRadius: 6, background: brand.textPrimary, opacity: 0.2 }} />
       </div>
 
-      {/* Caption overlays on top of app UI */}
       <Caption text="Your entire library, organized." delay={5} />
     </div>
   );
@@ -303,25 +305,58 @@ export const S2_Feature: React.FC = () => {
 </div>
 ```
 
-**Text sizes for full-screen mode (886px canvas):**
+**CRITICAL — Element scaling for full-screen mode (886px canvas):**
+
+The 886px canvas is **2.25× wider** than an iPhone 16 Pro screen (393px). All element sizes must be scaled up by this factor. Using phone-logical sizes (17px, 13px, 11px) directly on the 886px canvas produces tiny, unreadable UI.
+
 ```tsx
-// Status bar time: 17px, weight 600
-// Nav bar large title: 34px, weight 700
-// Nav bar inline title: 20px, weight 600
-// Body text: 17-20px
-// Tab bar labels: 11-12px
-// Caption: unchanged (44px default, overlaid with pill background)
+// Scale factor: 886 / 393 ≈ 2.25
+// Multiply ALL phone-logical sizes by 2.25
+
+// ── Text ──
+// Status bar time:    17px × 2.25 = 38px, weight 600
+// Nav bar large title: 34px × 2.25 = 77px, weight 700
+// Nav bar inline title: 17px × 2.25 = 38px, weight 600
+// Section headers:    13px × 2.25 = 29px (ALL CAPS with letter-spacing)
+// Body text:          16px × 2.25 = 36px
+// Small labels:       12px × 2.25 = 27px
+// Tab bar labels:     11px × 2.25 = 25px
+// Caption: unchanged (44px, handled by Caption component)
+
+// ── Elements ──
+// Nav buttons:        48px × 2.25 = 108px (borderRadius: 27px)
+// Nav button icons:   22px × 2.25 = 50px
+// Tab bar icons:      24px × 2.25 = 54px
+// Play button:        44px × 2.25 = 99px
+// Speed pills:        height 28px × 2.25 = 63px
+// Badge pills:        height 24px × 2.25 = 54px
+
+// ── Spacing ──
+// Horizontal padding: 20px × 2.25 = 45px (use px-11 or px-12)
+// Card padding:       16px × 2.25 = 36px
+// Section gap:        24px × 2.25 = 54px
+// Element gap:        12px × 2.25 = 27px
+// Card border-radius: 16px × 2.25 = 36px
+
+// ── Misc ──
+// Card border:        1px → 2px (scale borders minimally)
+// Divider height:     2px → 3px
+// Home indicator:     134×5px → 302×11px
 ```
+
+**The same scale factor applies to ALL visual specs.** When the `visualSpec` says a button is 48px, that's the phone-logical size — render it as 108px on the 886px canvas. When it says font-size 16px, render 36px.
 
 **Navigation chrome reference:**
 Use the extracted `navigation` data from `.appshot-context.json` for tab labels, icon descriptions, header style, and status bar style. The chrome must match the actual app — don't invent navigation that doesn't exist.
 
-- **iOS status bar**: "9:41" left, signal + wifi + battery icons right. Use `<StatusBarIcons>` from components.
-- **iOS large title nav bar**: 34px bold title, left-aligned. Optional right action button.
-- **iOS inline nav bar**: 20px semibold title, centered. Back arrow left, action right.
-- **iOS tab bar**: Icon + label per tab, active tab in `brand.primary`, inactive in `brand.textSecondary`. Bottom safe area padding.
-- **iOS home indicator**: 134×5px rounded bar, centered, 20% opacity.
-- **Android status bar**: "12:30" left, icons right.
+All sizes below are canvas-scaled (886px). Phone-logical sizes in parentheses.
+
+- **iOS status bar**: "9:41" at 38px (17px) left, StatusBarIcons right. Height: 110px (50px).
+- **iOS large title nav bar**: 77px (34px) bold title, left-aligned. Optional right action button.
+- **iOS inline nav bar**: 38px (17px) semibold title, centered. Back button 108px (48px) square left.
+- **iOS tab bar**: Icon 54px (24px) + label 25px (11px) per tab, active in `brand.primary`, inactive in `brand.textSecondary`. Height: ~130px (58px).
+- **iOS home indicator**: 302×11px rounded bar, centered, 20% opacity.
+- **Android status bar**: "12:30" at 38px left, icons right.
 - **Android bottom navigation**: Same concept as iOS tab bar, Material style.
 
 **Marketing target:** Continue using PhoneFrame as in sections 2-4 above. Navigation chrome inside the phone is nice-to-have.
@@ -339,61 +374,57 @@ Why: AppShot's value is animated, living mock UI — elements entering with spri
 4. The result looks like the real app AND has motion
 
 ```tsx
-// CORRECT — Animated mock UI built from visualSpec of recording.png
-// The scene LOOKS like the screenshot but elements animate in
+// CORRECT — Animated mock, all sizes canvas-scaled (×2.25)
 export const S2_Record: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
   const waveformProgress = interpolate(frame, [10, 80], [0, 1], { extrapolateRight: "clamp" });
   const timerSeconds = Math.floor(interpolate(frame, [0, 150], [0, 5], { extrapolateRight: "clamp" }));
 
   return (
     <div style={{ background: "#0A1628", height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
-      {/* Status bar */}
-      <div className="flex items-center justify-between px-7 pt-3" style={{ height: 50 }}>
-        <span style={{ fontSize: 17, fontWeight: 600, color: "#E8ECF1" }}>9:41</span>
+      {/* Status bar — 38px (17×2.25) */}
+      <div className="flex items-center justify-between" style={{ height: 110, padding: "20px 45px 0" }}>
+        <span style={{ fontSize: 38, fontWeight: 600, color: "#E8ECF1" }}>9:41</span>
         <StatusBarIcons color="#E8ECF1" />
       </div>
 
-      {/* Nav — 48px rounded-square back button matching visualSpec */}
+      {/* Nav — 108px button (48×2.25), 45px text (20×2.25) */}
       <FadeIn delay={0} direction="down">
-        <div className="flex items-center px-5" style={{ height: 56 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: "#1A2940",
+        <div className="flex items-center" style={{ height: 126, padding: "0 40px" }}>
+          <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
                         display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ color: "#E8ECF1", fontSize: 20 }}>‹</span>
+            <span style={{ color: "#E8ECF1", fontSize: 50 }}>‹</span>
           </div>
-          <span style={{ fontSize: 20, fontWeight: 600, color: "#E8ECF1", marginLeft: 12 }}>Voice Recording</span>
+          <span style={{ fontSize: 45, fontWeight: 600, color: "#E8ECF1", marginLeft: 27 }}>Voice Recording</span>
         </div>
       </FadeIn>
 
-      {/* Recording indicator — animates in */}
-      <FadeIn delay={8} direction="none" className="flex flex-col items-center pt-20">
-        <div className="flex items-center gap-2">
-          <div style={{ width: 10, height: 10, borderRadius: 5,
+      {/* Recording indicator — 36px text (16×2.25), pulsing dot 22px (10×2.25) */}
+      <FadeIn delay={8} direction="none" className="flex flex-col items-center" style={{ paddingTop: 90 }}>
+        <div className="flex items-center" style={{ gap: 10 }}>
+          <div style={{ width: 22, height: 22, borderRadius: 11,
                         background: "#FF4444", opacity: 0.5 + Math.sin(frame * 0.15) * 0.5 }} />
-          <span style={{ fontSize: 16, color: "#FF6B6B", fontWeight: 500 }}>Recording</span>
+          <span style={{ fontSize: 36, color: "#FF6B6B", fontWeight: 500 }}>Recording</span>
         </div>
       </FadeIn>
 
-      {/* Animated waveform — bars grow over time */}
-      <div className="flex items-center justify-center px-12 pt-8" style={{ height: 80 }}>
+      {/* Animated waveform — 9px bars (4×2.25), 180px height (80×2.25) */}
+      <div className="flex items-center justify-center" style={{ height: 180, padding: "36px 54px 0" }}>
         {Array.from({ length: 40 }).map((_, i) => {
-          const barHeight = Math.sin(i * 0.5 + frame * 0.1) * 20 + 25;
+          const barHeight = Math.sin(i * 0.5 + frame * 0.1) * 45 + 56;
           const visible = i / 40 < waveformProgress;
           return (
             <div key={i} style={{
-              width: 4, height: visible ? barHeight : 2, marginRight: 3,
-              background: "#3BB8E0", borderRadius: 2,
-              transition: "height 0.1s",
+              width: 9, height: visible ? barHeight : 5, marginRight: 7,
+              background: "#3BB8E0", borderRadius: 5,
             }} />
           );
         })}
       </div>
 
-      {/* Animated timer */}
-      <div className="flex justify-center pt-6">
-        <span style={{ fontSize: 72, fontWeight: 300, color: "#E8ECF1", fontVariantNumeric: "tabular-nums" }}>
+      {/* Animated timer — 162px (72×2.25) */}
+      <div className="flex justify-center" style={{ paddingTop: 36 }}>
+        <span style={{ fontSize: 162, fontWeight: 300, color: "#E8ECF1", fontVariantNumeric: "tabular-nums" }}>
           {`0${Math.floor(timerSeconds / 60)}:${String(timerSeconds % 60).padStart(2, "0")}`}
         </span>
       </div>
@@ -403,14 +434,13 @@ export const S2_Record: React.FC = () => {
   );
 };
 
-// WRONG — Embedding screenshot as static image
-<Img src={staticFile("screens/recording.png")} style={{ width: "100%", height: "100%" }} />
+// WRONG — phone-logical sizes on 886px canvas (everything tiny)
+<span style={{ fontSize: 17 }}>9:41</span>       // ← 17px is unreadable, should be 38px
+<div style={{ width: 48, height: 48 }}>...</div>  // ← 48px button is tiny, should be 108px
+<span style={{ fontSize: 11 }}>Home</span>        // ← 11px tab label invisible, should be 25px
 
-// WRONG — Generic mock UI that ignores the visualSpec
-<div style={{ background: brand.background }}>
-  <span className="text-white text-sm">← VOICE RECORDING</span>
-  {/* ... looks nothing like the real app ... */}
-</div>
+// WRONG — Embedding screenshot as static image
+<Img src={staticFile("screens/recording.png")} />
 ```
 
 **What can animate in mock scenes:**
@@ -459,11 +489,13 @@ Count the distinct UI elements in the screenshot before writing code. If the scr
 - **Badge indicators** — type badges, status pills, credit counters
 - **Home indicator** — the bottom bar on modern iPhones
 
-### Example: complete mock scene from visualSpec
+### Example: complete mock scene from visualSpec (canvas-scaled)
 
-This example shows a voice note detail screen. Every element from the screenshot is present — nothing is abbreviated.
+This example shows a voice note detail screen on the 886×1920 canvas. Every element from the screenshot is present, and **all sizes are scaled ×2.25** from phone-logical values.
 
 ```tsx
+// All sizes are canvas-scaled: phone-logical × 2.25
+// e.g., 48px phone button → 108px, 16px phone text → 36px
 export const S2_Transcription: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -471,60 +503,62 @@ export const S2_Transcription: React.FC = () => {
   return (
     <div style={{ background: "#0A1628", height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
 
-      {/* ── Status bar ── */}
-      <div className="flex items-center justify-between px-7 pt-3" style={{ height: 50 }}>
-        <span style={{ fontSize: 17, fontWeight: 600, color: "#E8ECF1" }}>9:41</span>
+      {/* ── Status bar: 38px text (17×2.25), height 110px ── */}
+      <div className="flex items-center justify-between"
+           style={{ height: 110, padding: "20px 45px 0" }}>
+        <span style={{ fontSize: 38, fontWeight: 600, color: "#E8ECF1" }}>9:41</span>
         <StatusBarIcons color="#E8ECF1" />
       </div>
 
-      {/* ── Nav bar: back button (left) + 3 action icons (right) ── */}
-      <div className="flex items-center justify-between px-5" style={{ height: 56 }}>
-        <div style={{ width: 48, height: 48, borderRadius: 12, background: "#1A2940",
+      {/* ── Nav bar: 108px buttons (48×2.25), icon text 50px ── */}
+      <div className="flex items-center justify-between" style={{ padding: "0 40px", height: 126 }}>
+        <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
                       display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ color: "#E8ECF1", fontSize: 22 }}>‹</span>
+          <span style={{ color: "#E8ECF1", fontSize: 50 }}>‹</span>
         </div>
-        <div className="flex gap-3">
+        <div className="flex" style={{ gap: 14 }}>
           {["⋯", "↑", "🗑"].map((icon, i) => (
-            <div key={i} style={{ width: 48, height: 48, borderRadius: 12, background: "#1A2940",
+            <div key={i} style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
                                   display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ color: i === 2 ? "#E85D5D" : "#E8ECF1", fontSize: 18 }}>{icon}</span>
+              <span style={{ color: i === 2 ? "#E85D5D" : "#E8ECF1", fontSize: 40 }}>{icon}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── Type badge + metadata ── */}
+      {/* ── Type badge (29px text) + metadata ── */}
       <FadeIn delay={3} direction="up">
-        <div className="flex items-center gap-3 px-5 pt-3">
-          <span style={{ background: "#1A3A28", color: "#E5C044", fontSize: 13, fontWeight: 600,
-                          padding: "4px 12px", borderRadius: 8 }}>🎙 Voice Recording</span>
-          <span style={{ fontSize: 13, color: "#6B7A8D" }}>1d ago · 4m 23s ☁</span>
+        <div className="flex items-center" style={{ gap: 14, padding: "14px 45px 0" }}>
+          <span style={{ background: "#1A3A28", color: "#E5C044", fontSize: 29, fontWeight: 600,
+                          padding: "9px 27px", borderRadius: 18 }}>🎙 Voice Recording</span>
+          <span style={{ fontSize: 29, color: "#6B7A8D" }}>1d ago · 4m 23s ☁</span>
         </div>
       </FadeIn>
 
-      {/* ── Title + divider ── */}
-      <div className="px-5 pt-2">
-        <span style={{ fontSize: 30, fontWeight: 700, color: "#E8ECF1" }}>Client strategy call — pricing</span>
+      {/* ── Title: 68px (30×2.25) + colored divider ── */}
+      <div style={{ padding: "10px 45px 0" }}>
+        <span style={{ fontSize: 68, fontWeight: 700, color: "#E8ECF1" }}>Client strategy call — pricing</span>
       </div>
-      <div className="mx-5 mt-3" style={{ height: 2, background: "#3B7DD8" }} />
+      <div style={{ height: 3, background: "#3B7DD8", margin: "14px 45px 0" }} />
 
-      {/* ── Waveform card with playback controls ── */}
+      {/* ── Waveform card: 36px radius, 36px padding ── */}
       <FadeIn delay={8} direction="up">
-        <div className="mx-5 mt-4" style={{ background: "#1A2940", borderRadius: 16, border: "1px solid #2A3A50", padding: 16 }}>
-          <div style={{ height: 40, background: "#253550", borderRadius: 8, marginBottom: 12 }} />
+        <div style={{ background: "#1A2940", borderRadius: 36, border: "2px solid #2A3A50",
+                      padding: 36, margin: "18px 45px 0" }}>
+          <div style={{ height: 90, background: "#253550", borderRadius: 18, marginBottom: 27 }} />
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div style={{ width: 44, height: 44, borderRadius: 22, background: "#3BB8E0",
+            <div className="flex items-center" style={{ gap: 14 }}>
+              <div style={{ width: 99, height: 99, borderRadius: 50, background: "#3BB8E0",
                             display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ color: "#FFF", fontSize: 16 }}>▶</span>
+                <span style={{ color: "#FFF", fontSize: 36 }}>▶</span>
               </div>
-              <span style={{ fontSize: 14, color: "#6B7A8D", fontVariantNumeric: "tabular-nums" }}>0:00 / 4:23</span>
+              <span style={{ fontSize: 31, color: "#6B7A8D", fontVariantNumeric: "tabular-nums" }}>0:00 / 4:23</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex" style={{ gap: 9 }}>
               {["0.75x", "1x", "1.5x", "2x"].map((speed, i) => (
-                <div key={i} style={{ padding: "4px 10px", borderRadius: 12,
+                <div key={i} style={{ padding: "9px 22px", borderRadius: 27,
                                       background: i === 1 ? "#3BB8E0" : "#253550",
-                                      color: i === 1 ? "#FFF" : "#6B7A8D", fontSize: 12, fontWeight: 600 }}>
+                                      color: i === 1 ? "#FFF" : "#6B7A8D", fontSize: 27, fontWeight: 600 }}>
                   {speed}
                 </div>
               ))}
@@ -533,31 +567,31 @@ export const S2_Transcription: React.FC = () => {
         </div>
       </FadeIn>
 
-      {/* ── Transcription section header ── */}
-      <div className="flex items-center gap-3 px-5 pt-5">
-        <span style={{ fontSize: 13, fontWeight: 600, color: "#3BB8E0",
-                        textTransform: "uppercase", letterSpacing: 1 }}>TRANSCRIPTION</span>
-        <div style={{ flex: 1, height: 1, background: "#2A3A50" }} />
-        <span style={{ fontSize: 12, color: "#3BB8E0", background: "#1A3040",
-                        padding: "3px 10px", borderRadius: 6 }}>AI Enhanced</span>
+      {/* ── Transcription header: 29px ALL CAPS (13×2.25) ── */}
+      <div className="flex items-center" style={{ gap: 14, padding: "36px 45px 0" }}>
+        <span style={{ fontSize: 29, fontWeight: 600, color: "#3BB8E0",
+                        textTransform: "uppercase", letterSpacing: 2 }}>TRANSCRIPTION</span>
+        <div style={{ flex: 1, height: 2, background: "#2A3A50" }} />
+        <span style={{ fontSize: 27, color: "#3BB8E0", background: "#1A3040",
+                        padding: "7px 22px", borderRadius: 14 }}>AI Enhanced</span>
       </div>
 
-      {/* ── Transcription text with timestamps ── */}
+      {/* ── Transcription text: 36px body (16×2.25), 25px timestamps ── */}
       <FadeIn delay={14} direction="up">
-        <div className="px-5 pt-4" style={{ flex: 1 }}>
-          <div className="flex flex-col gap-4">
+        <div style={{ flex: 1, padding: "18px 45px 0" }}>
+          <div className="flex flex-col" style={{ gap: 18 }}>
             <div>
-              <span style={{ fontSize: 11, color: "#E85D5D", background: "#2A1A1A",
-                              padding: "2px 6px", borderRadius: 4 }}>0:00</span>
-              <p style={{ fontSize: 16, color: "#E8ECF1", lineHeight: 1.5, marginTop: 6 }}>
+              <span style={{ fontSize: 25, color: "#E85D5D", background: "#2A1A1A",
+                              padding: "5px 14px", borderRadius: 9 }}>0:00</span>
+              <p style={{ fontSize: 36, color: "#E8ECF1", lineHeight: 1.5, marginTop: 14 }}>
                 Just got off the call with the Acme team. Their pricing is all over the place — three tiers
                 but the middle one has no clear value prop.
               </p>
             </div>
             <div>
-              <span style={{ fontSize: 11, color: "#4CAF50", background: "#1A2A1A",
-                              padding: "2px 6px", borderRadius: 4 }}>0:42</span>
-              <p style={{ fontSize: 16, color: "#E8ECF1", lineHeight: 1.5, marginTop: 6 }}>
+              <span style={{ fontSize: 25, color: "#4CAF50", background: "#1A2A1A",
+                              padding: "5px 14px", borderRadius: 9 }}>0:42</span>
+              <p style={{ fontSize: 36, color: "#E8ECF1", lineHeight: 1.5, marginTop: 14 }}>
                 What I told them is: your middle tier needs to be the obvious choice. Anchor the top tier
                 high so the middle feels like a deal.
               </p>
@@ -566,44 +600,45 @@ export const S2_Transcription: React.FC = () => {
         </div>
       </FadeIn>
 
-      {/* ── Bottom CTA area: timestamps + language + enhance ── */}
-      <div className="px-5 pb-3">
-        <div style={{ background: "#1A2940", borderRadius: 16, border: "1px solid #2A3A50", padding: 16 }}>
-          <span style={{ fontSize: 16, fontWeight: 600, color: "#3BB8E0" }}>Add timestamps & structure</span>
-          <p style={{ fontSize: 13, color: "#6B7A8D", marginTop: 4 }}>Jump to any part of your recording.</p>
-          <div className="flex items-center gap-3 mt-3">
-            <div style={{ padding: "6px 14px", borderRadius: 20, background: "#253550",
-                          display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 14 }}>🇻🇳</span>
-              <span style={{ fontSize: 13, color: "#E8ECF1" }}>VI</span>
+      {/* ── Bottom CTA card: 36px radius, all text scaled ── */}
+      <div style={{ padding: "0 45px 14px" }}>
+        <div style={{ background: "#1A2940", borderRadius: 36, border: "2px solid #2A3A50", padding: 36 }}>
+          <span style={{ fontSize: 36, fontWeight: 600, color: "#3BB8E0" }}>Add timestamps & structure</span>
+          <p style={{ fontSize: 29, color: "#6B7A8D", marginTop: 9 }}>Jump to any part of your recording.</p>
+          <div className="flex items-center" style={{ gap: 14, marginTop: 14 }}>
+            <div style={{ padding: "14px 31px", borderRadius: 45, background: "#253550",
+                          display: "flex", alignItems: "center", gap: 14 }}>
+              <span style={{ fontSize: 31 }}>🇻🇳</span>
+              <span style={{ fontSize: 29, color: "#E8ECF1" }}>VI</span>
             </div>
-            <div style={{ padding: "6px 18px", borderRadius: 20, border: "1px solid #3BB8E0" }}>
-              <span style={{ fontSize: 14, color: "#3BB8E0", fontWeight: 600 }}>Enhance · 2 credits</span>
+            <div style={{ padding: "14px 40px", borderRadius: 45, border: "2px solid #3BB8E0" }}>
+              <span style={{ fontSize: 31, color: "#3BB8E0", fontWeight: 600 }}>Enhance · 2 credits</span>
             </div>
           </div>
-          <span style={{ fontSize: 12, color: "#6B7A8D", marginTop: 8, display: "block" }}>5 credits remaining</span>
+          <span style={{ fontSize: 27, color: "#6B7A8D", marginTop: 18, display: "block" }}>5 credits remaining</span>
         </div>
       </div>
 
-      {/* ── Tab bar with icons ── */}
-      <div className="flex items-center justify-around px-4 pb-2 pt-2"
-           style={{ borderTop: "1px solid #1A2940", background: "#0D1520" }}>
+      {/* ── Tab bar: 54px icons (24×2.25), 25px labels (11×2.25), height 130px ── */}
+      <div className="flex items-center justify-around"
+           style={{ borderTop: "2px solid #1A2940", background: "#0D1520",
+                    height: 130, padding: "0 36px 10px" }}>
         {[
           { icon: "⌂", label: "Home", active: true },
           { icon: "⚲", label: "Search", active: false },
           { icon: "⚙", label: "Settings", active: false },
         ].map((tab, i) => (
-          <div key={i} className="flex flex-col items-center gap-1">
-            <span style={{ fontSize: 22, color: tab.active ? "#3BB8E0" : "#6B7A8D" }}>{tab.icon}</span>
-            <span style={{ fontSize: 11, fontWeight: tab.active ? 600 : 400,
+          <div key={i} className="flex flex-col items-center" style={{ gap: 4 }}>
+            <span style={{ fontSize: 54, color: tab.active ? "#3BB8E0" : "#6B7A8D" }}>{tab.icon}</span>
+            <span style={{ fontSize: 25, fontWeight: tab.active ? 600 : 400,
                             color: tab.active ? "#3BB8E0" : "#6B7A8D" }}>{tab.label}</span>
           </div>
         ))}
       </div>
 
-      {/* ── Home indicator ── */}
-      <div className="flex justify-center pb-2">
-        <div style={{ width: 134, height: 5, borderRadius: 3, background: "#E8ECF1", opacity: 0.2 }} />
+      {/* ── Home indicator: 302×11px (134×5 × 2.25) ── */}
+      <div className="flex justify-center" style={{ paddingBottom: 10 }}>
+        <div style={{ width: 302, height: 11, borderRadius: 6, background: "#E8ECF1", opacity: 0.2 }} />
       </div>
 
       <Caption text="AI transcribes in 47 languages." delay={5} />
@@ -612,7 +647,7 @@ export const S2_Transcription: React.FC = () => {
 };
 ```
 
-Note: this scene is ~130 lines — that's the expected size for a screen with many elements. Do NOT abbreviate with `{/* ... */}` comments. Every element in the visualSpec must appear in code.
+Note: this scene is ~150 lines. Every element from the visualSpec is present and all sizes are canvas-scaled (×2.25). Do NOT use phone-logical sizes directly — they will be unreadably small.
 
 ### Fallback: no screenshots provided
 
