@@ -464,8 +464,9 @@ For each provided screenshot, study the image and write a structured visual spec
 ```
 
 **Rules for the analysis:**
+- **Be exhaustive.** List EVERY distinct UI element visible in the screenshot. Count them. If you see 15 elements, document 15 elements. Common elements that get missed: nav bar action buttons (all of them, not just back), tab bar icons, speed/playback controls, CTAs, badge indicators, credit counters, language selectors, divider lines, home indicator.
 - Be precise about colors — sample from the actual image, don't guess. "#0A1628" is very different from "#000000".
-- Describe component shapes exactly: "48px rounded-square" not "rounded button".
+- Describe component shapes exactly: "48px rounded-square with 12px radius" not "rounded button".
 - Note spacing: "20px padding inside cards", "12px gap between elements".
 - Note what is NOT there: "no shadow on cards", "no border on buttons", "no separator between list items".
 - This analysis overrides `uiPatterns` from code extraction when they conflict — the screenshot is the visual truth.

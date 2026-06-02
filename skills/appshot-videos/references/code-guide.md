@@ -425,7 +425,7 @@ export const S2_Record: React.FC = () => {
 
 ## Code Quality Rules
 
-- Every scene: self-contained `.tsx` in `src/scenes/`, max ~150 lines
+- Every scene: self-contained `.tsx` in `src/scenes/`, typically 80-150 lines (complex screens with many elements may reach 180+)
 - Tailwind for layout, `style={}` for brand-colored/dynamic properties
 - All motion: Remotion `spring()` or `interpolate()` — no CSS transitions
 - Demo data: realistic names, plausible numbers, proper formatting
@@ -446,79 +446,173 @@ export const S2_Record: React.FC = () => {
 
 If no screenshot exists for the scene, use `visualSpec` from the most visually similar screenshot as a style reference — the overall app style (colors, card shapes, button styles) should stay consistent across scenes even when the content differs.
 
-### Example: mock scene WITH visual spec vs WITHOUT
+### Completeness rule
+
+**Every visible element in the screenshot must appear in the mock scene.** Do not abbreviate, skip, or placeholder any UI component. If the screenshot shows a tab bar with 3 tabs and icons, the mock must have 3 tabs with icons. If it shows a waveform card with playback controls and speed pills, all of those must be in the JSX. A scene with `{/* ... */}` placeholder comments is a bug.
+
+Count the distinct UI elements in the screenshot before writing code. If the screenshot has 15 elements, the scene must have 15 elements. Common elements that get skipped (and must NOT be):
+- **Tab bar icons** — don't render text-only tabs when the app has icons above labels
+- **Action buttons in nav bar** — all of them, not just the back button
+- **Cards with internal structure** — waveform + play button + timestamps + speed pills, not just an empty card
+- **CTAs and secondary actions** — "Add timestamps", "Enhance · 2 credits", language selectors
+- **Dividers and separators** — colored lines, section dividers with rules
+- **Badge indicators** — type badges, status pills, credit counters
+- **Home indicator** — the bottom bar on modern iPhones
+
+### Example: complete mock scene from visualSpec
+
+This example shows a voice note detail screen. Every element from the screenshot is present — nothing is abbreviated.
 
 ```tsx
-// CORRECT — uses exact values from visualSpec of transcription.png
-// visualSpec says: bg #0A1628, cards #1A2940 with 1px #2A3A50 border,
-// 16px radius, back button is 48px rounded-square, section headers
-// are ALL CAPS 13px teal with 1px letter-spacing
 export const S2_Transcription: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
   return (
     <div style={{ background: "#0A1628", height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
-      {/* Status bar */}
+
+      {/* ── Status bar ── */}
       <div className="flex items-center justify-between px-7 pt-3" style={{ height: 50 }}>
         <span style={{ fontSize: 17, fontWeight: 600, color: "#E8ECF1" }}>9:41</span>
         <StatusBarIcons color="#E8ECF1" />
       </div>
 
-      {/* Nav bar — 48px rounded-square back button, icon actions right */}
+      {/* ── Nav bar: back button (left) + 3 action icons (right) ── */}
       <div className="flex items-center justify-between px-5" style={{ height: 56 }}>
         <div style={{ width: 48, height: 48, borderRadius: 12, background: "#1A2940",
                       display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ color: "#E8ECF1", fontSize: 20 }}>‹</span>
+          <span style={{ color: "#E8ECF1", fontSize: 22 }}>‹</span>
         </div>
-        <div className="flex gap-4">
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: "#1A2940",
-                        display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ color: "#E8ECF1", fontSize: 16 }}>⋯</span>
+        <div className="flex gap-3">
+          {["⋯", "↑", "🗑"].map((icon, i) => (
+            <div key={i} style={{ width: 48, height: 48, borderRadius: 12, background: "#1A2940",
+                                  display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: i === 2 ? "#E85D5D" : "#E8ECF1", fontSize: 18 }}>{icon}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Type badge + metadata ── */}
+      <FadeIn delay={3} direction="up">
+        <div className="flex items-center gap-3 px-5 pt-3">
+          <span style={{ background: "#1A3A28", color: "#E5C044", fontSize: 13, fontWeight: 600,
+                          padding: "4px 12px", borderRadius: 8 }}>🎙 Voice Recording</span>
+          <span style={{ fontSize: 13, color: "#6B7A8D" }}>1d ago · 4m 23s ☁</span>
+        </div>
+      </FadeIn>
+
+      {/* ── Title + divider ── */}
+      <div className="px-5 pt-2">
+        <span style={{ fontSize: 30, fontWeight: 700, color: "#E8ECF1" }}>Client strategy call — pricing</span>
+      </div>
+      <div className="mx-5 mt-3" style={{ height: 2, background: "#3B7DD8" }} />
+
+      {/* ── Waveform card with playback controls ── */}
+      <FadeIn delay={8} direction="up">
+        <div className="mx-5 mt-4" style={{ background: "#1A2940", borderRadius: 16, border: "1px solid #2A3A50", padding: 16 }}>
+          <div style={{ height: 40, background: "#253550", borderRadius: 8, marginBottom: 12 }} />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div style={{ width: 44, height: 44, borderRadius: 22, background: "#3BB8E0",
+                            display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ color: "#FFF", fontSize: 16 }}>▶</span>
+              </div>
+              <span style={{ fontSize: 14, color: "#6B7A8D", fontVariantNumeric: "tabular-nums" }}>0:00 / 4:23</span>
+            </div>
+            <div className="flex gap-2">
+              {["0.75x", "1x", "1.5x", "2x"].map((speed, i) => (
+                <div key={i} style={{ padding: "4px 10px", borderRadius: 12,
+                                      background: i === 1 ? "#3BB8E0" : "#253550",
+                                      color: i === 1 ? "#FFF" : "#6B7A8D", fontSize: 12, fontWeight: 600 }}>
+                  {speed}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </FadeIn>
 
-      {/* Type badge */}
-      <div className="px-5 pt-3">
-        <span style={{ background: "#1A3A28", color: "#E5C044", fontSize: 13, fontWeight: 600,
-                        padding: "4px 12px", borderRadius: 8 }}>🎙 Voice Recording</span>
-      </div>
-
-      {/* Title */}
-      <div className="px-5 pt-3">
-        <span style={{ fontSize: 32, fontWeight: 700, color: "#E8ECF1" }}>Client strategy call</span>
-      </div>
-
-      {/* Section header — ALL CAPS, teal, letter-spacing */}
-      <div className="px-5 pt-6">
+      {/* ── Transcription section header ── */}
+      <div className="flex items-center gap-3 px-5 pt-5">
         <span style={{ fontSize: 13, fontWeight: 600, color: "#3BB8E0",
                         textTransform: "uppercase", letterSpacing: 1 }}>TRANSCRIPTION</span>
+        <div style={{ flex: 1, height: 1, background: "#2A3A50" }} />
+        <span style={{ fontSize: 12, color: "#3BB8E0", background: "#1A3040",
+                        padding: "3px 10px", borderRadius: 6 }}>AI Enhanced</span>
       </div>
 
-      {/* ... content matching visual spec ... */}
+      {/* ── Transcription text with timestamps ── */}
+      <FadeIn delay={14} direction="up">
+        <div className="px-5 pt-4" style={{ flex: 1 }}>
+          <div className="flex flex-col gap-4">
+            <div>
+              <span style={{ fontSize: 11, color: "#E85D5D", background: "#2A1A1A",
+                              padding: "2px 6px", borderRadius: 4 }}>0:00</span>
+              <p style={{ fontSize: 16, color: "#E8ECF1", lineHeight: 1.5, marginTop: 6 }}>
+                Just got off the call with the Acme team. Their pricing is all over the place — three tiers
+                but the middle one has no clear value prop.
+              </p>
+            </div>
+            <div>
+              <span style={{ fontSize: 11, color: "#4CAF50", background: "#1A2A1A",
+                              padding: "2px 6px", borderRadius: 4 }}>0:42</span>
+              <p style={{ fontSize: 16, color: "#E8ECF1", lineHeight: 1.5, marginTop: 6 }}>
+                What I told them is: your middle tier needs to be the obvious choice. Anchor the top tier
+                high so the middle feels like a deal.
+              </p>
+            </div>
+          </div>
+        </div>
+      </FadeIn>
+
+      {/* ── Bottom CTA area: timestamps + language + enhance ── */}
+      <div className="px-5 pb-3">
+        <div style={{ background: "#1A2940", borderRadius: 16, border: "1px solid #2A3A50", padding: 16 }}>
+          <span style={{ fontSize: 16, fontWeight: 600, color: "#3BB8E0" }}>Add timestamps & structure</span>
+          <p style={{ fontSize: 13, color: "#6B7A8D", marginTop: 4 }}>Jump to any part of your recording.</p>
+          <div className="flex items-center gap-3 mt-3">
+            <div style={{ padding: "6px 14px", borderRadius: 20, background: "#253550",
+                          display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 14 }}>🇻🇳</span>
+              <span style={{ fontSize: 13, color: "#E8ECF1" }}>VI</span>
+            </div>
+            <div style={{ padding: "6px 18px", borderRadius: 20, border: "1px solid #3BB8E0" }}>
+              <span style={{ fontSize: 14, color: "#3BB8E0", fontWeight: 600 }}>Enhance · 2 credits</span>
+            </div>
+          </div>
+          <span style={{ fontSize: 12, color: "#6B7A8D", marginTop: 8, display: "block" }}>5 credits remaining</span>
+        </div>
+      </div>
+
+      {/* ── Tab bar with icons ── */}
+      <div className="flex items-center justify-around px-4 pb-2 pt-2"
+           style={{ borderTop: "1px solid #1A2940", background: "#0D1520" }}>
+        {[
+          { icon: "⌂", label: "Home", active: true },
+          { icon: "⚲", label: "Search", active: false },
+          { icon: "⚙", label: "Settings", active: false },
+        ].map((tab, i) => (
+          <div key={i} className="flex flex-col items-center gap-1">
+            <span style={{ fontSize: 22, color: tab.active ? "#3BB8E0" : "#6B7A8D" }}>{tab.icon}</span>
+            <span style={{ fontSize: 11, fontWeight: tab.active ? 600 : 400,
+                            color: tab.active ? "#3BB8E0" : "#6B7A8D" }}>{tab.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Home indicator ── */}
+      <div className="flex justify-center pb-2">
+        <div style={{ width: 134, height: 5, borderRadius: 3, background: "#E8ECF1", opacity: 0.2 }} />
+      </div>
 
       <Caption text="AI transcribes in 47 languages." delay={5} />
     </div>
   );
 };
-
-// WRONG — ignores visual spec, uses generic styling
-export const S2_Transcription: React.FC = () => {
-  const { brand } = appConfig;
-  return (
-    <div style={{ background: brand.background }} className="flex flex-col h-full">
-      {/* Generic nav with tiny back arrow */}
-      <div className="flex items-center px-4 pt-4">
-        <span style={{ color: brand.textPrimary }}>←</span>
-        <span style={{ fontSize: 14, color: brand.textSecondary, marginLeft: 8 }}>VOICE RECORDING</span>
-      </div>
-      {/* Generic title — wrong size, wrong weight, wrong color */}
-      <h1 className="px-4 pt-2 text-xl font-bold text-white">Client strategy call</h1>
-      {/* Generic section header — not ALL CAPS, not teal, no letter-spacing */}
-      <span className="px-4 pt-4 text-sm text-gray-400">Transcription</span>
-      {/* ... generic content that doesn't match the app ... */}
-    </div>
-  );
-};
 ```
+
+Note: this scene is ~130 lines — that's the expected size for a screen with many elements. Do NOT abbreviate with `{/* ... */}` comments. Every element in the visualSpec must appear in code.
 
 ### Fallback: no screenshots provided
 
