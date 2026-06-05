@@ -59,6 +59,8 @@ Pick the angle that best sells THIS app. Use AskUserQuestion with options:
 - **UI showcase:** Let the polished UI do the talking. Best when interface IS the product.
 - **Problem-solution:** Name the pain, show the fix. Best for utility and productivity.
 
+**App Store Preview note:** All angles work, but every scene (except the final CTA) must show the app in use. For "problem-solution" or "transformation" angles, the pain/setup is conveyed via Caption text over the app's core screen — not via a standalone text card or composed graphic. The app must be visible from frame 0.
+
 ### Step 2: Theme preference
 
 Use AskUserQuestion: light or dark theme. Default recommendation: light (higher visibility in App Store). Dark-only apps default to dark with high contrast.
@@ -118,13 +120,25 @@ Present as: "Based on your [category] app, I'd recommend **[track]** ([mood]). W
 
 ### Step 6: Scene breakdown
 
+**App Store Preview target:**
+
 | # | Name | Duration | Visual ref | What the viewer sees | Caption |
 |---|------|----------|------------|---------------------|---------|
-| 1 | Hook | Xs | — | [text-only or composed graphic] | "..." |
+| 1 | Core Screen | Xs | `home.png` | [app's main screen — app visible from frame 0] | "..." |
 | 2 | Feature | Xs | `recording.png` | [animated mock matching visualSpec] | "..." |
-| 3 | ... | Xs | `transcription.png` | [animated mock matching visualSpec] | "..." |
+| 3 | Feature 2 | Xs | `transcription.png` | [animated mock matching visualSpec] | "..." |
+| 4 | CTA | Xs | — | [app icon + tagline + store badge] | "..." |
 
-The **Visual ref** column shows which user-provided screenshot is used as the styling reference for that scene's mock UI (`filename.png`), or `—` for composed scenes (hook, CTA) that don't depict app screens. If the user didn't provide screenshots, leave this column out.
+**Marketing target:**
+
+| # | Name | Duration | Visual ref | What the viewer sees | Caption |
+|---|------|----------|------------|---------------------|---------|
+| 1 | Hook | Xs | — | [text hook with FloatingCard] | "..." |
+| 2 | Feature | Xs | `recording.png` | [PhoneFrame with animated mock] | "..." |
+| 3 | ... | Xs | `transcription.png` | [PhoneFrame with animated mock] | "..." |
+| 4 | CTA | Xs | — | [app icon + tagline + store badge] | "..." |
+
+The **Visual ref** column shows which user-provided screenshot is used as the styling reference for that scene's mock UI (`filename.png`), or `—` for composed scenes (CTA). If the user didn't provide screenshots, leave this column out.
 
 **Rules:**
 - Total: 15-30 seconds (under 25s ideal). Each scene: 3-6 seconds.
@@ -132,10 +146,9 @@ The **Visual ref** column shows which user-provided screenshot is used as the st
 - **All app screen scenes are animated mock UI.** Screenshots are never embedded directly — they are visual references only. Build mock JSX that matches the `visualSpec` and adds animation (elements entering, counters ticking, waveforms pulsing).
 - **If screenshots provided:** Use the `visualSpec` for exact colors, shapes, spacing, typography. The mock must look like the screenshot.
 - **If no screenshots:** Use `uiPatterns` and `brand` colors. No generic UI.
-- **App Store Preview target:** Full-bleed animated mock screens with navigation chrome. No PhoneFrame.
-- **Marketing target:** PhoneFrame wraps the animated mock screen.
-- Hook and CTA scenes use composed primitives (FloatingCard, AppIcon, AppStoreBadge).
-- Final scene: CTA with app icon + tagline + store badge.
+- **App Store Preview target:** Scene 1 MUST show the app in use from frame 0. No text-only hooks, no FloatingCards, no AmbientBackground-only scenes. The hook text goes in the Caption overlay on top of the app screen. Only the final CTA scene may show a non-app-screen (app icon + tagline + badge).
+- **Marketing target:** Scene 1 can be a text hook with FloatingCard. PhoneFrame wraps app screen scenes.
+- Final scene: CTA with app icon + tagline + store badge (both targets).
 
 ### Step 7: Draft all copy
 

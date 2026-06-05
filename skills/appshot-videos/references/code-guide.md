@@ -81,9 +81,32 @@ import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 // Only import what you use. Remove unused imports.
 ```
 
-**Scene 1 — Frame 0 thumbnail rule:**
+**Scene 1 — Frame 0 rules:**
+
+**App Store Preview target:** Frame 0 must show the app in use — a real app screen with navigation chrome and content. Apple rejects previews that don't show the app from the start. The hook text goes in the Caption overlay, not in a standalone FloatingCard.
+
 ```tsx
-// CORRECT — FloatingCard visible at frame 0
+// CORRECT (App Store Preview) — App screen visible at frame 0, hook as Caption
+export const S1_CoreScreen: React.FC = () => {
+  return (
+    <div style={{ background: "#0A1628", height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Full app screen: status bar + nav + content + tab bar + home indicator */}
+      {/* ... (build from visualSpec, canvas-scaled, all elements present) ... */}
+      <Caption text="Your voice, perfectly captured." delay={0} />
+    </div>
+  );
+};
+
+// WRONG (App Store Preview) — FloatingCard/text-only hook without app screen
+<AmbientBackground brand={brand} variant="dark" />
+<FloatingCard delay={0} variant="dark">Your best ideas disappear.</FloatingCard>
+// ↑ Apple rejection: "does not sufficiently show the app in use"
+```
+
+**Marketing target:** FloatingCard or composed graphic hooks are fine — no store compliance needed.
+
+```tsx
+// CORRECT (Marketing) — FloatingCard visible at frame 0
 export const S1_Hook: React.FC<{ device: DevicePreset }> = ({ device }) => {
   const { brand } = appConfig;
   return (
@@ -100,7 +123,10 @@ export const S1_Hook: React.FC<{ device: DevicePreset }> = ({ device }) => {
     </div>
   );
 };
+```
 
+**Both targets — frame 0 must not be blank:**
+```tsx
 // WRONG — TypeWriter first (0-1 chars at frame 0 = blank)
 // WRONG — spring({ frame: frame - 70 }) first (blank for 70 frames)
 // WRONG — FadeIn delay={8} as ONLY element (blank for 8 frames)
@@ -164,15 +190,17 @@ export const S1_Hook: React.FC<{ device: DevicePreset }> = ({ device }) => {
 ```tsx
 import { Sequence } from "remotion";
 import { SceneWrap } from "./components";
-import { S1_Hook } from "./scenes/S1_Hook";
-import { S2_CoreFeature } from "./scenes/S2_CoreFeature";
+// App Store Preview: every scene (except CTA) shows the app
+import { S1_CoreScreen } from "./scenes/S1_CoreScreen";
+import { S2_Feature } from "./scenes/S2_Feature";
 import { S3_Proof } from "./scenes/S3_Proof";
 import { S4_CTA } from "./scenes/S4_CTA";
 import type { DevicePreset } from "./config";
 
+// App Store Preview: S1 is an app screen, not a text hook
 const scenes = [
-  { component: S1_Hook, duration: 120 },
-  { component: S2_CoreFeature, duration: 150 },
+  { component: S1_CoreScreen, duration: 120 },
+  { component: S2_Feature, duration: 150 },
   { component: S3_Proof, duration: 150 },
   { component: S4_CTA, duration: 120 },
 ];
@@ -783,7 +811,7 @@ All sizes from `uiPatterns` are phone-logical — apply the ×2.25 canvas scale 
 - [ ] `video.width` is `886`
 
 **Each scene:**
-1. **S1 frame 0:** Fully visible element at frame 0? FAIL if TypeWriter first, `frame - N` first, or all delayed FadeIns.
+1. **S1 frame 0:** Fully visible element at frame 0? FAIL if TypeWriter first, `frame - N` first, or all delayed FadeIns. **App Store Preview:** S1 must be an app screen (not FloatingCard/AmbientBackground hook).
 2. **PhoneFrame scale:** `scale={1.5}` present? Missing scale = bug. (Marketing target only — App Store Preview must NOT use PhoneFrame.)
 3. **Text outside PhoneFrame:** Body under 24px or titles under 34px = too small. (Marketing target only.)
 4. **Card widths outside PhoneFrame:** Under 700px = too narrow. (Marketing target only.)
