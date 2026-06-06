@@ -718,7 +718,7 @@ Animated card container with glass, solid, or dark variants. Spring entrance ani
 | App Store | `-AppStore` | `iphone-16-pro` | `"ios"` |
 | Play Store | `-PlayStore` | `pixel-9` | `"android"` |
 
-For multi-store projects, Root.tsx registers one `<Composition>` per store. Scenes are shared — only the device frame and CTA badge differ. Canvas stays 886×1920 for both.
+For multi-store projects, Root.tsx registers one `<Composition>` per store. Scenes are shared — only the device frame (and navigation chrome style) differ. Canvas stays 886×1920 for both. Note: App Store Preview videos do not include store badges in the CTA (redundant inside the store listing); Marketing videos include `AppStoreBadge` in the CTA.
 
 ## Output Targets
 
@@ -777,9 +777,10 @@ Google Play:
 
 ## Project Setup
 
+The skill scaffolds an `appshot-video/` directory inside the target project during Phase 3 code generation. See code-guide.md for the full scaffolding steps.
+
 ```bash
-npx create-appshot my-app-video
-cd my-app-video
+cd appshot-video
 npm run dev     # Preview at localhost:3000
 npm run build   # Render to out/AppPreview.mp4
 ```

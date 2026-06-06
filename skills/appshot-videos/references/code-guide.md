@@ -83,14 +83,15 @@ import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 
 **Scene 1 — Frame 0 rules:**
 
-**App Store Preview target:** Frame 0 must show the app in use — a real app screen with navigation chrome and content. Apple rejects previews that don't show the app from the start. The hook text goes in the Caption overlay, not in a standalone FloatingCard.
+**App Store Preview target:** Frame 0 must show the app in use — a real app screen with navigation chrome and **populated content** (notes, entries, data, cards — never an empty state, blank list, or onboarding). Apple rejects previews that don't show the app from the start. The hook text goes in the Caption overlay, not in a standalone FloatingCard.
 
 ```tsx
-// CORRECT (App Store Preview) — App screen visible at frame 0, hook as Caption
+// CORRECT (App Store Preview) — App screen with populated content at frame 0, hook as Caption
 export const S1_CoreScreen: React.FC = () => {
   return (
     <div style={{ background: "#0A1628", height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
-      {/* Full app screen: status bar + nav + content + tab bar + home indicator */}
+      {/* Full app screen: status bar + nav + populated content + tab bar + home indicator */}
+      {/* Content must show real data: notes, entries, cards — never an empty list */}
       {/* ... (build from visualSpec, canvas-scaled, all elements present) ... */}
       <Caption text="Your voice, perfectly captured." delay={0} />
     </div>
@@ -811,7 +812,7 @@ All sizes from `uiPatterns` are phone-logical — apply the ×2.25 canvas scale 
 - [ ] `video.width` is `886`
 
 **Each scene:**
-1. **S1 frame 0:** Fully visible element at frame 0? FAIL if TypeWriter first, `frame - N` first, or all delayed FadeIns. **App Store Preview:** S1 must be an app screen (not FloatingCard/AmbientBackground hook).
+1. **S1 frame 0:** Fully visible element at frame 0? FAIL if TypeWriter first, `frame - N` first, or all delayed FadeIns. **App Store Preview:** S1 must be an app screen with populated content (not FloatingCard/AmbientBackground hook, not an empty state or blank list).
 2. **PhoneFrame scale:** `scale={1.5}` present? Missing scale = bug. (Marketing target only — App Store Preview must NOT use PhoneFrame.)
 3. **Text outside PhoneFrame:** Body under 24px or titles under 34px = too small. (Marketing target only.)
 4. **Card widths outside PhoneFrame:** Under 700px = too narrow. (Marketing target only.)
@@ -821,7 +822,7 @@ All sizes from `uiPatterns` are phone-logical — apply the ×2.25 canvas scale 
 8. **Unused imports:** Remove `spring`, `interpolate`, etc. if not used.
 9. **Caption present:** Every scene has `<Caption>`.
 10. **Multi-store Root.tsx:** One `<Composition>` per target store with correct `defaultProps={{ device }}`?
-11. **CTA badge:** `AppStoreBadge platform` matches target store (`"ios"` for AppStore, `"android"` for PlayStore)?
+11. **CTA badge:** **App Store Preview:** No `AppStoreBadge` in CTA scene (redundant inside the store listing)? **Marketing:** `AppStoreBadge platform` matches target store (`"ios"` for AppStore, `"android"` for PlayStore)?
 12. **Device prop threading:** Orchestrator accepts `{ device: DevicePreset }`, passes to each scene, scenes pass to `<PhoneFrame>`? (Marketing target only.)
 13. **Navigation chrome (App Store Preview):** Every mock screen has status bar + navigation bar + tab bar (if the app uses tabs)? Chrome matches extracted `navigation` data?
 14. **No device frames (App Store Preview):** Zero uses of `<PhoneFrame>` in any scene? App UI fills full canvas?

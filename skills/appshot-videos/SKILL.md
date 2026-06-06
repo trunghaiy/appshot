@@ -59,7 +59,7 @@ Pick the angle that best sells THIS app. Use AskUserQuestion with options:
 - **UI showcase:** Let the polished UI do the talking. Best when interface IS the product.
 - **Problem-solution:** Name the pain, show the fix. Best for utility and productivity.
 
-**App Store Preview note:** All angles work, but every scene (except the final CTA) must show the app in use. For "problem-solution" or "transformation" angles, the pain/setup is conveyed via Caption text over the app's core screen — not via a standalone text card or composed graphic. The app must be visible from frame 0.
+**App Store Preview note:** All angles work, but every scene (except the final CTA) must show the app in use. For "problem-solution" or "transformation" angles, the pain/setup is conveyed via Caption text over the app's core screen — not via a standalone text card or composed graphic. The app must be visible from frame 0. Scene 1 must show the app with **populated content** — real notes, entries, data, or active use. Never show an empty state, blank list, onboarding, or a screen that looks unused.
 
 ### Step 2: Theme preference
 
@@ -78,9 +78,9 @@ Default recommendation: App Store Preview for videos intended for store listings
 
 If the app's platform is `"both"` (has both iOS and Android identifiers), recommend generating for both App Store and Play Store. Use AskUserQuestion:
 
-- **Both App Store + Play Store (Recommended)** — Same scenes, only the navigation chrome style (iOS vs Android) and CTA badge differ. One prompt, two outputs.
-- **App Store only** — iOS chrome style, iOS badge.
-- **Play Store only** — Android chrome style, Android badge.
+- **Both App Store + Play Store (Recommended)** — Same scenes, only the navigation chrome style (iOS vs Android) differs. One prompt, two outputs.
+- **App Store only** — iOS chrome style.
+- **Play Store only** — Android chrome style.
 
 If platform is `"ios"` only or `"android"` only, skip this step and target the matching store.
 
@@ -127,7 +127,7 @@ Present as: "Based on your [category] app, I'd recommend **[track]** ([mood]). W
 | 1 | Core Screen | Xs | `home.png` | [app's main screen — app visible from frame 0] | "..." |
 | 2 | Feature | Xs | `recording.png` | [animated mock matching visualSpec] | "..." |
 | 3 | Feature 2 | Xs | `transcription.png` | [animated mock matching visualSpec] | "..." |
-| 4 | CTA | Xs | — | [app icon + tagline + store badge] | "..." |
+| 4 | CTA | Xs | — | [app icon + tagline + pills] | "..." |
 
 **Marketing target:**
 
@@ -146,9 +146,9 @@ The **Visual ref** column shows which user-provided screenshot is used as the st
 - **All app screen scenes are animated mock UI.** Screenshots are never embedded directly — they are visual references only. Build mock JSX that matches the `visualSpec` and adds animation (elements entering, counters ticking, waveforms pulsing).
 - **If screenshots provided:** Use the `visualSpec` for exact colors, shapes, spacing, typography. The mock must look like the screenshot.
 - **If no screenshots:** Use `uiPatterns` and `brand` colors. No generic UI.
-- **App Store Preview target:** Scene 1 MUST show the app in use from frame 0. No text-only hooks, no FloatingCards, no AmbientBackground-only scenes. The hook text goes in the Caption overlay on top of the app screen. Only the final CTA scene may show a non-app-screen (app icon + tagline + badge).
+- **App Store Preview target:** Scene 1 MUST show the app in use from frame 0 with **populated content** (notes, entries, data — never an empty state or blank list). No text-only hooks, no FloatingCards, no AmbientBackground-only scenes. The hook text goes in the Caption overlay on top of the app screen. Only the final CTA scene may show a non-app-screen (app icon + tagline + pills). **No store badge** in the CTA — the video already plays inside the store listing, so a "Download on the App Store" button is redundant.
 - **Marketing target:** Scene 1 can be a text hook with FloatingCard. PhoneFrame wraps app screen scenes.
-- Final scene: CTA with app icon + tagline + store badge (both targets).
+- Final scene: **App Store Preview** — CTA with app icon + tagline + pills (no store badge). **Marketing** — CTA with app icon + tagline + store badge.
 
 ### Step 7: Draft all copy
 
@@ -228,7 +228,7 @@ Key points (details in code-guide):
 - Orchestrator: `fadeIn={!isFirst} fadeOut={!isLast}` on SceneWrap
 - Never `staticFile()` on AppIcon src
 - Multi-store: Root.tsx registers one `<Composition>` per target store. Orchestrator receives `device` as a prop. See store-to-device mapping in appshot-core.
-- CTA scene: `AppStoreBadge platform` must match the target store (`"ios"` for App Store, `"android"` for Play Store)
+- CTA scene: **App Store Preview** — no `AppStoreBadge` (redundant inside the store). **Marketing** — `AppStoreBadge platform` must match the target store (`"ios"` for App Store, `"android"` for Play Store)
 - Remove unused imports
 
 **Existing projects:** If an `appshot-video/` directory already exists with a single composition, do not add multi-store compositions unless the user explicitly requests both stores.
@@ -245,7 +245,7 @@ Start Remotion Studio for preview:
    - Frame 0: content visible (not black)?
    - Text readable at playback speed?
    - Each scene looks like THIS app?
-   - CTA badge visible 2+ seconds?
+   - CTA visible 2+ seconds? (Marketing: badge visible? App Store Preview: no badge?)
    - Pacing: rushed or draggy?
    - Any contrast issues?
 4. Iterate with user until approved
@@ -295,6 +295,6 @@ If `--quick`: make all creative decisions autonomously. Present combined Phase 1
 - Under 25 seconds — attention drops after 20s
 - Dark scenes before light amplify contrast
 - Core loop in under 5 seconds of screen time
-- CTA + badge visible 2+ seconds
+- CTA visible 2+ seconds (no store badge in App Store Preview — it's redundant)
 - Caption every scene — many watch without sound
 - Real app icon for recognition
