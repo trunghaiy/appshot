@@ -133,7 +133,7 @@ Present as: "Based on your [category] app, I'd recommend **[track]** ([mood]). W
 
 | # | Name | Duration | Visual ref | What the viewer sees | Caption |
 |---|------|----------|------------|---------------------|---------|
-| 1 | Hook | Xs | — | [text hook with FloatingCard] | "..." |
+| 1 | Hook | Xs | — | [text hook card with spring entrance] | "..." |
 | 2 | Feature | Xs | `recording.png` | [PhoneFrame with animated mock] | "..." |
 | 3 | ... | Xs | `transcription.png` | [PhoneFrame with animated mock] | "..." |
 | 4 | CTA | Xs | — | [app icon + tagline + store badge] | "..." |
@@ -146,8 +146,8 @@ The **Visual ref** column shows which user-provided screenshot is used as the st
 - **All app screen scenes are animated mock UI.** Screenshots are never embedded directly — they are visual references only. Build mock JSX that matches the `visualSpec` and adds animation (elements entering, counters ticking, waveforms pulsing).
 - **If screenshots provided:** Use the `visualSpec` for exact colors, shapes, spacing, typography. The mock must look like the screenshot.
 - **If no screenshots:** Use `uiPatterns` and `brand` colors. No generic UI.
-- **App Store Preview target:** Scene 1 MUST show the app in use from frame 0 with **populated content** (notes, entries, data — never an empty state or blank list). No text-only hooks, no FloatingCards, no AmbientBackground-only scenes. The hook text goes in the Caption overlay on top of the app screen. Only the final CTA scene may show a non-app-screen (app icon + tagline + pills). **No store badge** in the CTA — the video already plays inside the store listing, so a "Download on the App Store" button is redundant.
-- **Marketing target:** Scene 1 can be a text hook with FloatingCard. PhoneFrame wraps app screen scenes.
+- **App Store Preview target:** Scene 1 MUST show the app in use from frame 0 with **populated content** (notes, entries, data — never an empty state or blank list). No text-only hooks, no AmbientBackground-only scenes. The hook text goes in the Caption overlay on top of the app screen. Only the final CTA scene may show a non-app-screen (app icon + tagline + pills). **No store badge** in the CTA — the video already plays inside the store listing, so a badge is redundant.
+- **Marketing target:** Scene 1 can be a text hook with a styled card (spring entrance). PhoneFrame wraps app screen scenes.
 - Final scene: **App Store Preview** — CTA with app icon + tagline + pills (no store badge). **Marketing** — CTA with app icon + tagline + store badge.
 
 ### Step 7: Draft all copy
@@ -228,7 +228,7 @@ Key points (details in code-guide):
 - Orchestrator: `fadeIn={!isFirst} fadeOut={!isLast}` on SceneWrap
 - Never `staticFile()` on AppIcon src
 - Multi-store: Root.tsx registers one `<Composition>` per target store. Orchestrator receives `device` as a prop. See store-to-device mapping in appshot-core.
-- CTA scene: **App Store Preview** — no `AppStoreBadge` (redundant inside the store). **Marketing** — `AppStoreBadge platform` must match the target store (`"ios"` for App Store, `"android"` for Play Store)
+- CTA scene: **App Store Preview** — no store badge (redundant inside the store). **Marketing** — inline store badge SVG must match the target store (see Animation Patterns in appshot-core for the SVG snippet)
 - Remove unused imports
 
 **Existing projects:** If an `appshot-video/` directory already exists with a single composition, do not add multi-store compositions unless the user explicitly requests both stores.

@@ -47,7 +47,7 @@ Pass: average 3.5+, no dimension below 2.
 ## What to Do with Results
 
 - **Dimension below 3:** Identify root cause in SKILL.md or shared resources. Fix and re-run that scenario.
-- **Extraction below 3:** Check `shared/extract-app-context.md` — are the scan patterns correct for the framework?
+- **Extraction below 3:** Check the extraction section in `appshot-core/SKILL.md` — are the scan patterns correct for the framework?
 - **Creative below 3:** Check `shared/copy-principles.md` — are the writing rules clear? Check the Phase 2 guidance in SKILL.md.
 - **Technical below 3:** Check Phase 3 code examples in SKILL.md — are the correct/wrong patterns explicit enough?
 - **Conversational below 3:** Check the phase descriptions and STOP gates in SKILL.md — is the flow clear?

@@ -7,11 +7,11 @@ App Store preview video generator for mobile apps (iOS/Android). AI skills scan 
 
 ## Key constraint
 
-All video output is **886×1920px** (App Store native for iPhone 6.7"). Every sizing rule in the skills and components is calibrated for this canvas width. PhoneFrame scale: 1.5. Text outside PhoneFrame: body 24px+, titles 34px+. FloatingCard width: 700px+.
+All video output is **886×1920px** (App Store native for iPhone 6.7"). Every sizing rule in the skills and components is calibrated for this canvas width. PhoneFrame scale: 1.5. Text outside PhoneFrame: body 24px+, titles 34px+.
 
 ## Where things live
 
-- `template/src/components/` — 11 animation primitives (the product)
+- `template/src/components/` — 10 animation primitives (the product)
 - `skills/appshot-core/` — extraction, config schema, primitives catalog
 - `skills/appshot-videos/` — video creative director + `references/code-guide.md`
 - `skills/appshot-images/` — screenshot creative director

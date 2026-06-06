@@ -24,8 +24,7 @@ Scaffold an `appshot-video/` directory in the target project's root:
 │       ├── config.ts        ← copy from appshot template
 │       ├── styles.css
 │       ├── components/      ← copy all primitives from appshot template
-│       │                      includes BrowserFrame, AnimatedCursor,
-│       │                      ProgressBar, IconSet alongside existing primitives
+│       │                      includes BrowserFrame, AnimatedCursor
 │       ├── scenes/          ← generated custom scenes
 │       └── ProductDemo.tsx  ← generated orchestrator
 ├── src/                     ← target app source (untouched)
@@ -77,7 +76,7 @@ export const appConfig: AppConfig = {
 
 **Imports:**
 ```tsx
-import { AmbientBackground, BrowserFrame, AnimatedCursor, Caption, FadeIn, FloatingCard } from "../components";
+import { AmbientBackground, BrowserFrame, AnimatedCursor, Caption, FadeIn } from "../components";
 import { appConfig } from "../app-config";
 import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 // Only import what you use. Remove unused imports.
@@ -85,18 +84,21 @@ import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 
 **Scene 1 — Frame 0 thumbnail rule:**
 ```tsx
-// CORRECT — FloatingCard visible at frame 0
+// CORRECT — styled card with spring entrance visible at frame 0
 export const S1_Hook: React.FC = () => {
   const { brand } = appConfig;
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const entrance = spring({ frame, fps, delay: 0, config: { mass: 0.8, damping: 14, stiffness: 120 } });
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
       <AmbientBackground brand={brand} variant="dark" />
-      <div className="relative z-10">
-        <FloatingCard delay={0} variant="dark" style={{ width: 900, padding: 40 }}>
+      <div className="relative z-10" style={{ opacity: entrance, transform: `translateY(${(1 - entrance) * 20}px)` }}>
+        <div style={{ width: 900, padding: 40, borderRadius: 16, background: "rgba(26,26,46,0.9)", border: "1px solid rgba(255,255,255,0.1)" }}>
           <span style={{ fontSize: 48, fontWeight: 700, color: brand.textPrimary }}>
             Your workflow is broken.
           </span>
-        </FloatingCard>
+        </div>
       </div>
       <Caption text="There's a better way." delay={5} maxWidth={1200} fontSize={38} />
     </div>
@@ -184,7 +186,7 @@ export const S1_Hook: React.FC = () => {
 <TypeWriter text="..." startFrame={20} className="leading-relaxed" />
 ```
 
-**CTA scene (NO AppStoreBadge):**
+**CTA scene (no store badges — this is a web product):**
 ```tsx
 // CORRECT — custom web CTA
 export const S_CTA: React.FC = () => {
@@ -223,7 +225,7 @@ export const S_CTA: React.FC = () => {
   );
 };
 
-// WRONG — using AppStoreBadge (web product, not a mobile app)
+// WRONG — using store badges (web product, not a mobile app)
 // WRONG — CTA says "Download" (web apps don't download)
 // WRONG — no CTA button (just a logo)
 ```
@@ -377,7 +379,7 @@ Layout patterns for BrowserFrame content (1440px viewport):
 5. **Text contrast:** Every `color:` traced against its `background:`. Both dark = bug. TypeWriter needs explicit color via parent style.
 6. **AnimatedCursor:** Inside positioned parent with BrowserFrame? Keyframe positions align with UI elements? 3-5 keyframes max?
 7. **Caption:** `maxWidth={1200}`, `fontSize={38-44}`? Present in every scene?
-8. **No AppStoreBadge:** Web videos must NOT use store badges.
+8. **No store badges:** Web videos must NOT use store badges.
 9. **No PhoneFrame:** Web videos must NOT use device frames.
 10. **staticFile:** Only in `<Audio>` or raw `<img>`. Never on `<AppIcon>`.
 11. **Unused imports removed.**

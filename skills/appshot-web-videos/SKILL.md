@@ -132,8 +132,8 @@ Present as: "Based on your [category] app, I'd recommend **[track]** ([mood]). W
 - Every scene has a Caption.
 - BrowserFrame scenes: content must mock THIS product's actual pages. Use extracted routes, features, brand colors. No generic UI.
 - At least one scene shows real product interaction (BrowserFrame + AnimatedCursor).
-- Final scene: CTA with product name/logo + action text + URL. NO AppStoreBadge.
-- Non-BrowserFrame scenes: persona intro, outcome/stats, abstract concepts. Use FloatingCard, StatCard, FadeIn, AmbientBackground.
+- Final scene: CTA with product name/logo + action text + URL. No store badges.
+- Non-BrowserFrame scenes: persona intro, outcome/stats, abstract concepts. Use styled cards with spring entrance, animated counters, FadeIn, AmbientBackground (see Animation Patterns in appshot-core).
 
 ### Step 6: Draft all copy
 
@@ -202,7 +202,7 @@ Key points (details in code-guide-web):
 - Single composition in Root.tsx
 - Scene 1: visible content at frame 0 (no TypeWriter first, no delayed springs)
 - Orchestrator: `fadeIn={!isFirst} fadeOut={!isLast}` on SceneWrap
-- CTA: custom button, NO AppStoreBadge
+- CTA: custom button, no store badges
 - AnimatedCursor: inside positioned parent with BrowserFrame, 3-5 keyframes per scene max
 - UI mockups: bespoke JSX reflecting real product pages from extraction
 - Never `staticFile()` on AppIcon

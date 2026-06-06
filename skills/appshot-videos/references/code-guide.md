@@ -74,7 +74,7 @@ export const appConfig: AppConfig = {
 
 **Imports:**
 ```tsx
-import { AmbientBackground, PhoneFrame, Caption, FadeIn, FloatingCard } from "../components";
+import { AmbientBackground, PhoneFrame, Caption, FadeIn } from "../components";
 import { appConfig } from "../app-config";
 import type { DevicePreset } from "../config";
 import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
@@ -83,7 +83,7 @@ import { spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 
 **Scene 1 — Frame 0 rules:**
 
-**App Store Preview target:** Frame 0 must show the app in use — a real app screen with navigation chrome and **populated content** (notes, entries, data, cards — never an empty state, blank list, or onboarding). Apple rejects previews that don't show the app from the start. The hook text goes in the Caption overlay, not in a standalone FloatingCard.
+**App Store Preview target:** Frame 0 must show the app in use — a real app screen with navigation chrome and **populated content** (notes, entries, data, cards — never an empty state, blank list, or onboarding). Apple rejects previews that don't show the app from the start. The hook text goes in the Caption overlay, not a standalone text card.
 
 ```tsx
 // CORRECT (App Store Preview) — App screen with populated content at frame 0, hook as Caption
@@ -98,27 +98,30 @@ export const S1_CoreScreen: React.FC = () => {
   );
 };
 
-// WRONG (App Store Preview) — FloatingCard/text-only hook without app screen
+// WRONG (App Store Preview) — text-only hook without app screen
 <AmbientBackground brand={brand} variant="dark" />
-<FloatingCard delay={0} variant="dark">Your best ideas disappear.</FloatingCard>
+<div style={{ borderRadius: 16, padding: 24, background: "#1A1A2E" }}>Your best ideas disappear.</div>
 // ↑ Apple rejection: "does not sufficiently show the app in use"
 ```
 
-**Marketing target:** FloatingCard or composed graphic hooks are fine — no store compliance needed.
+**Marketing target:** Styled card hooks are fine — no store compliance needed.
 
 ```tsx
-// CORRECT (Marketing) — FloatingCard visible at frame 0
+// CORRECT (Marketing) — card with spring entrance visible at frame 0
 export const S1_Hook: React.FC<{ device: DevicePreset }> = ({ device }) => {
   const { brand } = appConfig;
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const entrance = spring({ frame, fps, delay: 0, config: { mass: 0.8, damping: 14, stiffness: 120 } });
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
       <AmbientBackground brand={brand} variant="dark" />
-      <div className="relative z-10">
-        <FloatingCard delay={0} variant="dark" style={{ width: 740, padding: 32 }}>
+      <div className="relative z-10" style={{ opacity: entrance, transform: `translateY(${(1 - entrance) * 20}px)` }}>
+        <div style={{ width: 740, padding: 32, borderRadius: 16, background: "rgba(26,26,46,0.9)", border: "1px solid rgba(255,255,255,0.1)" }}>
           <span style={{ fontSize: 36, fontWeight: 700, color: brand.textPrimary }}>
             Your best ideas disappear.
           </span>
-        </FloatingCard>
+        </div>
       </div>
       <Caption text="Great ideas deserve better." delay={5} />
     </div>
@@ -183,7 +186,7 @@ export const S1_Hook: React.FC<{ device: DevicePreset }> = ({ device }) => {
 **Audio — staticFile() only here:**
 ```tsx
 <Audio src={staticFile("music.mp3")} volume={0.3} />
-// AppIcon, AppStoreBadge handle staticFile internally — never wrap them.
+// AppIcon handles staticFile internally — never wrap it.
 ```
 
 ### 3. Orchestrator
@@ -490,8 +493,8 @@ export const S2_Record: React.FC = () => {
 - Recording indicator pulsing
 - Cards sliding in with `FadeIn` or `spring()`
 - Text typing in with `TypeWriter`
-- Counters incrementing with `StatCard`
-- Progress bars filling
+- Counters incrementing with animated `interpolate()` (see Animation Patterns in appshot-core)
+- Progress bars filling with `interpolate()` on width
 - Elements appearing in sequence (staggered `delay`)
 
 ## Icon Rendering
@@ -812,7 +815,7 @@ All sizes from `uiPatterns` are phone-logical — apply the ×2.25 canvas scale 
 - [ ] `video.width` is `886`
 
 **Each scene:**
-1. **S1 frame 0:** Fully visible element at frame 0? FAIL if TypeWriter first, `frame - N` first, or all delayed FadeIns. **App Store Preview:** S1 must be an app screen with populated content (not FloatingCard/AmbientBackground hook, not an empty state or blank list).
+1. **S1 frame 0:** Fully visible element at frame 0? FAIL if TypeWriter first, `frame - N` first, or all delayed FadeIns. **App Store Preview:** S1 must be an app screen with populated content (not a text-card/AmbientBackground hook, not an empty state or blank list).
 2. **PhoneFrame scale:** `scale={1.5}` present? Missing scale = bug. (Marketing target only — App Store Preview must NOT use PhoneFrame.)
 3. **Text outside PhoneFrame:** Body under 24px or titles under 34px = too small. (Marketing target only.)
 4. **Card widths outside PhoneFrame:** Under 700px = too narrow. (Marketing target only.)
@@ -822,7 +825,7 @@ All sizes from `uiPatterns` are phone-logical — apply the ×2.25 canvas scale 
 8. **Unused imports:** Remove `spring`, `interpolate`, etc. if not used.
 9. **Caption present:** Every scene has `<Caption>`.
 10. **Multi-store Root.tsx:** One `<Composition>` per target store with correct `defaultProps={{ device }}`?
-11. **CTA badge:** **App Store Preview:** No `AppStoreBadge` in CTA scene (redundant inside the store listing)? **Marketing:** `AppStoreBadge platform` matches target store (`"ios"` for AppStore, `"android"` for PlayStore)?
+11. **CTA badge:** **App Store Preview:** No store badge in CTA scene (redundant inside the store listing)? **Marketing:** Inline store badge SVG matches target store (Apple logo for AppStore, Play logo for PlayStore)?
 12. **Device prop threading:** Orchestrator accepts `{ device: DevicePreset }`, passes to each scene, scenes pass to `<PhoneFrame>`? (Marketing target only.)
 13. **Navigation chrome (App Store Preview):** Every mock screen has status bar + navigation bar + tab bar (if the app uses tabs)? Chrome matches extracted `navigation` data?
 14. **No device frames (App Store Preview):** Zero uses of `<PhoneFrame>` in any scene? App UI fills full canvas?

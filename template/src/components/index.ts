@@ -1,17 +1,10 @@
 export { AmbientBackground } from "./AmbientBackground";
 export { AppIcon } from "./AppIcon";
-export { AppStoreBadge } from "./AppStoreBadge";
 export { Caption } from "./Caption";
 export { FadeIn } from "./FadeIn";
-export { FloatingCard } from "./FloatingCard";
-export { HeatMap } from "./HeatMap";
 export { PhoneFrame, StatusBarIcons } from "./PhoneFrame";
 export { SceneWrap } from "./SceneWrap";
-export { StatCard } from "./StatCard";
 export { TypeWriter } from "./TypeWriter";
 export { BrowserFrame } from "./BrowserFrame";
 export { AnimatedCursor } from "./AnimatedCursor";
 export type { CursorKeyframe } from "./AnimatedCursor";
-export { ProgressBar } from "./ProgressBar";
-export { Icon } from "./IconSet";
-export type { IconName } from "./IconSet";

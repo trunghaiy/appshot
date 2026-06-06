@@ -494,17 +494,15 @@ src/
     S2_[Name].tsx
     ...
   components/           # Shared primitives library (imported from template)
-    PhoneFrame.tsx
-    AmbientBackground.tsx
-    Caption.tsx
-    FadeIn.tsx
-    SceneWrap.tsx
-    HeatMap.tsx
-    AppIcon.tsx
-    AppStoreBadge.tsx
-    TypeWriter.tsx
-    StatCard.tsx
-    FloatingCard.tsx
+    PhoneFrame.tsx      # Device frame with bezel, Dynamic Island, spring entrance
+    AmbientBackground.tsx # Animated gradient bg with floating orbs
+    Caption.tsx         # Word-by-word animated caption with frosted pill
+    FadeIn.tsx          # Directional spring fade-in wrapper
+    SceneWrap.tsx       # Fade envelope for scene transitions
+    AppIcon.tsx         # App icon with optional glow pulse
+    TypeWriter.tsx      # Character-by-character text reveal
+    BrowserFrame.tsx    # macOS browser chrome (light/dark)
+    AnimatedCursor.tsx  # Bezier-interpolated cursor with click ripple
     index.ts
   config.ts             # Type definitions, device dimensions, defaults
 public/
@@ -618,22 +616,6 @@ Wraps each scene with fade-in/fade-out transitions (12 frames each). Used by the
 
 **When to use:** In the orchestrator component, wrap each scene inside `<Sequence>` + `<SceneWrap>`.
 
-### HeatMap
-
-GitHub-style contribution grid that fills cell-by-cell. Brand-colored ramp from `primaryLight` to `primary`.
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `brand` | `BrandColors` | required | Color ramp source |
-| `delay` | `number` | `0` | Animation start frame |
-| `weeks` | `number` | `13` | Number of columns |
-| `days` | `number` | `7` | Number of rows |
-| `cellSize` | `number` | `18` | Cell size in px |
-| `gap` | `number` | `3` | Gap between cells |
-| `monthLabels` | `string[]` | `["Jan","Feb","Mar","Apr"]` | Column group labels |
-
-**When to use:** Habit/consistency tracking apps, activity visualization, any app where showing daily engagement patterns makes sense.
-
 ### AppIcon
 
 Renders the app icon with optional animated glow effect.
@@ -646,17 +628,6 @@ Renders the app icon with optional animated glow effect.
 | `glowColor` | `string` | `"rgba(0,122,255,0.4)"` | Glow color |
 
 **When to use:** CTA/closing scenes. Builds brand recognition.
-
-### AppStoreBadge
-
-iOS App Store and/or Google Play download badge.
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `platform` | `"ios" \| "android" \| "both"` | `"ios"` | Which badge(s) to show |
-| `delay` | `number` | `0` | Entrance delay (frames) |
-
-**When to use:** CTA/closing scene. Badge should be visible for 2+ seconds.
 
 ### TypeWriter
 
@@ -673,34 +644,70 @@ Character-by-character text reveal with optional blinking cursor.
 
 **When to use:** Search bars, text inputs, chat messages, anywhere you want to simulate user typing.
 
-### StatCard
+### BrowserFrame
 
-Before/after stat comparison card with animated counter transition.
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `label` | `string` | required | Stat name (e.g., "Weekly sessions") |
-| `before` | `number` | required | Starting value (crossed out) |
-| `after` | `number` | required | Target value (animated counter) |
-| `suffix` | `string` | `""` | Unit suffix (e.g., "%", "+", "hrs") |
-| `delay` | `number` | `0` | Entrance delay (frames) |
-| `brand` | `BrandColors` | required | Colors for text and accent |
-
-**When to use:** Proof/outcome scenes showing measurable improvement. Good for before/after transformations.
-
-### FloatingCard
-
-Animated card container with glass, solid, or dark variants. Spring entrance animation.
+macOS-style browser chrome with traffic lights, address bar, and content area. Light and dark variants.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `children` | `ReactNode` | required | Card content |
-| `delay` | `number` | `0` | Entrance delay (frames) |
-| `variant` | `"glass" \| "solid" \| "dark"` | `"glass"` | Visual style |
-| `className` | `string` | — | Tailwind classes |
-| `style` | `CSSProperties` | — | Override styles |
+| `children` | `ReactNode` | required | Page content |
+| `url` | `string` | `"app.example.com"` | Address bar text |
+| `delay` | `number` | `0` | Entrance animation delay (frames) |
+| `scale` | `number` | `1` | Scale multiplier |
+| `variant` | `"light" \| "dark"` | `"light"` | Chrome theme |
 
-**When to use:** Feature cards, info panels, any floating UI element that needs a polished container.
+### AnimatedCursor
+
+Bezier-interpolated cursor that moves between keyframe positions with click ripple effect.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `keyframes` | `CursorKeyframe[]` | required | `{ frame, x, y, click? }` positions |
+| `visible` | `boolean` | `true` | Show/hide cursor |
+
+## Animation Patterns
+
+The removed primitives (FloatingCard, StatCard, HeatMap, ProgressBar, AppStoreBadge, IconSet) were simple wrappers that constrained the agent with hardcoded sizes. Write these patterns inline instead, scaled appropriately for your canvas:
+
+**Animated counter** (before/after stat):
+```tsx
+const counter = spring({ frame, fps, delay: 10, config: { mass: 0.6, damping: 18, stiffness: 80 } });
+const value = Math.round(interpolate(counter, [0, 1], [beforeValue, afterValue]));
+```
+
+**Cell-by-cell grid fill** (heatmap/contribution grid):
+```tsx
+{cells.map((cell, i) => {
+  const cellEnter = spring({ frame, fps, delay: baseDelay + i * 0.4, config: { mass: 0.2, damping: 10, stiffness: 180 } });
+  return <div key={i} style={{ opacity: 0.3 + cellEnter * 0.7, transform: `scale(${0.6 + cellEnter * 0.4})` }} />;
+})}
+```
+
+**Progress bar fill**:
+```tsx
+const progress = interpolate(frame, [delay, delay + 30], [0, targetPercent], { extrapolateRight: "clamp" });
+<div style={{ width: `${progress}%`, height, backgroundColor: color, borderRadius }} />
+```
+
+**Spring-entrance card** (replaces FloatingCard):
+```tsx
+const entrance = spring({ frame, fps, delay, config: { mass: 0.8, damping: 14, stiffness: 120 } });
+<div style={{ opacity: entrance, transform: `translateY(${(1 - entrance) * 20}px)`, borderRadius, padding, background }}>
+```
+
+**App Store / Play Store badge** (for Marketing CTA scenes):
+```tsx
+// iOS badge — black rounded rect with Apple SVG
+<div style={{ background: "#000", borderRadius: 14, padding: "14px 28px", display: "flex", alignItems: "center", gap: 12 }}>
+  <svg width="28" height="34" viewBox="0 0 28 34" fill="white">
+    <path d="M23.2 17.8c0-3.6 2.9-5.3 3-5.4-1.6-2.4-4.2-2.7-5.1-2.8-2.1-.2-4.2 1.3-5.3 1.3-1.1 0-2.8-1.2-4.6-1.2C8.5 9.8 6 11.2 4.6 13.5c-2.8 4.9-.7 12.1 2 16.1 1.3 1.9 2.9 4.1 5 4 2-.1 2.8-1.3 5.2-1.3 2.4 0 3.1 1.3 5.2 1.3 2.2 0 3.5-2 4.8-3.9 1.5-2.2 2.1-4.3 2.2-4.4 0-.1-4.2-1.6-4.2-6.4zM19.3 7.5c1.1-1.3 1.8-3.2 1.6-5-1.6.1-3.4 1-4.6 2.3-1 1.2-1.9 3-1.6 4.8 1.7.2 3.5-.9 4.6-2.1z" />
+  </svg>
+  <div>
+    <div style={{ fontSize: 16, color: "rgba(255,255,255,0.8)" }}>Download on the</div>
+    <div style={{ fontSize: 28, fontWeight: 600, color: "#FFF" }}>App Store</div>
+  </div>
+</div>
+```
 
 ## Device Presets
 
@@ -713,12 +720,12 @@ Animated card container with glass, solid, or dark variants. Spring entrance ani
 
 ### Store-to-Device Mapping
 
-| Store | Composition ID suffix | Device preset | Badge platform |
-|-------|----------------------|---------------|----------------|
-| App Store | `-AppStore` | `iphone-16-pro` | `"ios"` |
-| Play Store | `-PlayStore` | `pixel-9` | `"android"` |
+| Store | Composition ID suffix | Device preset |
+|-------|----------------------|---------------|
+| App Store | `-AppStore` | `iphone-16-pro` |
+| Play Store | `-PlayStore` | `pixel-9` |
 
-For multi-store projects, Root.tsx registers one `<Composition>` per store. Scenes are shared — only the device frame (and navigation chrome style) differ. Canvas stays 886×1920 for both. Note: App Store Preview videos do not include store badges in the CTA (redundant inside the store listing); Marketing videos include `AppStoreBadge` in the CTA.
+For multi-store projects, Root.tsx registers one `<Composition>` per store. Scenes are shared — only the device frame (and navigation chrome style) differ. Canvas stays 886×1920 for both. Note: App Store Preview videos do not include store badges in the CTA (redundant inside the store listing); Marketing videos include an inline store badge in the CTA (see Animation Patterns above for the SVG snippet).
 
 ## Output Targets
 

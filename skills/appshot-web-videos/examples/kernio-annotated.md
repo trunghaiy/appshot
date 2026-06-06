@@ -14,14 +14,14 @@ Product demo video for a web-based AI content platform. 60 seconds, 1920x1080, p
 
 | # | Scene | Dur | Primitives | Animation density | Notes |
 |---|-------|-----|-----------|-------------------|-------|
-| 1 | Meet Maya | 5s | AmbientBackground(dark), FloatingCard, FadeIn | 3 (card + stats + caption) | Persona intro. Red pulsing "0" values create urgency. Visible at frame 0. |
-| 2 | 90s Setup | 10s | BrowserFrame, ProgressBar, FadeIn, Caption | 4 (browser + progress + tags + caption) | Onboarding flow mockup. Upload animation + expertise extraction. |
+| 1 | Meet Maya | 5s | AmbientBackground(dark), FadeIn, spring card | 3 (card + stats + caption) | Persona intro. Red pulsing "0" values create urgency. Visible at frame 0. |
+| 2 | 90s Setup | 10s | BrowserFrame, interpolate progress, FadeIn, Caption | 4 (browser + progress + tags + caption) | Onboarding flow mockup. Upload animation + expertise extraction. |
 | 3 | First Post | 9s | BrowserFrame, AnimatedCursor, TypeWriter, Caption | 5 (browser + cursor + typing + topic selection + caption) | Highest density scene. Cursor clicks topic → post generates. The money shot. |
-| 3b | Capture | 8s | FadeIn, FloatingCard, Caption, ProgressBar | 3 (cards + counter + caption) | Multi-source capture cards slide in from left. Knowledge base counter ticks up. |
-| 4 | Montage | 7s | FadeIn, FloatingCard, Caption | 3 (post cards + calendar + caption) | Quick stack of 3 generated posts + weekly calendar fills. Communicates volume. |
+| 3b | Capture | 8s | FadeIn, spring cards, Caption, interpolate counter | 3 (cards + counter + caption) | Multi-source capture cards slide in from left. Knowledge base counter ticks up. |
+| 4 | Montage | 7s | FadeIn, spring cards, Caption | 3 (post cards + calendar + caption) | Quick stack of 3 generated posts + weekly calendar fills. Communicates volume. |
 | 5 | Book Editor | 10s | BrowserFrame, TypeWriter, FadeIn, Caption | 4 (browser + typing + source cards + caption) | 3-panel layout: chapters, editor, sources. Word counter 0→45,200. Most complex mockup. |
-| 6 | Outcome | 6s | AmbientBackground(dark), StatCard, FadeIn, Caption | 4 (5 stat cards staggering in + caption) | Before/after transformation. Each stat springs in with counter. Emotional payoff. |
-| 7 | CTA | 5s | AmbientBackground(dark), AppIcon, FadeIn, Caption | 3 (logo + button + platform badges) | Glow-pulse CTA button. URL visible. Platform badges spring in. |
+| 6 | Outcome | 6s | AmbientBackground(dark), animated counters, FadeIn, Caption | 4 (5 stat cards staggering in + caption) | Before/after transformation. Each stat springs in with counter. Emotional payoff. |
+| 7 | CTA | 5s | AmbientBackground(dark), AppIcon, FadeIn, Caption | 3 (logo + button + URL) | Glow-pulse CTA button. URL visible. |
 
 ## Key patterns to replicate
 
