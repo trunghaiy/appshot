@@ -502,41 +502,22 @@ export const S2_Record: React.FC = () => {
 **Never use Unicode characters for icons.** Unicode glyphs (`⌂`, `⚲`, `⚙`, `⋯`) render as OS-specific shapes that don't match the app's real icons. Instead, draw icons as inline SVG paths that match the icon descriptions from the visual spec.
 
 ```tsx
-// CORRECT — inline SVG that matches the app's actual "house" tab icon
-<svg width={54} height={54} viewBox="0 0 24 24" fill={tab.active ? "#3BB8E0" : "#6B7A8D"}>
-  <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z" />
+// CORRECT — inline SVG (filled icon)
+<svg width={54} height={54} viewBox="0 0 24 24" fill={color}>
+  <path d="M3 12l9-9 9 9v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
 </svg>
 
-// CORRECT — inline SVG for "magnifying glass" search icon
-<svg width={54} height={54} viewBox="0 0 24 24" fill="none" stroke={tab.active ? "#3BB8E0" : "#6B7A8D"} strokeWidth={2}>
+// CORRECT — inline SVG (stroked icon)
+<svg width={54} height={54} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
   <circle cx="11" cy="11" r="7" />
   <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
 </svg>
 
-// CORRECT — inline SVG for "gear" settings icon
-<svg width={54} height={54} viewBox="0 0 24 24" fill="none" stroke={tab.active ? "#3BB8E0" : "#6B7A8D"} strokeWidth={2}>
-  <circle cx="12" cy="12" r="3" />
-  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-</svg>
-
-// WRONG — Unicode characters that don't match the app's icons
+// WRONG — Unicode characters
 <span style={{ fontSize: 54 }}>⌂</span>    // OS-dependent, wrong shape
-<span style={{ fontSize: 54 }}>⚲</span>    // Not a search icon on most systems
-<span style={{ fontSize: 54 }}>⚙</span>    // Generic gear, wrong weight/style
 ```
 
-**Common icons as SVG (viewBox 0 0 24 24, scale with width/height):**
-- **Home**: filled house shape — `M3 12l9-9 9 9v8a2 2 0 01-2 2H5a2 2 0 01-2-2z`
-- **Search**: circle + diagonal line — `<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>`
-- **Settings/Gear**: circle center + cog path (see example above)
-- **Back chevron**: `M15 18l-6-6 6-6` (stroke, no fill)
-- **More/ellipsis**: three circles — `<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>`
-- **Share/upload**: `M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 3v12M7 8l5-5 5 5`
-- **Trash**: `M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14`
-- **Play**: `M5 3l14 9-14 9V3z` (filled triangle)
-- **Pause**: two rectangles — `M6 4h4v16H6zM14 4h4v16h-4z`
-
-Read the icon descriptions from the `visualSpec` and pick the SVG path that best matches. For app-specific icons not listed here, draw a simplified SVG that captures the recognizable shape.
+Read the icon descriptions from the `visualSpec` and draw SVG paths that match. Use `viewBox="0 0 24 24"` and scale with `width`/`height`.
 
 ## Code Quality Rules
 
@@ -575,195 +556,74 @@ Count the distinct UI elements in the screenshot before writing code. If the scr
 - **Badge indicators** — type badges, status pills, credit counters
 - **Home indicator** — the bottom bar on modern iPhones
 
-### Example: complete mock scene from visualSpec (canvas-scaled)
+### Example: full-bleed scene structure (App Store Preview, canvas-scaled)
 
-This example shows a voice note detail screen on the 886×1920 canvas. Every element from the screenshot is present, and **all sizes are scaled ×2.25** from phone-logical values.
+Every full-bleed scene follows this vertical layout. All sizes are ×2.25 from phone-logical values. Use colors from `visualSpec` (if screenshots provided) or `brand.*` (if not).
 
 ```tsx
-// All sizes are canvas-scaled: phone-logical × 2.25
-// e.g., 48px phone button → 108px, 16px phone text → 36px
-export const S2_Transcription: React.FC = () => {
+export const S2_Feature: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const { brand } = appConfig;
 
   return (
-    <div style={{ background: "#0A1628", height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
+    <div style={{ background: brand.background, height: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
 
-      {/* ── Status bar: 38px text (17×2.25), height 110px ── */}
-      <div className="flex items-center justify-between"
-           style={{ height: 110, padding: "20px 45px 0" }}>
-        <span style={{ fontSize: 38, fontWeight: 600, color: "#E8ECF1" }}>9:41</span>
-        <StatusBarIcons color="#E8ECF1" />
+      {/* ── Status bar: 38px (17×2.25), height 110px ── */}
+      <div className="flex items-center justify-between" style={{ height: 110, padding: "20px 45px 0" }}>
+        <span style={{ fontSize: 38, fontWeight: 600, color: brand.textPrimary }}>9:41</span>
+        <div style={{ transform: "scale(2.25)", transformOrigin: "right center" }}>
+          <StatusBarIcons color={brand.textPrimary} />
+        </div>
       </div>
 
-      {/* ── Nav bar: 108px buttons (48×2.25), SVG icons ── */}
-      <div className="flex items-center justify-between" style={{ padding: "0 40px", height: 126 }}>
-        <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
+      {/* ── Nav bar: 108px buttons (48×2.25), inline SVG icons ── */}
+      <div className="flex items-center justify-between" style={{ padding: "0 45px", height: 126 }}>
+        <div style={{ width: 108, height: 108, borderRadius: 27, background: brand.surface,
                       display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <svg width={44} height={44} viewBox="0 0 24 24" fill="none" stroke="#E8ECF1" strokeWidth={2.5}>
+          <svg width={44} height={44} viewBox="0 0 24 24" fill="none" stroke={brand.textPrimary} strokeWidth={2.5}>
             <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <div className="flex" style={{ gap: 14 }}>
-          {/* More, Share, Trash — all as inline SVG */}
-          <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
-                        display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width={44} height={44} viewBox="0 0 24 24" fill="#E8ECF1">
-              <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
-            </svg>
-          </div>
-          <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
-                        display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width={44} height={44} viewBox="0 0 24 24" fill="none" stroke="#E8ECF1" strokeWidth={2}>
-              <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 3v12M7 8l5-5 5 5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div style={{ width: 108, height: 108, borderRadius: 27, background: "#1A2940",
-                        display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width={44} height={44} viewBox="0 0 24 24" fill="none" stroke="#E85D5D" strokeWidth={2}>
-              <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </div>
+        {/* ... additional nav action buttons as inline SVG ... */}
       </div>
 
-      {/* ── Type badge (29px text) + metadata ── */}
-      <FadeIn delay={3} direction="up">
-        <div className="flex items-center" style={{ gap: 14, padding: "14px 45px 0" }}>
-          <span style={{ background: "#1A3A28", color: "#E5C044", fontSize: 29, fontWeight: 600,
-                          padding: "9px 27px", borderRadius: 18 }}>🎙 Voice Recording</span>
-          <span style={{ fontSize: 29, color: "#6B7A8D" }}>1d ago · 4m 23s ☁</span>
-        </div>
-      </FadeIn>
+      {/* ── Content area: flex-1, all text/elements canvas-scaled ── */}
+      <div style={{ flex: 1, padding: "18px 45px" }}>
+        {/* Title: 68px (30×2.25) */}
+        <span style={{ fontSize: 68, fontWeight: 700, color: brand.textPrimary }}>Screen Title</span>
 
-      {/* ── Title: 68px (30×2.25) + colored divider ── */}
-      <div style={{ padding: "10px 45px 0" }}>
-        <span style={{ fontSize: 68, fontWeight: 700, color: "#E8ECF1" }}>Client strategy call — pricing</span>
-      </div>
-      <div style={{ height: 3, background: "#3B7DD8", margin: "14px 45px 0" }} />
-
-      {/* ── Waveform card: 36px radius, 36px padding ── */}
-      <FadeIn delay={8} direction="up">
-        <div style={{ background: "#1A2940", borderRadius: 36, border: "2px solid #2A3A50",
-                      padding: 36, margin: "18px 45px 0" }}>
-          <div style={{ height: 90, background: "#253550", borderRadius: 18, marginBottom: 27 }} />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center" style={{ gap: 14 }}>
-              <div style={{ width: 99, height: 99, borderRadius: 50, background: "#3BB8E0",
-                            display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width={36} height={36} viewBox="0 0 24 24" fill="#FFF"><path d="M5 3l14 9-14 9V3z" /></svg>
-              </div>
-              <span style={{ fontSize: 31, color: "#6B7A8D", fontVariantNumeric: "tabular-nums" }}>0:00 / 4:23</span>
-            </div>
-            <div className="flex" style={{ gap: 9 }}>
-              {["0.75x", "1x", "1.5x", "2x"].map((speed, i) => (
-                <div key={i} style={{ padding: "9px 22px", borderRadius: 27,
-                                      background: i === 1 ? "#3BB8E0" : "#253550",
-                                      color: i === 1 ? "#FFF" : "#6B7A8D", fontSize: 27, fontWeight: 600 }}>
-                  {speed}
-                </div>
-              ))}
-            </div>
+        {/* Cards: 36px radius (16×2.25), 36px padding (16×2.25) */}
+        <FadeIn delay={8} direction="up">
+          <div style={{ background: brand.surface, borderRadius: 36, padding: 36, marginTop: 18 }}>
+            {/* Card content — match visualSpec exactly. Every element present. */}
           </div>
-        </div>
-      </FadeIn>
+        </FadeIn>
 
-      {/* ── Transcription header: 29px ALL CAPS (13×2.25) ── */}
-      <div className="flex items-center" style={{ gap: 14, padding: "36px 45px 0" }}>
-        <span style={{ fontSize: 29, fontWeight: 600, color: "#3BB8E0",
-                        textTransform: "uppercase", letterSpacing: 2 }}>TRANSCRIPTION</span>
-        <div style={{ flex: 1, height: 2, background: "#2A3A50" }} />
-        <span style={{ fontSize: 27, color: "#3BB8E0", background: "#1A3040",
-                        padding: "7px 22px", borderRadius: 14 }}>AI Enhanced</span>
+        {/* Body text: 36px (16×2.25), labels: 27px (12×2.25) */}
+        <FadeIn delay={14} direction="up">
+          <p style={{ fontSize: 36, color: brand.textPrimary, lineHeight: 1.5 }}>Content text here.</p>
+        </FadeIn>
       </div>
 
-      {/* ── Transcription text: 36px body (16×2.25), 25px timestamps ── */}
-      <FadeIn delay={14} direction="up">
-        <div style={{ flex: 1, padding: "18px 45px 0" }}>
-          <div className="flex flex-col" style={{ gap: 18 }}>
-            <div>
-              <span style={{ fontSize: 25, color: "#E85D5D", background: "#2A1A1A",
-                              padding: "5px 14px", borderRadius: 9 }}>0:00</span>
-              <p style={{ fontSize: 36, color: "#E8ECF1", lineHeight: 1.5, marginTop: 14 }}>
-                Just got off the call with the Acme team. Their pricing is all over the place — three tiers
-                but the middle one has no clear value prop.
-              </p>
-            </div>
-            <div>
-              <span style={{ fontSize: 25, color: "#4CAF50", background: "#1A2A1A",
-                              padding: "5px 14px", borderRadius: 9 }}>0:42</span>
-              <p style={{ fontSize: 36, color: "#E8ECF1", lineHeight: 1.5, marginTop: 14 }}>
-                What I told them is: your middle tier needs to be the obvious choice. Anchor the top tier
-                high so the middle feels like a deal.
-              </p>
-            </div>
-          </div>
-        </div>
-      </FadeIn>
-
-      {/* ── Bottom CTA card: 36px radius, all text scaled ── */}
-      <div style={{ padding: "0 45px 14px" }}>
-        <div style={{ background: "#1A2940", borderRadius: 36, border: "2px solid #2A3A50", padding: 36 }}>
-          <span style={{ fontSize: 36, fontWeight: 600, color: "#3BB8E0" }}>Add timestamps & structure</span>
-          <p style={{ fontSize: 29, color: "#6B7A8D", marginTop: 9 }}>Jump to any part of your recording.</p>
-          <div className="flex items-center" style={{ gap: 14, marginTop: 14 }}>
-            <div style={{ padding: "14px 31px", borderRadius: 45, background: "#253550",
-                          display: "flex", alignItems: "center", gap: 14 }}>
-              <span style={{ fontSize: 31 }}>🇻🇳</span>
-              <span style={{ fontSize: 29, color: "#E8ECF1" }}>VI</span>
-            </div>
-            <div style={{ padding: "14px 40px", borderRadius: 45, border: "2px solid #3BB8E0" }}>
-              <span style={{ fontSize: 31, color: "#3BB8E0", fontWeight: 600 }}>Enhance · 2 credits</span>
-            </div>
-          </div>
-          <span style={{ fontSize: 27, color: "#6B7A8D", marginTop: 18, display: "block" }}>5 credits remaining</span>
-        </div>
-      </div>
-
-      {/* ── Tab bar: 54px SVG icons, 25px labels, height 130px ── */}
+      {/* ── Tab bar: 54px SVG icons (24×2.25), 25px labels (11×2.25), height 130px ── */}
       <div className="flex items-center justify-around"
-           style={{ borderTop: "2px solid #1A2940", background: "#0D1520",
-                    height: 130, padding: "0 36px 10px" }}>
-        {[
-          { label: "Home", active: true, path: "M3 12l9-9 9 9v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" },
-          { label: "Search", active: false, path: "" },
-          { label: "Settings", active: false, path: "" },
-        ].map((tab, i) => {
-          const color = tab.active ? "#3BB8E0" : "#6B7A8D";
-          return (
-            <div key={i} className="flex flex-col items-center" style={{ gap: 4 }}>
-              {i === 0 && (
-                <svg width={54} height={54} viewBox="0 0 24 24" fill={color}><path d={tab.path} /></svg>
-              )}
-              {i === 1 && (
-                <svg width={54} height={54} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
-                  <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" strokeLinecap="round" />
-                </svg>
-              )}
-              {i === 2 && (
-                <svg width={54} height={54} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-                </svg>
-              )}
-              <span style={{ fontSize: 25, fontWeight: tab.active ? 600 : 400, color }}>{tab.label}</span>
-            </div>
-          );
-        })}
+           style={{ borderTop: `2px solid ${brand.surface}`, background: brand.background, height: 130, paddingBottom: 18 }}>
+        {/* Map extracted navigation.tabs — each with inline SVG icon + label */}
       </div>
 
       {/* ── Home indicator: 302×11px (134×5 × 2.25) ── */}
-      <div className="flex justify-center" style={{ paddingBottom: 10 }}>
-        <div style={{ width: 302, height: 11, borderRadius: 6, background: "#E8ECF1", opacity: 0.2 }} />
+      <div className="flex justify-center" style={{ paddingBottom: 14 }}>
+        <div style={{ width: 302, height: 11, borderRadius: 6, background: brand.textPrimary, opacity: 0.2 }} />
       </div>
 
-      <Caption text="AI transcribes in 47 languages." delay={5} />
+      <Caption text="Your caption here." delay={5} />
     </div>
   );
 };
 ```
 
-Note: this scene is ~150 lines. Every element from the visualSpec is present and all sizes are canvas-scaled (×2.25). Do NOT use phone-logical sizes directly — they will be unreadably small.
+Replace placeholder text, colors, and card content with actual app data. Every element from the `visualSpec` must be present — no `{/* ... */}` abbreviations. Status bar icons need `transform: scale(2.25)` wrapping since the component renders at phone-logical size.
 
 ### Fallback: no screenshots provided
 
